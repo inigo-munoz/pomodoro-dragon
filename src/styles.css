@@ -1,3 +1,45 @@
-/* src/styles.css */
 * { box-sizing: border-box; }
-body { margin: 0; font-family: system-ui, sans-serif; }
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  background: #1b1030;
+  color: #fff;
+  -webkit-user-select: none;
+  user-select: none;
+}
+#app { max-width: 480px; margin: 0 auto; min-height: 100vh; }
+.screen { display: flex; flex-direction: column; align-items: center; padding: 16px; gap: 16px; min-height: 100vh; }
+
+.top-bar, .nav-bar { display: flex; justify-content: space-between; width: 100%; align-items: center; }
+.coin-counter { font-size: 1.4rem; font-weight: 700; }
+.mode-label { font-size: 1.1rem; opacity: 0.8; }
+
+.dragon-stage { flex: 1; display: flex; align-items: center; justify-content: center; }
+.dragon-art { font-size: 6rem; }
+
+.xp-bar { width: 100%; height: 18px; background: #33224d; border-radius: 9px; overflow: hidden; }
+.xp-fill { height: 100%; background: #6cf; transition: width 0.3s ease; }
+
+.timer-display { font-size: 3rem; font-variant-numeric: tabular-nums; margin: 0; }
+
+.big-btn { font-size: 1.5rem; padding: 18px 28px; border: none; border-radius: 16px; background: #6c3; color: #06210a; font-weight: 700; }
+.big-btn.primary { min-width: 240px; }
+.icon-btn { font-size: 1.6rem; background: none; border: none; padding: 8px; }
+
+.food-grid, .dragon-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%; }
+.food-card, .dragon-choice { display: flex; flex-direction: column; gap: 4px; padding: 14px; border: none; border-radius: 16px; background: #2c1c4a; color: #fff; }
+.food-card.dimmed { opacity: 0.4; }
+.food-icon, .dragon-art { font-size: 2.5rem; }
+
+.setting-group { width: 100%; }
+.preset-row, .step-row { display: flex; gap: 10px; }
+.preset, .step-row button { font-size: 1.3rem; padding: 12px 18px; border: none; border-radius: 12px; background: #2c1c4a; color: #fff; }
+.preset.active { background: #6c3; color: #06210a; }
+
+.back-btn { align-self: flex-start; font-size: 1.1rem; background: none; border: none; color: #9af; }
+
+.level-up-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; }
+.level-up-card { text-align: center; }
+.level-up-title { font-size: 2rem; }
+.level-up-art { font-size: 7rem; animation: pop 0.5s ease; }
+@keyframes pop { 0% { transform: scale(0.2); } 100% { transform: scale(1); } }

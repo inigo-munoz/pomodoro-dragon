@@ -1,2 +1,3 @@
-// src/main.js
-document.querySelector('#app').textContent = 'Pomodoro Dragon';
+import { createApp } from './app.js';
+
+createApp(document.querySelector('#app'));
