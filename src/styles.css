@@ -14,7 +14,6 @@ body {
 .coin-counter { font-size: 1.4rem; font-weight: 700; }
 .mode-label { font-size: 1.1rem; opacity: 0.8; }
 
-.dragon-stage { flex: 1; display: flex; align-items: center; justify-content: center; }
 .dragon-art { font-size: 6rem; }
 
 .xp-bar { width: 100%; height: 18px; background: #33224d; border-radius: 9px; overflow: hidden; }
@@ -41,16 +40,15 @@ body {
 .level-up-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; }
 .level-up-card { text-align: center; }
 .level-up-title { font-size: 2rem; }
-.level-up-art { font-size: 7rem; animation: pop 0.5s ease; }
-@keyframes pop { 0% { transform: scale(0.2); } 100% { transform: scale(1); } }
+.level-up-art { font-size: 7rem; }
 
 /* --- art elements --- */
 .art-img { width: 100%; height: 100%; object-fit: contain; }
-.dragon-stage { width: 60vw; max-width: 260px; aspect-ratio: 1; }
+.dragon-stage { width: 60vw; max-width: 260px; aspect-ratio: 1; margin: auto; display: flex; align-items: center; justify-content: center; }
 .dragon-art { display: flex; width: 100%; height: 100%; align-items: center; justify-content: center; }
 
 /* idle: gentle float + breathe on the main dragon */
-.dragon-art.alive { animation: float 3.5s ease-in-out infinite, breathe 2.4s ease-in-out infinite; }
+.dragon-art.alive { font-size: 6rem; animation: float 3.5s ease-in-out infinite, breathe 2.4s ease-in-out infinite; }
 @keyframes float   { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 @keyframes breathe { 0%,100% { scale: 1; } 50% { scale: 1.04; } }
 
