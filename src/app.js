@@ -74,7 +74,18 @@ export const createApp = (root) => {
       onChange: (settings) => {
         state = { ...state, settings };
         save();
-        if (!timerState.running) timerState = createTimerState(settings);
+        if (!timerState.running) {
+          const workSeconds = settings.workMinutes * 60;
+          const breakSeconds = settings.breakMinutes * 60;
+          const atFreshWorkStart =
+            timerState.mode === 'work' && timerState.remaining === timerState.workSeconds;
+          timerState = {
+            ...timerState,
+            workSeconds,
+            breakSeconds,
+            remaining: atFreshWorkStart ? workSeconds : timerState.remaining,
+          };
+        }
         onSettings();
       },
       onBack: render,
@@ -108,7 +119,7 @@ export const createApp = (root) => {
         timerState = advance(timerState);
       }
     }
-    render();
+    if (screens.current === 'main') render();
   }, 1000);
 
   render();
@@ -118,5 +129,10 @@ export const createApp = (root) => {
 const createScreenManagerWithCache = (root) => {
   const cache = {};
   const mgr = createScreenManager(root, cache);
-  return { set: (name, el) => { cache[name] = el; }, show: mgr.show };
+  let current = null;
+  return {
+    set: (name, el) => { cache[name] = el; },
+    show: (name) => { current = name; mgr.show(name); },
+    get current() { return current; },
+  };
 };

@@ -76,4 +76,44 @@ describe('createApp full timer loop', () => {
     vi.advanceTimersByTime(ONE_BLOCK_MS);
     expect(coins()).toBe(config.coinsPerWork * 2);
   });
+
+  it('does not yank the shop back to main while the timer keeps ticking (regression)', () => {
+    createApp(root);
+    pickDragon('ember');
+
+    click('start');
+    click('shop');
+    expect(root.querySelector('.shop')).not.toBeNull();
+
+    vi.advanceTimersByTime(1000);
+
+    // The per-second driver must keep ticking in the background but must NOT
+    // force the screen back to main while the child is shopping.
+    expect(root.querySelector('.shop')).not.toBeNull();
+    expect(root.querySelector('[data-food]')).not.toBeNull();
+    expect(root.querySelector('.main')).toBeNull();
+  });
+
+  it('preserves a paused break when settings change (regression)', () => {
+    createApp(root);
+    pickDragon('ember');
+
+    // Drive a work block to completion, then move into break.
+    click('start');
+    vi.advanceTimersByTime(ONE_BLOCK_MS);
+    click('break');
+    expect(modeLabel()).toBe('Break');
+
+    // Pause mid-break, then tweak settings.
+    click('pause');
+    click('settings');
+    const workPlus = root.querySelector('[data-step="work-plus"]');
+    expect(workPlus).not.toBeNull();
+    workPlus.click();
+
+    root.querySelector('.back-btn').click();
+
+    // The break must NOT have been reset to a fresh work block.
+    expect(modeLabel()).toBe('Break');
+  });
 });
