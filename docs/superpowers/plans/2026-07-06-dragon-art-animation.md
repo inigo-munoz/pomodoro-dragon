@@ -70,10 +70,12 @@ describe('art helper', () => {
   });
 
   it('falls back to the emoji when the image fails to load', () => {
+    const parent = document.createElement('div');
     const el = art('/art/missing.png', 'Ember', '🥚');
+    parent.appendChild(el);
     el.dispatchEvent(new Event('error'));
-    // the img has been replaced in place by an emoji span
-    expect(el.isConnected).toBe(false); // detached after replaceWith is not observable here;
+    expect(parent.querySelector('img')).toBeNull();
+    expect(parent.querySelector('.art-emoji').textContent).toBe('🥚');
   });
 });
 ```
@@ -113,27 +115,12 @@ export const art = (value, altText, fallback) => {
 };
 ```
 
-- [ ] **Step 4: Fix the fallback test to assert the replacement properly**
-
-Replace the last test body with one that observes the swap through a parent:
-
-```js
-  it('falls back to the emoji when the image fails to load', () => {
-    const parent = document.createElement('div');
-    const el = art('/art/missing.png', 'Ember', '🥚');
-    parent.appendChild(el);
-    el.dispatchEvent(new Event('error'));
-    expect(parent.querySelector('img')).toBeNull();
-    expect(parent.querySelector('.art-emoji').textContent).toBe('🥚');
-  });
-```
-
-- [ ] **Step 5: Run test to verify it passes**
+- [ ] **Step 4: Run test to verify it passes**
 
 Run: `npx vitest run src/ui/art.test.js`
 Expected: PASS (4 tests).
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 5: Commit**
 
 ```bash
 git add src/ui/art.js src/ui/art.test.js
