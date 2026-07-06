@@ -1,5 +1,6 @@
 import { canAfford } from '../core/wallet.js';
 import { backButton } from './backButton.js';
+import { art } from './art.js';
 
 export const renderShopScreen = ({ state, foods, onBuy, onBack }) => {
   const section = document.createElement('section');
@@ -17,10 +18,12 @@ export const renderShopScreen = ({ state, foods, onBuy, onBack }) => {
     card.dataset.food = food.id;
     card.disabled = !affordable;
     card.innerHTML =
-      `<span class="food-icon">${food.icon}</span>` +
+      `<span class="food-icon"></span>` +
       `<span class="food-name">${food.name}</span>` +
       `<span class="food-price">🪙 ${food.price}</span>` +
       `<span class="food-xp">+${food.xp} XP</span>`;
+    card.querySelector('.food-icon')
+      .appendChild(art(food.icon, food.name, food.fallback));
     card.addEventListener('click', () => {
       if (affordable) onBuy(food);
     });

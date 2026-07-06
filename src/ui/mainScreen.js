@@ -1,4 +1,5 @@
 import { currentLevel, levelProgress } from '../core/dragon.js';
+import { art } from './art.js';
 
 const fmt = (seconds) => {
   const m = Math.floor(seconds / 60);
@@ -21,7 +22,7 @@ export const renderMainScreen = (ctx) => {
       `<span class="mode-label">${timerState.mode === 'work' ? 'Work' : 'Break'}</span>` +
       `<button class="icon-btn" data-action="mute">🔇</button>` +
     `</header>` +
-    `<div class="dragon-stage"><span class="dragon-art">${level.image}</span></div>` +
+    `<div class="dragon-stage"></div>` +
     `<div class="xp-bar"><div class="xp-fill" style="width:${Math.round(progress.ratio * 100)}%"></div></div>` +
     `<p class="timer-display">${fmt(timerState.remaining)}</p>` +
     `<div class="controls"></div>` +
@@ -29,6 +30,10 @@ export const renderMainScreen = (ctx) => {
       `<button class="icon-btn" data-action="shop">🍎</button>` +
       `<button class="icon-btn" data-action="settings">⚙️</button>` +
     `</footer>`;
+
+  const dragonArt = art(level.image, dragon.name, level.fallback);
+  dragonArt.classList.add('dragon-art', 'alive');
+  section.querySelector('.dragon-stage').appendChild(dragonArt);
 
   const controls = section.querySelector('.controls');
   if (justFinishedWork) {

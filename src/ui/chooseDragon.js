@@ -1,3 +1,5 @@
+import { art } from './art.js';
+
 export const renderChooseDragon = ({ dragons, onPick }) => {
   const section = document.createElement('section');
   section.className = 'screen choose-dragon';
@@ -14,8 +16,11 @@ export const renderChooseDragon = ({ dragons, onPick }) => {
     choice.className = 'dragon-choice';
     choice.dataset.dragon = dragon.id;
     choice.innerHTML =
-      `<span class="dragon-art">${dragon.levels[0].image}</span>` +
+      `<span class="dragon-art"></span>` +
       `<span class="dragon-name">${dragon.name}</span>`;
+    const lvl0 = dragon.levels[0];
+    choice.querySelector('.dragon-art')
+      .appendChild(art(lvl0.image, dragon.name, lvl0.fallback));
     choice.addEventListener('click', () => onPick(dragon.id));
     grid.appendChild(choice);
   }
