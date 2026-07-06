@@ -10,8 +10,17 @@ export const showLevelUp = (dragon, level, onAudio) => {
     `<div class="level-up-art"></div>` +
     `<p class="level-up-sub">${dragon.name} is now level ${level.level}</p>` +
     `</div>`;
-  overlay.querySelector('.level-up-art')
-    .appendChild(art(level.image, dragon.name, level.fallback));
+  const artBox = overlay.querySelector('.level-up-art');
+  artBox.appendChild(art(level.image, dragon.name, level.fallback));
+  for (const [i, pos] of [['0%', '0%'], ['80%', '10%'], ['20%', '75%'], ['70%', '70%']].entries()) {
+    const s = document.createElement('span');
+    s.className = 'sparkle';
+    s.textContent = '✨';
+    s.style.left = pos[0];
+    s.style.top = pos[1];
+    s.style.animationDelay = `${i * 0.12}s`;
+    artBox.appendChild(s);
+  }
   overlay.addEventListener('click', () => overlay.remove());
   document.body.appendChild(overlay);
 };
