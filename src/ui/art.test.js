@@ -31,4 +31,18 @@ describe('art helper', () => {
     expect(parent.querySelector('img')).toBeNull();
     expect(parent.querySelector('.art-emoji').textContent).toBe('🥚');
   });
+
+  it('fallback preserves caller-added classes and swaps art-img to art-emoji', () => {
+    const parent = document.createElement('div');
+    const el = art('/art/missing.png', 'Ember', '🥚');
+    el.classList.add('dragon-art', 'alive');
+    parent.appendChild(el);
+    el.dispatchEvent(new Event('error'));
+    const span = parent.querySelector('.art-emoji');
+    expect(span).not.toBeNull();
+    expect(span.classList.contains('dragon-art')).toBe(true);
+    expect(span.classList.contains('alive')).toBe(true);
+    expect(span.classList.contains('art-img')).toBe(false);
+    expect(span.textContent).toBe('🥚');
+  });
 });

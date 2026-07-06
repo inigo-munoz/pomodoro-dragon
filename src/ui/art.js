@@ -11,7 +11,7 @@ export const art = (value, altText, fallback) => {
     if (fallback) {
       img.addEventListener('error', () => {
         const span = document.createElement('span');
-        span.className = 'art-emoji';
+        span.className = img.className.replace('art-img', 'art-emoji');
         span.textContent = fallback;
         img.replaceWith(span);
       }, { once: true });
