@@ -1440,6 +1440,7 @@ import { renderSettingsScreen } from './ui/settingsScreen.js';
 import { showLevelUp } from './ui/levelUp.js';
 import { createTimerState, start, pause, tick, advance } from './core/timer.js';
 import { grantWorkReward, buyFood, leveledUp } from './core/game.js';
+import { currentLevel } from './core/dragon.js';
 
 export const createApp = (root) => {
   const store = createStore(localStorageBackend, config);
@@ -1485,9 +1486,7 @@ export const createApp = (root) => {
         save();
         audio.playEffect('eat');
         if (leveledUp(dragon, oldXp, state.xp)) {
-          const { currentLevel } = { currentLevel: dragon.levels.find };
-          showLevelUp(dragon, dragon.levels.find(
-            (l) => l.xpNeeded <= state.xp) && lvlAt(dragon, state.xp),
+          showLevelUp(dragon, currentLevel(dragon, state.xp),
             () => audio.playEffect('levelup'));
         }
         onShop(); // re-render shop with updated coins/xp
@@ -1537,13 +1536,6 @@ export const createApp = (root) => {
   render();
 };
 
-// helper: level object for an xp value
-const lvlAt = (dragon, xp) => {
-  let r = dragon.levels[0];
-  for (const l of dragon.levels) if (xp >= l.xpNeeded) r = l;
-  return r;
-};
-
 // screen manager with a small cache so we can pre-build then show by name
 const createScreenManagerWithCache = (root) => {
   const cache = {};
@@ -1552,30 +1544,10 @@ const createScreenManagerWithCache = (root) => {
 };
 ```
 
-> Implementation note for the engineer: Step 1 is intentionally the "first
-> draft" wiring. Steps 2–3 below clean it up — the `onShop` level-up block
-> above is deliberately convoluted and MUST be simplified using `lvlAt`
-> before you commit. Do not ship the tangled version.
+The level-up branch reuses `currentLevel` from `core/dragon.js` — the app
+layer owns no level math of its own (single source of truth).
 
-- [ ] **Step 2: Simplify the level-up branch in `onShop`**
-
-Replace the `onBuy` body with this clean version (uses the shared `lvlAt` helper, no dead code):
-
-```js
-      onBuy: (food) => {
-        const oldXp = state.xp;
-        state = buyFood(state, food);
-        save();
-        audio.playEffect('eat');
-        if (leveledUp(dragon, oldXp, state.xp)) {
-          showLevelUp(dragon, lvlAt(dragon, state.xp),
-            () => audio.playEffect('levelup'));
-        }
-        onShop(); // re-render shop with updated coins/xp
-      },
-```
-
-- [ ] **Step 3: Replace `src/main.js`**
+- [ ] **Step 2: Replace `src/main.js`**
 
 ```js
 import { createApp } from './app.js';
@@ -1583,7 +1555,7 @@ import { createApp } from './app.js';
 createApp(document.querySelector('#app'));
 ```
 
-- [ ] **Step 4: Write `src/styles.css` (mobile-first, big touch targets)**
+- [ ] **Step 3: Write `src/styles.css` (mobile-first, big touch targets)**
 
 ```css
 * { box-sizing: border-box; }
@@ -1633,7 +1605,7 @@ body {
 @keyframes pop { 0% { transform: scale(0.2); } 100% { transform: scale(1); } }
 ```
 
-- [ ] **Step 5: Manual verification (the fun part)**
+- [ ] **Step 4: Manual verification (the fun part)**
 
 Run: `npm run dev` → open on a phone-sized viewport (or the tablet).
 Check the full loop by hand:
@@ -1644,12 +1616,12 @@ Check the full loop by hand:
 5. Buy enough to cross 100 XP → level-up overlay shows the new dragon image.
 6. Toggle mute → music stops; reload → mute preference and progress persist.
 
-- [ ] **Step 6: Run the full test suite**
+- [ ] **Step 5: Run the full test suite**
 
 Run: `npm test`
 Expected: ALL tests PASS.
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 6: Commit**
 
 ```bash
 git add src/
@@ -1736,9 +1708,8 @@ that isn't (e.g. leftover helpers).
 - [ ] **Step 2: DRY sweep**
 
 Look for duplicated logic that a module already owns. Specific checks:
-- Level-object lookup: `app.js` `lvlAt` duplicates `core/dragon.js`
-  `currentLevel`. **Replace `lvlAt` with `currentLevel`** and delete
-  `lvlAt`. Update the `onBuy` handler accordingly.
+- Level-object lookup: confirm `app.js` uses `core/dragon.js`
+  `currentLevel` and defines no local level-math helper of its own.
 - Any `mm:ss` formatting outside `mainScreen.js` → there should be exactly
   one formatter.
 - Any coin/xp arithmetic outside `core/` → move it into `wallet`/`dragon`.
@@ -1779,9 +1750,9 @@ git commit -m "refactor: remove dead code and duplication after MVP iteration"
 - Placeholder emoji art, English artifacts, PWA installable/offline → Tasks 2, 16.
 - TDD on money/level/timer/store math → Tasks 3–7.
 
-**Placeholder scan:** No "TBD"/"implement later" left. The one deliberately
-messy block in Task 15 Step 1 is explicitly flagged and fixed in Step 2 and
-Task 17 — this models the DRY review the user asked for, not a plan gap.
+**Placeholder scan:** No "TBD"/"implement later" left. Task 15 wires the app
+using `currentLevel` from `core/dragon.js` — no duplicated level math in the
+app layer. Task 17 is a genuine end-of-iteration dead-code/DRY sweep.
 
 **Type consistency:** `currentLevel`, `levelProgress`, `createTimerState`,
 `tick`, `advance`, `grantWorkReward`, `buyFood`, `leveledUp`,
