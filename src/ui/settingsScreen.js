@@ -1,3 +1,5 @@
+import { backButton } from './backButton.js';
+
 const clamp = (n, { min, max }) => Math.min(max, Math.max(min, n));
 
 export const renderSettingsScreen = ({ settings, config, onChange, onBack }) => {
@@ -48,11 +50,7 @@ export const renderSettingsScreen = ({ settings, config, onChange, onBack }) => 
   section.appendChild(group('Work', 'workMinutes', config.durations.workPresets, 'work'));
   section.appendChild(group('Break', 'breakMinutes', config.durations.breakPresets, 'break'));
 
-  const back = document.createElement('button');
-  back.className = 'back-btn';
-  back.textContent = '← Back';
-  back.addEventListener('click', onBack);
-  section.appendChild(back);
+  section.appendChild(backButton(onBack));
 
   return section;
 };

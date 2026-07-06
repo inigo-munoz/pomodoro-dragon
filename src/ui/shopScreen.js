@@ -1,14 +1,11 @@
 import { canAfford } from '../core/wallet.js';
+import { backButton } from './backButton.js';
 
 export const renderShopScreen = ({ state, foods, onBuy, onBack }) => {
   const section = document.createElement('section');
   section.className = 'screen shop';
 
-  const back = document.createElement('button');
-  back.className = 'back-btn';
-  back.textContent = '← Back';
-  back.addEventListener('click', onBack);
-  section.appendChild(back);
+  section.appendChild(backButton(onBack));
 
   const grid = document.createElement('div');
   grid.className = 'food-grid';
