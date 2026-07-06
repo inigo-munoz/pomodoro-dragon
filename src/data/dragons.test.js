@@ -14,4 +14,13 @@ describe('dragons data', () => {
     expect(getDragon('ember').id).toBe('ember');
     expect(getDragon('nope')).toBeNull();
   });
+
+  it('every dragon level has an emoji fallback', () => {
+    for (const d of dragons) {
+      for (const lvl of d.levels) {
+        expect(typeof lvl.fallback).toBe('string');
+        expect(lvl.fallback.length).toBeGreaterThan(0);
+      }
+    }
+  });
 });
