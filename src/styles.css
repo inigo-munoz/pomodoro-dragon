@@ -14,8 +14,6 @@ body {
 .coin-counter { font-size: 1.4rem; font-weight: 700; }
 .mode-label { font-size: 1.1rem; opacity: 0.8; }
 
-.dragon-art { font-size: 6rem; }
-
 .xp-bar { width: 100%; height: 18px; background: #33224d; border-radius: 9px; overflow: hidden; }
 .xp-fill { height: 100%; background: #6cf; transition: width 0.3s ease; }
 
@@ -44,7 +42,7 @@ body {
 
 /* --- art elements --- */
 .art-img { width: 100%; height: 100%; object-fit: contain; }
-.dragon-stage { width: 60vw; max-width: 260px; aspect-ratio: 1; margin: auto; display: flex; align-items: center; justify-content: center; }
+.dragon-stage { width: 60vw; max-width: 260px; aspect-ratio: 1; margin: auto; }
 .dragon-art { display: flex; width: 100%; height: 100%; align-items: center; justify-content: center; }
 
 /* idle: gentle float + breathe on the main dragon */
