@@ -16,10 +16,10 @@ describe('main screen', () => {
       ...base, timerState: { mode: 'work', remaining: 900, running: false },
     });
     expect(el.querySelector('.coin-counter').textContent).toContain('30');
-    // xp 150 → level 2 → young dragon image
+    // xp 150 → level 2 → baby dragon image (egg=0, baby=100, young=300, adult=600)
     const img = el.querySelector('img.dragon-art.art-img');
     expect(img).not.toBeNull();
-    expect(img.getAttribute('src')).toContain('ember-young.webp');
+    expect(img.getAttribute('src')).toContain('ember-baby.webp');
   });
 
   it('formats the remaining time as mm:ss', () => {
