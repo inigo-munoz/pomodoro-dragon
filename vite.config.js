@@ -5,6 +5,9 @@ export default defineConfig({
   plugins: [
     VitePWA({
       registerType: 'autoUpdate',
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,webp,png,svg}'],
+      },
       manifest: {
         name: 'Pomodoro Dragon',
         short_name: 'Dragon',

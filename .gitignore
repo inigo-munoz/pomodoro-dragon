@@ -1,3 +1,6 @@
 node_modules
 dist
 .DS_Store
+
+# High-res source art (originals). Shipped assets live in public/art/ as optimized webp.
+art-src
