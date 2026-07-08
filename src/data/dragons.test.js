@@ -12,7 +12,7 @@ describe('dragons data', () => {
   });
 
   it('getDragon returns a dragon by id and null when missing', () => {
-    expect(getDragon('ember').id).toBe('ember');
+    expect(getDragon('frost').id).toBe('frost');
     expect(getDragon('nope')).toBeNull();
   });
 

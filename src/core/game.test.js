@@ -3,9 +3,9 @@ import { grantWorkReward, buyFood, leveledUp } from './game.js';
 import { config } from '../data/config.js';
 import { getDragon } from '../data/dragons.js';
 
-const base = { version: 1, dragonId: 'ember', coins: 0, xp: 0, muted: false,
+const base = { version: 1, dragonId: 'frost', coins: 0, xp: 0, muted: false,
   settings: { workMinutes: 15, breakMinutes: 5 } };
-const ember = getDragon('ember');
+const frost = getDragon('frost');
 
 describe('game rules', () => {
   it('grants coins on work completion', () => {
@@ -29,7 +29,7 @@ describe('game rules', () => {
   });
 
   it('detects a level up across a threshold', () => {
-    expect(leveledUp(ember, 90, 110)).toBe(true);   // crossed 100
-    expect(leveledUp(ember, 110, 150)).toBe(false);  // same level
+    expect(leveledUp(frost, 90, 110)).toBe(true);   // crossed 100
+    expect(leveledUp(frost, 110, 150)).toBe(false);  // same level
   });
 });

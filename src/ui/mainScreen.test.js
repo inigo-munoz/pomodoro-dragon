@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { renderMainScreen } from './mainScreen.js';
 import { getDragon } from '../data/dragons.js';
 
-const dragon = getDragon('ember');
+const dragon = getDragon('frost');
 const base = {
   state: { coins: 30, xp: 150 },
   dragon,
@@ -19,7 +19,7 @@ describe('main screen', () => {
     // xp 150 → level 2 → baby dragon image (egg=0, baby=100, young=300, adult=600)
     const img = el.querySelector('img.dragon-art.art-img');
     expect(img).not.toBeNull();
-    expect(img.getAttribute('src')).toContain('ember-baby.webp');
+    expect(img.getAttribute('src')).toContain('frost-baby.webp');
   });
 
   it('formats the remaining time as mm:ss', () => {

@@ -8,7 +8,7 @@ describe('choose dragon screen', () => {
     const el = renderChooseDragon({ dragons, onPick });
     const choices = el.querySelectorAll('.dragon-choice');
     expect(choices).toHaveLength(dragons.length);
-    el.querySelector('[data-dragon="ember"]').click();
-    expect(onPick).toHaveBeenCalledWith('ember');
+    el.querySelector('[data-dragon="frost"]').click();
+    expect(onPick).toHaveBeenCalledWith('frost');
   });
 });

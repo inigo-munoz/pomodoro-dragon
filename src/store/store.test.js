@@ -22,7 +22,7 @@ describe('store', () => {
 
   it('save then load returns the same state (roundtrip)', () => {
     const store = createStore(memoryBackend(), config);
-    const saved = { ...defaultState(config), dragonId: 'ember', coins: 40, xp: 120 };
+    const saved = { ...defaultState(config), dragonId: 'frost', coins: 40, xp: 120 };
     store.save(saved);
     expect(store.load()).toEqual(saved);
   });

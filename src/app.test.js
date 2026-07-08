@@ -51,7 +51,7 @@ describe('createApp full timer loop', () => {
     createApp(root);
 
     // 1. Pick the dragon → advances from the choose screen to the main screen.
-    pickDragon('ember');
+    pickDragon('frost');
     expect(coins()).toBe(0);
     expect(modeLabel()).toBe('Work');
 
@@ -79,7 +79,7 @@ describe('createApp full timer loop', () => {
 
   it('does not yank the shop back to main while the timer keeps ticking (regression)', () => {
     createApp(root);
-    pickDragon('ember');
+    pickDragon('frost');
 
     click('start');
     click('shop');
@@ -96,7 +96,7 @@ describe('createApp full timer loop', () => {
 
   it('preserves a paused break when settings change (regression)', () => {
     createApp(root);
-    pickDragon('ember');
+    pickDragon('frost');
 
     // Drive a work block to completion, then move into break.
     click('start');
