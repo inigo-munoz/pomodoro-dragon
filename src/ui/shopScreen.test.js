@@ -29,4 +29,15 @@ describe('shop screen', () => {
     el.querySelector('[data-food="apple"]').click();
     expect(onBuy).toHaveBeenCalledWith(foods[0]);
   });
+
+  it('renders themed food icons when a theme provides them', () => {
+    const theme = { icons: { coin: '/art/icons/coin.webp' },
+      foods: { apple: '/art/foods/apple.webp' } };
+    const el = renderShopScreen({
+      state: { coins: 100 }, foods, theme, onBuy: () => {}, onBack: () => {},
+    });
+    const appleIcon = el.querySelector('[data-food="apple"] .food-icon img.art-img');
+    expect(appleIcon).not.toBeNull();
+    expect(appleIcon.getAttribute('src')).toBe('/art/foods/apple.webp');
+  });
 });

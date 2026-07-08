@@ -1,8 +1,9 @@
 import { canAfford } from '../core/wallet.js';
 import { backButton } from './backButton.js';
 import { art } from './art.js';
+import { themedIcon } from './themedIcon.js';
 
-export const renderShopScreen = ({ state, foods, onBuy, onBack }) => {
+export const renderShopScreen = ({ state, foods, theme, onBuy, onBack }) => {
   const section = document.createElement('section');
   section.className = 'screen shop';
 
@@ -20,10 +21,11 @@ export const renderShopScreen = ({ state, foods, onBuy, onBack }) => {
     card.innerHTML =
       `<span class="food-icon"></span>` +
       `<span class="food-name">${food.name}</span>` +
-      `<span class="food-price">🪙 ${food.price}</span>` +
+      `<span class="food-price"><span class="price-coin"></span> ${food.price}</span>` +
       `<span class="food-xp">+${food.xp} XP</span>`;
-    card.querySelector('.food-icon')
-      .appendChild(art(food.icon, food.name, food.fallback));
+    const iconValue = theme?.foods?.[food.id] ?? food.icon;
+    card.querySelector('.food-icon').appendChild(art(iconValue, food.name, food.fallback));
+    card.querySelector('.price-coin').appendChild(themedIcon(theme, 'coin'));
     card.addEventListener('click', () => {
       if (affordable) onBuy(food);
     });
