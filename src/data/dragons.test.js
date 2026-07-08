@@ -24,4 +24,12 @@ describe('dragons data', () => {
       }
     }
   });
+
+  it('has a Blaze dragon with a themeId and 4 levels', () => {
+    const blaze = getDragon('blaze');
+    expect(blaze.name).toBe('Blaze');
+    expect(blaze.themeId).toBe('blaze');
+    expect(blaze.levels).toHaveLength(4);
+    expect(blaze.levels[0].image).toBe('/art/dragons/blaze-egg.webp');
+  });
 });

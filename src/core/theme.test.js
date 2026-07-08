@@ -18,6 +18,14 @@ describe('resolveTheme', () => {
     expect(resolveTheme('frost').foods.apple).toBe('/art/foods/apple.webp');
     expect(resolveTheme('default').foods.apple).toBeUndefined();
   });
+
+  it('resolves the blaze fire theme (palette + icon/food overrides)', () => {
+    const blaze = resolveTheme('blaze');
+    expect(blaze.palette.bg).toBe('#1f0a08');       // fire bg
+    expect(blaze.palette.fg).toBe('#ffffff');        // falls back to default
+    expect(blaze.icons.coin).toBe('/art/icons/blaze-coin.webp');
+    expect(blaze.foods.apple).toBe('/art/foods/blaze-apple.webp');
+  });
 });
 
 describe('applyPalette', () => {
