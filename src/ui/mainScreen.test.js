@@ -48,4 +48,15 @@ describe('main screen', () => {
     pause.click();
     expect(base.onPause).toHaveBeenCalled();
   });
+
+  it('renders themed UI icons from the theme', () => {
+    const theme = { icons: { coin: '/art/icons/coin.webp', shop: '/art/icons/shop.webp',
+      settings: '/art/icons/settings.webp', mute: '/art/icons/mute.webp', break: '☕' }, foods: {} };
+    const el = renderMainScreen({
+      ...base, theme, timerState: { mode: 'work', remaining: 900, running: false },
+    });
+    const shopIcon = el.querySelector('[data-action="shop"] img.art-img');
+    expect(shopIcon).not.toBeNull();
+    expect(shopIcon.getAttribute('src')).toBe('/art/icons/shop.webp');
+  });
 });
