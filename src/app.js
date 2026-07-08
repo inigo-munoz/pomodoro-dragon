@@ -26,7 +26,7 @@ export const createApp = (root) => {
 
   const render = () => {
     if (!state.dragonId) {
-      screens.set('choose', renderChooseDragon({ dragons, onPick }));
+      screens.set('choose', renderChooseDragon({ dragons, onPick, currentId: state.dragonId }));
       return screens.show('choose');
     }
     const dragon = getDragon(state.dragonId);
@@ -43,7 +43,7 @@ export const createApp = (root) => {
   const onPick = (id) => { state = { ...state, dragonId: id }; save(); render(); };
 
   const onChangeDragon = () => {
-    screens.set('choose', renderChooseDragon({ dragons, onPick }));
+    screens.set('choose', renderChooseDragon({ dragons, onPick, currentId: state.dragonId }));
     screens.show('choose');
   };
 

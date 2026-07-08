@@ -1,6 +1,6 @@
 import { art } from './art.js';
 
-export const renderChooseDragon = ({ dragons, onPick }) => {
+export const renderChooseDragon = ({ dragons, onPick, currentId }) => {
   const section = document.createElement('section');
   section.className = 'screen choose-dragon';
 
@@ -13,7 +13,7 @@ export const renderChooseDragon = ({ dragons, onPick }) => {
 
   for (const dragon of dragons) {
     const choice = document.createElement('button');
-    choice.className = 'dragon-choice';
+    choice.className = 'dragon-choice' + (dragon.id === currentId ? ' current' : '');
     choice.dataset.dragon = dragon.id;
     choice.innerHTML =
       `<span class="dragon-art"></span>` +

@@ -36,6 +36,7 @@ body {
 
 .food-grid, .dragon-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%; }
 .food-card, .dragon-choice { display: flex; flex-direction: column; gap: 4px; padding: 14px; border: none; border-radius: 16px; background: var(--card); color: var(--fg); }
+.dragon-choice.current { outline: 3px solid var(--accent); outline-offset: 2px; }
 .food-card { transition: transform 0.08s ease; }
 .food-card.dimmed { opacity: 0.4; }
 .food-icon, .dragon-art { font-size: 2.5rem; }
