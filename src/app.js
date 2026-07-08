@@ -13,6 +13,7 @@ import { showLevelUp } from './ui/levelUp.js';
 import { createTimerState, start, pause, tick, advance } from './core/timer.js';
 import { grantWorkReward, buyFood, leveledUp } from './core/game.js';
 import { currentLevel } from './core/dragon.js';
+import { resolveTheme, applyPalette } from './core/theme.js';
 
 export const createApp = (root) => {
   const store = createStore(localStorageBackend, config);
@@ -29,8 +30,10 @@ export const createApp = (root) => {
       return screens.show('choose');
     }
     const dragon = getDragon(state.dragonId);
+    const theme = resolveTheme(dragon.themeId);
+    applyPalette(theme.palette);
     screens.set('main', renderMainScreen({
-      state, dragon, timerState,
+      state, dragon, timerState, theme,
       onStart, onPause, onBreak, onShop, onSettings, onToggleMute,
     }));
     screens.show('main');
@@ -50,8 +53,9 @@ export const createApp = (root) => {
 
   const onShop = () => {
     const dragon = getDragon(state.dragonId);
+    const theme = resolveTheme(dragon.themeId);
     screens.set('shop', renderShopScreen({
-      state, foods,
+      state, foods, theme,
       onBuy: (food) => {
         const oldXp = state.xp;
         state = buyFood(state, food);

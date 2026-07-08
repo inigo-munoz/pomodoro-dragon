@@ -2,6 +2,7 @@ export const dragons = [
   {
     id: 'ember',
     name: 'Ember',
+    themeId: 'frost',
     levels: [
       { level: 1, xpNeeded: 0,   image: '/art/dragons/ember-egg.webp',   fallback: '🥚' },
       { level: 2, xpNeeded: 100, image: '/art/dragons/ember-baby.webp',  fallback: '🐣' },
