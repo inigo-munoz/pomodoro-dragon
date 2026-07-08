@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { resolveTheme } from './theme.js';
+import { resolveTheme, applyPalette } from './theme.js';
 
 describe('resolveTheme', () => {
   it('returns the default theme for an unknown or missing id', () => {
@@ -17,5 +17,14 @@ describe('resolveTheme', () => {
   it('exposes food overrides keyed by food id', () => {
     expect(resolveTheme('frost').foods.apple).toBe('/art/foods/apple.webp');
     expect(resolveTheme('default').foods.apple).toBeUndefined();
+  });
+});
+
+describe('applyPalette', () => {
+  it('sets each palette entry as a CSS custom property on the root', () => {
+    const root = document.createElement('div');
+    applyPalette({ bg: '#123456', 'accent-fg': '#abcdef' }, root);
+    expect(root.style.getPropertyValue('--bg')).toBe('#123456');
+    expect(root.style.getPropertyValue('--accent-fg')).toBe('#abcdef');
   });
 });

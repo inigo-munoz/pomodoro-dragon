@@ -11,3 +11,10 @@ export const resolveTheme = (themeId) => {
     foods: { ...base.foods, ...(override.foods ?? {}) },
   };
 };
+
+// Write palette entries as CSS custom properties (e.g. { bg } -> --bg).
+export const applyPalette = (palette, root = document.documentElement) => {
+  for (const [key, value] of Object.entries(palette)) {
+    root.style.setProperty(`--${key}`, value);
+  }
+};
