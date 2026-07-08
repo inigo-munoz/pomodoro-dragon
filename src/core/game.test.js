@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { grantWorkReward, buyFood, leveledUp } from './game.js';
+import { grantWorkReward, buyFood, leveledUp, dragonXp, addDragonXp } from './game.js';
 import { config } from '../data/config.js';
 import { getDragon } from '../data/dragons.js';
 
-const base = { version: 1, dragonId: 'frost', coins: 0, xp: 0, muted: false,
+const base = { version: 2, dragonId: 'frost', coins: 0, xpByDragon: {}, muted: false,
   settings: { workMinutes: 15, breakMinutes: 5 } };
 const frost = getDragon('frost');
 
@@ -13,12 +13,23 @@ describe('game rules', () => {
     expect(s.coins).toBe(config.coinsPerWork);
   });
 
-  it('buying food spends coins and adds xp', () => {
+  it('dragonXp reads the active dragon and defaults to 0', () => {
+    expect(dragonXp(base)).toBe(0);
+    expect(dragonXp({ ...base, xpByDragon: { frost: 42 } })).toBe(42);
+  });
+
+  it('addDragonXp adds only to the active dragon and leaves others intact', () => {
+    const s = addDragonXp({ ...base, xpByDragon: { blaze: 10 } }, 60);
+    expect(s.xpByDragon.frost).toBe(60);
+    expect(s.xpByDragon.blaze).toBe(10);
+  });
+
+  it('buying food spends coins and adds xp to the active dragon', () => {
     const rich = { ...base, coins: 100 };
     const food = { id: 'meat', price: 25, xp: 60 };
     const s = buyFood(rich, food);
     expect(s.coins).toBe(75);
-    expect(s.xp).toBe(60);
+    expect(dragonXp(s)).toBe(60);
   });
 
   it('buying food you cannot afford throws and does not mutate', () => {

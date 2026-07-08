@@ -10,8 +10,9 @@ const fmt = (seconds) => {
 
 export const renderMainScreen = (ctx) => {
   const { state, dragon, timerState, theme } = ctx;
-  const level = currentLevel(dragon, state.xp);
-  const progress = levelProgress(dragon, state.xp);
+  const xp = ctx.xp ?? 0;
+  const level = currentLevel(dragon, xp);
+  const progress = levelProgress(dragon, xp);
   const justFinishedWork =
     timerState.mode === 'work' && timerState.remaining === 0 && !timerState.running;
 

@@ -4,7 +4,8 @@ import { getDragon } from '../data/dragons.js';
 
 const dragon = getDragon('frost');
 const base = {
-  state: { coins: 30, xp: 150 },
+  state: { coins: 30 },
+  xp: 150,
   dragon,
   onStart: vi.fn(), onPause: vi.fn(), onBreak: vi.fn(),
   onShop: vi.fn(), onSettings: vi.fn(), onToggleMute: vi.fn(),

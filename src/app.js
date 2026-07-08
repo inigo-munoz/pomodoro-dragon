@@ -11,7 +11,7 @@ import { renderShopScreen } from './ui/shopScreen.js';
 import { renderSettingsScreen } from './ui/settingsScreen.js';
 import { showLevelUp } from './ui/levelUp.js';
 import { createTimerState, start, pause, tick, advance } from './core/timer.js';
-import { grantWorkReward, buyFood, leveledUp } from './core/game.js';
+import { grantWorkReward, buyFood, leveledUp, dragonXp } from './core/game.js';
 import { currentLevel } from './core/dragon.js';
 import { resolveTheme, applyPalette } from './core/theme.js';
 
@@ -33,7 +33,7 @@ export const createApp = (root) => {
     const theme = resolveTheme(dragon.themeId);
     applyPalette(theme.palette);
     screens.set('main', renderMainScreen({
-      state, dragon, timerState, theme,
+      state, dragon, xp: dragonXp(state), timerState, theme,
       onStart, onPause, onBreak, onShop, onSettings, onToggleMute,
     }));
     screens.show('main');
@@ -57,12 +57,13 @@ export const createApp = (root) => {
     screens.set('shop', renderShopScreen({
       state, foods, theme,
       onBuy: (food) => {
-        const oldXp = state.xp;
+        const oldXp = dragonXp(state);
         state = buyFood(state, food);
         save();
         audio.playEffect('eat');
-        if (leveledUp(dragon, oldXp, state.xp)) {
-          showLevelUp(dragon, currentLevel(dragon, state.xp),
+        const newXp = dragonXp(state);
+        if (leveledUp(dragon, oldXp, newXp)) {
+          showLevelUp(dragon, currentLevel(dragon, newXp),
             () => audio.playEffect('levelup'));
         }
         onShop(); // re-render shop with updated coins/xp
