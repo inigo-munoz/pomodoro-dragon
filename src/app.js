@@ -42,6 +42,11 @@ export const createApp = (root) => {
   // --- handlers ---
   const onPick = (id) => { state = { ...state, dragonId: id }; save(); render(); };
 
+  const onChangeDragon = () => {
+    screens.set('choose', renderChooseDragon({ dragons, onPick }));
+    screens.show('choose');
+  };
+
   const onStart = () => {
     timerState = start(timerState);
     audio.playMusic();
@@ -75,7 +80,7 @@ export const createApp = (root) => {
 
   const onSettings = () => {
     screens.set('settings', renderSettingsScreen({
-      settings: state.settings, config,
+      settings: state.settings, config, onChangeDragon,
       onChange: (settings) => {
         state = { ...state, settings };
         save();

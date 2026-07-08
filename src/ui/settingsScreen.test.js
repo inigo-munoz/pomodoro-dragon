@@ -26,4 +26,14 @@ describe('settings screen', () => {
     el.querySelector('[data-step="work-minus"]').click();
     expect(onChange).not.toHaveBeenCalled();
   });
+
+  it('renders a Change Dragon button that invokes onChangeDragon', () => {
+    const onChangeDragon = vi.fn();
+    const el = renderSettingsScreen({ settings, config, onChange: () => {},
+      onBack: () => {}, onChangeDragon });
+    const btn = el.querySelector('[data-action="change-dragon"]');
+    expect(btn).not.toBeNull();
+    btn.click();
+    expect(onChangeDragon).toHaveBeenCalled();
+  });
 });

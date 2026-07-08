@@ -2,7 +2,7 @@ import { backButton } from './backButton.js';
 
 const clamp = (n, { min, max }) => Math.min(max, Math.max(min, n));
 
-export const renderSettingsScreen = ({ settings, config, onChange, onBack }) => {
+export const renderSettingsScreen = ({ settings, config, onChange, onBack, onChangeDragon }) => {
   const range = config.durations.customRange;
   const section = document.createElement('section');
   section.className = 'screen settings';
@@ -49,6 +49,13 @@ export const renderSettingsScreen = ({ settings, config, onChange, onBack }) => 
 
   section.appendChild(group('Work', 'workMinutes', config.durations.workPresets, 'work'));
   section.appendChild(group('Break', 'breakMinutes', config.durations.breakPresets, 'break'));
+
+  const changeDragon = document.createElement('button');
+  changeDragon.className = 'big-btn';
+  changeDragon.dataset.action = 'change-dragon';
+  changeDragon.textContent = '🐉 Change Dragon';
+  if (onChangeDragon) changeDragon.addEventListener('click', onChangeDragon);
+  section.appendChild(changeDragon);
 
   section.appendChild(backButton(onBack));
 
