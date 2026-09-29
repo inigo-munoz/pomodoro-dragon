@@ -164,3 +164,39 @@ Baseline verified 2026-09-29: `npm test` -> 18 files, 63 tests, all passing.
 ## Next step
 
 Feature complete — final verification and review.
+
+## Follow-up (user request, 2026-09-29)
+
+The user asked for three things after the first five tasks landed.
+
+1. *"Se tiene que poder seleccionar el tiempo del break"* — **already implemented.**
+   Verified in the built app: Settings offers the 3/5/10 break presets plus
+   `−`/`+`, and the choice persists (changed 5 -> 7, `breakMinutes: 7` in the
+   save). The real problem is that the break duration is invisible outside
+   Settings, which is what item 2 fixes.
+2. The timer must sit **above** the dragon. User chose: the countdown moves
+   above the dragon in **both** modes, so the number never jumps position.
+3. During a break the dragon's level art (the egg) must be replaced by the
+   break illustration.
+
+- [x] **T6 — Break presentation.** Move `.timer-display` (and the reward line)
+  above `.dragon-stage`, and render the theme's break art in the dragon stage
+  while `timerState.mode === 'break'`.
+  Route: delegated (writer trigger).
+
+**T6 done.** DOM order is now `top-bar`, `timer-display`, `session-reward`,
+`dragon-stage`, `xp-bar`, `controls`, `nav-bar`, identical in both modes. A
+`stageArt` helper reuses `themedIcon(theme, 'break')` during a break so the
+existing fallback path is preserved. Verified in the built app: work mode shows
+the countdown above the egg, break mode shows it above the sleeping dragon.
+`npm test` -> 18 files, 115 tests, all passing; `npm run build` succeeds.
+
+### Open, not a code defect: baked-in checkerboard in the icon assets
+
+Sampling the top-left 20x20 block of each asset in the browser:
+`break.webp` 400/400 pixels opaque, `coin.webp` 400/400 opaque,
+`frost-egg.webp` 0/400. The transparency checkerboard is real pixel data in the
+icon files, not alpha — the background removal exported the pattern instead of
+clearing it. Invisible at 28px as an icon, obvious now that `break.webp` fills
+the dragon stage. Fix is to regenerate those assets, which the user has
+deferred; no code change would help.

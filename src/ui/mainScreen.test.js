@@ -102,4 +102,47 @@ describe('main screen', () => {
       expect(render(value).querySelector('.session-reward')).toBeNull();
     });
   });
+  describe('layout order', () => {
+    const order = (a, b) => Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+    const render = (mode, lastReward = 0) => renderMainScreen({
+      ...base, lastReward, timerState: { mode, remaining: 0, running: false },
+    });
+
+    it.each(['work', 'break'])('puts the timer before the dragon stage in %s mode', (mode) => {
+      const el = render(mode);
+      expect(order(el.querySelector('.timer-display'), el.querySelector('.dragon-stage'))).toBe(true);
+    });
+
+    it('puts the session reward before the dragon stage', () => {
+      const el = render('work', 25);
+      expect(order(el.querySelector('.timer-display'), el.querySelector('.session-reward'))).toBe(true);
+      expect(order(el.querySelector('.session-reward'), el.querySelector('.dragon-stage'))).toBe(true);
+    });
+
+    it('keeps the XP bar right after the dragon stage', () => {
+      const el = render('work');
+      expect(el.querySelector('.dragon-stage').nextElementSibling).toBe(el.querySelector('.xp-bar'));
+    });
+  });
+
+  describe('dragon stage art', () => {
+    const theme = { icons: { break: '/art/icons/break.webp' }, foods: {} };
+    const stage = (mode) => renderMainScreen({
+      ...base, theme, timerState: { mode, remaining: 100, running: false },
+    }).querySelector('.dragon-stage');
+
+    it('shows the break art instead of the dragon during a break', () => {
+      const img = stage('break').querySelector('img.dragon-art.alive');
+      expect(img).not.toBeNull();
+      expect(img.getAttribute('src')).toBe('/art/icons/break.webp');
+      expect(img.getAttribute('alt')).toBe(`${dragon.name} is resting`);
+      expect(stage('break').innerHTML).not.toContain('frost-baby.webp');
+    });
+
+    it('shows the current level art, not the break art, while working', () => {
+      const el = stage('work');
+      expect(el.querySelector('img.dragon-art').getAttribute('src')).toContain('frost-baby.webp');
+      expect(el.innerHTML).not.toContain('break.webp');
+    });
+  });
 });
