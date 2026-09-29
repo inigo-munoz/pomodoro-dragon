@@ -8,9 +8,32 @@ const base = { version: 2, dragonId: 'frost', coins: 0, xpByDragon: {}, muted: f
 const frost = getDragon('frost');
 
 describe('game rules', () => {
-  it('grants coins on work completion', () => {
-    const s = grantWorkReward(base, config);
-    expect(s.coins).toBe(config.coinsPerWork);
+  it('grants one coin per minute of a completed work block', () => {
+    const s = grantWorkReward(base, { coinsPerMinute: 1 }, 15);
+    expect(s.coins).toBe(15);
+  });
+
+  it('a 1-minute block grants only 1 coin', () => {
+    expect(grantWorkReward(base, config, 1).coins).toBe(1);
+  });
+
+  it('honors the coinsPerMinute multiplier', () => {
+    expect(grantWorkReward(base, { coinsPerMinute: 2 }, 10).coins).toBe(20);
+  });
+
+  it('grants nothing for a zero, negative or missing duration', () => {
+    [0, -5, undefined, null, NaN].forEach((minutes) => {
+      const s = grantWorkReward({ ...base, coins: 7 }, config, minutes);
+      expect(s.coins).toBe(7);
+      expect(Number.isNaN(s.coins)).toBe(false);
+    });
+  });
+
+  it('does not mutate the input state', () => {
+    const before = { ...base };
+    const s = grantWorkReward(base, config, 15);
+    expect(s).not.toBe(base);
+    expect(base).toEqual(before);
   });
 
   it('dragonXp reads the active dragon and defaults to 0', () => {

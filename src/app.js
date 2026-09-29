@@ -122,7 +122,7 @@ export const createApp = (root, { now = () => Date.now() } = {}) => {
       audio.playEffect('bell');
       if (timerState.mode === 'work') {
         // work finished → grant coins; stays at 0:00 so the ☕ Break button shows
-        state = grantWorkReward(state, config);
+        state = grantWorkReward(state, config, timerState.workSeconds / 60);
         save();
       } else {
         // break finished → return to a fresh idle work block (▶ Start shows)

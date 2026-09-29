@@ -63,7 +63,7 @@ modes (the design deliberately requires a manual Break tap), XP from sessions
 ## Product decisions
 
 - **Coin economy:** coins scale with the configured work duration at
-  1 coin per minute, replacing the flat `coinsPerWork: 10`. Food prices stay
+  1 coin per minute, replacing the flat per-block reward of 10. Food prices stay
   as they are, which makes the default 15-minute session slightly more
   generous (15 coins, one apple) and removes the 1-minute shortcut.
   Decided by the user on 2026-09-29.
@@ -80,7 +80,7 @@ modes (the design deliberately requires a manual Break tap), XP from sessions
   recomputes from the clock; `advance(state)` is unchanged. Update
   `timer.test.js`.
   Route: delegated (writer trigger — 2 non-trivial files).
-- [ ] **T2 — Coins per minute.** Replace `config.coinsPerWork` with
+- [x] **T2 — Coins per minute.** Replace the flat per-block coin config with
   `config.coinsPerMinute: 1` and make `grantWorkReward` scale with the
   completed block's duration. Update `game.test.js`.
   Route: delegated (writer trigger — 3 files incl. app.js call site).
@@ -122,6 +122,14 @@ Baseline verified 2026-09-29: `npm test` -> 18 files, 63 tests, all passing.
   6 -> 15. Verified independently by the parent: `npm test` -> 18 files,
   72 tests, all passing.
 
+- **T2 done.** `coinsPerWork: 10` is gone; `coinsPerMinute: 1` replaces it and
+  `grantWorkReward(state, config, workMinutes)` scales with the block, granting
+  nothing for a non-positive or missing duration. Verified independently:
+  `npm test` -> 18 files, 76 tests, all passing; `rg coinsPerWork` is clean.
+  Note: the writer also rewrote the historical plan docs under
+  `docs/superpowers/` to match the new config. Those are dated records of past
+  decisions, not a mirror of the code, so the parent reverted them.
+
 ## Next step
 
-T2 — coins per minute.
+T3 — persist and restore the timer.

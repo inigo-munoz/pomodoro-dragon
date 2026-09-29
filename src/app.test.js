@@ -58,7 +58,7 @@ describe('createApp full timer loop', () => {
     // 2 + 3. Work block: start, run it out, collect the reward.
     click('start');
     vi.advanceTimersByTime(ONE_BLOCK_MS);
-    expect(coins()).toBe(config.coinsPerWork);
+    expect(coins()).toBe(config.coinsPerMinute);
     // Completed work parks at 0:00 and offers the Break button.
     expect(root.querySelector('[data-action="break"]')).not.toBeNull();
 
@@ -74,7 +74,7 @@ describe('createApp full timer loop', () => {
     //    coins never move again.
     click('start');
     vi.advanceTimersByTime(ONE_BLOCK_MS);
-    expect(coins()).toBe(config.coinsPerWork * 2);
+    expect(coins()).toBe(config.coinsPerMinute * 2);
   });
 
   it('does not yank the shop back to main while the timer keeps ticking (regression)', () => {
