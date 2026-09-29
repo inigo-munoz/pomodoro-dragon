@@ -89,7 +89,7 @@ modes (the design deliberately requires a manual Break tap), XP from sessions
   restore on load, granting the reward for a work block that ended while the
   app was closed. Update `store.test.js` and `app.test.js`.
   Route: delegated (writer trigger).
-- [ ] **T4 — Audible completion without assets.** Give `audio.js` a synthesized
+- [x] **T4 — Audible completion without assets.** Give `audio.js` a synthesized
   WebAudio tone fallback for effects that have no asset, respecting mute, and
   wire the bell so a completed session is audible. Update `audio.test.js`.
   Route: delegated (writer trigger).
@@ -138,6 +138,19 @@ Baseline verified 2026-09-29: `npm test` -> 18 files, 63 tests, all passing.
   elapsed break returns to an idle work block. Verified independently:
   `npm test` -> 18 files, 82 tests, all passing.
 
+- **T4 done.** Effects are synthesized with the Web Audio API from a data-only
+  `src/audio/tones.js`, so the bell needs no asset files. The context is built
+  lazily, in try/catch, with the failure cached so a platform without Web Audio
+  degrades to silence instead of throwing every tick.
+  Parent-caught defect, fixed as T4b before committing: the context was only
+  ever created inside the interval callback, never in a user gesture, so
+  autoplay policy would have left it `suspended` and silent on the target
+  Android tablet even though the tests passed. `audio.unlock()` now runs from
+  `onStart` and `onToggleMute`, which are real taps. Verified independently:
+  `npm test` -> 18 files, 96 tests, all passing.
+  Known test gap, to be closed in T5: no assertion that `onStart` actually
+  calls `audio.unlock()`.
+
 ## Next step
 
-T4 — audible completion without assets.
+T5 — break-aware controls, completion feedback, teardown.

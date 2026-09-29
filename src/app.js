@@ -4,6 +4,7 @@ import { foods } from './data/foods.js';
 import { createStore } from './store/store.js';
 import { localStorageBackend } from './store/localStorageBackend.js';
 import { createAudio } from './audio/audio.js';
+import { tones } from './audio/tones.js';
 import { createScreenManager } from './ui/screens.js';
 import { renderChooseDragon } from './ui/chooseDragon.js';
 import { renderMainScreen } from './ui/mainScreen.js';
@@ -17,7 +18,7 @@ import { resolveTheme, applyPalette } from './core/theme.js';
 
 export const createApp = (root, { now = () => Date.now() } = {}) => {
   const store = createStore(localStorageBackend, config);
-  const audio = createAudio({ music: null, effects: {} }); // wire real assets later
+  const audio = createAudio({ music: null, effects: {}, tones }); // music assets still pending
   let state = store.load();
   audio.setMuted(state.muted);
   // Settings-derived durations are recomputed; only the volatile part is restored.
@@ -58,6 +59,7 @@ export const createApp = (root, { now = () => Date.now() } = {}) => {
   const onStart = () => {
     timerState = start(timerState, now());
     persistTimer();
+    audio.unlock();
     audio.playMusic();
     render();
   };
@@ -117,6 +119,7 @@ export const createApp = (root, { now = () => Date.now() } = {}) => {
   };
 
   const onToggleMute = () => {
+    audio.unlock();
     const muted = audio.toggleMute();
     state = { ...state, muted };
     save();
