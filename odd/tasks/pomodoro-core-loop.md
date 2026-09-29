@@ -200,3 +200,30 @@ icon files, not alpha — the background removal exported the pattern instead of
 clearing it. Invisible at 28px as an icon, obvious now that `break.webp` fills
 the dragon stage. Fix is to regenerate those assets, which the user has
 deferred; no code change would help.
+
+## Delivery
+
+Final size: 960 authored changed lines across 8 work-unit commits, well over the
+~400 slice budget. Chain strategy chosen: **stacked to main**, not a feature
+branch chain — each slice leaves the app working and can merge on its own, so a
+draft tracker PR would be pure ceremony in a single-maintainer repo.
+
+The slice boundaries fall on existing commit boundaries, so no rebase was needed
+and no conflict risk was introduced.
+
+| Slice branch | Base | Lines | Tests |
+|---|---|---|---|
+| `slice/1-wall-clock-timer` | `main` | 256 | 72 |
+| `slice/2-coins-per-minute` | slice 1 | 57 | 76 |
+| `slice/3-session-persistence` | slice 2 | 146 | 82 |
+| `slice/4-audible-completion` | slice 3 | 242 | 96 |
+| `slice/5-main-screen` | slice 4 | 253 | 115 |
+
+Every slice was verified independently at its own tip: `npm test` green and
+`npm run build` succeeding on each, not only on the accumulated branch.
+
+**Status: local only.** The repository has no git remote, so no pull requests
+exist. The user chose to keep the work on disk rather than create a GitHub
+repository. To integrate by hand, merge the slices into `main` in order 1 -> 5.
+If PRs are wanted later, the stack is already cut and verified; it only needs a
+remote and one push per branch.
