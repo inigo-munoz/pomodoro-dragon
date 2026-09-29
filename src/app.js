@@ -15,7 +15,7 @@ import { grantWorkReward, buyFood, leveledUp, dragonXp } from './core/game.js';
 import { currentLevel } from './core/dragon.js';
 import { resolveTheme, applyPalette } from './core/theme.js';
 
-export const createApp = (root) => {
+export const createApp = (root, { now = () => Date.now() } = {}) => {
   const store = createStore(localStorageBackend, config);
   const audio = createAudio({ music: null, effects: {} }); // wire real assets later
   let state = store.load();
@@ -48,13 +48,13 @@ export const createApp = (root) => {
   };
 
   const onStart = () => {
-    timerState = start(timerState);
+    timerState = start(timerState, now());
     audio.playMusic();
     render();
   };
-  const onPause = () => { timerState = pause(timerState); render(); };
+  const onPause = () => { timerState = pause(timerState, now()); render(); };
 
-  const onBreak = () => { timerState = advance(timerState); timerState = start(timerState); render(); };
+  const onBreak = () => { timerState = advance(timerState); timerState = start(timerState, now()); render(); };
 
   const onShop = () => {
     const dragon = getDragon(state.dragonId);
@@ -116,7 +116,7 @@ export const createApp = (root) => {
   // --- per-second driver ---
   setInterval(() => {
     if (!timerState.running) return;
-    const result = tick(timerState);
+    const result = tick(timerState, now());
     timerState = result.state;
     if (result.completed) {
       audio.playEffect('bell');

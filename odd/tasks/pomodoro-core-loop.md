@@ -74,7 +74,7 @@ modes (the design deliberately requires a manual Break tap), XP from sessions
 
 ## Tasks
 
-- [ ] **T1 — Wall-clock timer core.** Rework `src/core/timer.js` so a running
+- [x] **T1 — Wall-clock timer core.** Rework `src/core/timer.js` so a running
   timer derives `remaining` from an injected `now`. `start(state, now)` sets
   `endsAt`; `pause(state, now)` freezes `remaining`; `tick(state, now)`
   recomputes from the clock; `advance(state)` is unchanged. Update
@@ -117,6 +117,11 @@ modes (the design deliberately requires a manual Break tap), XP from sessions
 
 Baseline verified 2026-09-29: `npm test` -> 18 files, 63 tests, all passing.
 
+- **T1 done.** Wall-clock timer landed. `timer.js` is 44 lines and pure;
+  `remainingAt(state, now)` is exported for later tasks. Timer tests grew
+  6 -> 15. Verified independently by the parent: `npm test` -> 18 files,
+  72 tests, all passing.
+
 ## Next step
 
-T1 — wall-clock timer core.
+T2 — coins per minute.
