@@ -191,15 +191,23 @@ existing fallback path is preserved. Verified in the built app: work mode shows
 the countdown above the egg, break mode shows it above the sleeping dragon.
 `npm test` -> 18 files, 115 tests, all passing; `npm run build` succeeds.
 
-### Open, not a code defect: baked-in checkerboard in the icon assets
+### Resolved: baked-in checkerboard in the icon assets
 
 Sampling the top-left 20x20 block of each asset in the browser:
 `break.webp` 400/400 pixels opaque, `coin.webp` 400/400 opaque,
 `frost-egg.webp` 0/400. The transparency checkerboard is real pixel data in the
 icon files, not alpha — the background removal exported the pattern instead of
 clearing it. Invisible at 28px as an icon, obvious now that `break.webp` fills
-the dragon stage. Fix is to regenerate those assets, which the user has
-deferred; no code change would help.
+the dragon stage. Resolved on 2026-09-29 without regenerating anything: each asset was re-cut from
+its original with `rembg -m isnet-general-use -a -ae 15` and reconverted. The
+alpha-matting flags were essential; plain rembg left grey blocks clinging to every
+soft glow edge. All eight corners now read `#00000000`. A faint fringe survives
+inside the glow, visible only at roughly 5x magnification and at no real render
+size, including the break illustration at 260px.
+
+One art issue remains that a cutout cannot fix: the coin renders at ~20px and its
+detailed medallion reads as a blob at that size. It needs regenerating with a far
+simpler silhouette.
 
 ## Delivery
 
@@ -218,9 +226,15 @@ and no conflict risk was introduced.
 | `slice/3-session-persistence` | slice 2 | 146 | 82 |
 | `slice/4-audible-completion` | slice 3 | 242 | 96 |
 | `slice/5-main-screen` | slice 4 | 253 | 115 |
+| `slice/6-art-cutout` | slice 5 | 8 binary assets | 115 |
 
 Every slice was verified independently at its own tip: `npm test` green and
 `npm run build` succeeding on each, not only on the accumulated branch.
+
+Slice 6 was added after the first five were cut, when the eight frost food and
+icon assets were re-cut to remove the checkerboard the image generator had baked
+in (see the Open section above, now resolved). It carries only binary webp files,
+so its review budget is the eight images rather than a line count.
 
 **Status: local only.** The repository has no git remote, so no pull requests
 exist. The user chose to keep the work on disk rather than create a GitHub
