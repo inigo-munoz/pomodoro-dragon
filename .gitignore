@@ -4,3 +4,6 @@ dist
 
 # High-res source art (originals). Shipped assets live in public/art/ as optimized webp.
 art-src
+
+# graphify knowledge-graph output
+graphify-out
