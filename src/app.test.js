@@ -117,3 +117,74 @@ describe('createApp full timer loop', () => {
     expect(modeLabel()).toBe('Break');
   });
 });
+
+describe('createApp timer persistence', () => {
+  const seed = (timer) => window.localStorage.setItem(
+    config.storageKey,
+    JSON.stringify({
+      dragonId: 'frost', coins: 0, settings: { workMinutes: 1, breakMinutes: 1 }, timer,
+    }),
+  );
+
+  // Simulates closing the tab: stops the old app's interval and mounts a fresh root.
+  // clearAllTimers resets the fake clock, so the current time is restored afterwards.
+  const reopen = () => {
+    const at = Date.now();
+    vi.clearAllTimers();
+    vi.setSystemTime(at);
+    root.remove();
+    root = document.createElement('div');
+    document.body.appendChild(root);
+    createApp(root);
+  };
+
+  const display = () => root.querySelector('.timer-display').textContent.trim();
+
+  it('resumes a session abandoned mid-run with the right remaining time', () => {
+    createApp(root);
+    pickDragon('frost');
+    click('start');
+    vi.advanceTimersByTime(20_000);
+
+    reopen();
+
+    expect(display()).toBe('00:40');
+    expect(root.querySelector('[data-action="pause"]')).not.toBeNull();
+    vi.advanceTimersByTime(ONE_BLOCK_MS);
+    expect(coins()).toBe(config.coinsPerMinute);
+  });
+
+  it('grants a work block that ended while closed exactly once', () => {
+    seed({ mode: 'work', running: true, remaining: 30, endsAt: Date.now() - 5_000 });
+
+    createApp(root);
+    expect(coins()).toBe(config.coinsPerMinute);
+    expect(root.querySelector('[data-action="break"]')).not.toBeNull();
+
+    reopen();
+    expect(coins()).toBe(config.coinsPerMinute);
+    expect(root.querySelector('[data-action="break"]')).not.toBeNull();
+  });
+
+  it('restores an elapsed break as an idle work block', () => {
+    seed({ mode: 'break', running: true, remaining: 30, endsAt: Date.now() - 5_000 });
+
+    createApp(root);
+
+    expect(modeLabel()).toBe('Work');
+    expect(root.querySelector('[data-action="start"]')).not.toBeNull();
+    expect(display()).toBe('01:00');
+    expect(coins()).toBe(0);
+  });
+
+  it('restores a paused session still paused with its remaining time', () => {
+    seed({ mode: 'work', running: false, remaining: 42, endsAt: null });
+
+    createApp(root);
+    vi.advanceTimersByTime(10_000);
+
+    expect(display()).toBe('00:42');
+    expect(root.querySelector('[data-action="start"]')).not.toBeNull();
+    expect(coins()).toBe(0);
+  });
+});

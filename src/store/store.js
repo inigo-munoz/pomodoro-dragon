@@ -1,20 +1,22 @@
 export const defaultState = (config) => ({
-  version: 2,
+  version: 3,
   dragonId: null,
   coins: 0,
   xpByDragon: {},
   muted: false,
   settings: { ...config.durations.default },
+  timer: null,
 });
 
-// Upgrade a legacy v1 save (global `xp`) to the per-dragon `xpByDragon` shape.
+// Upgrade older saves to the current shape. v1 (global `xp`) becomes the
+// per-dragon `xpByDragon`; v2 gains `timer`, which the defaults merge fills in.
 const migrate = (merged, parsed) => {
   if ('xp' in parsed) {
     const xpByDragon = parsed.dragonId ? { [parsed.dragonId]: parsed.xp ?? 0 } : {};
     const { xp, ...rest } = merged;
-    return { ...rest, xpByDragon, version: 2 };
+    return { ...rest, xpByDragon, version: 3 };
   }
-  return { ...merged, version: 2 };
+  return { ...merged, version: 3 };
 };
 
 export const createStore = (backend, config) => {

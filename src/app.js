@@ -20,9 +20,17 @@ export const createApp = (root, { now = () => Date.now() } = {}) => {
   const audio = createAudio({ music: null, effects: {} }); // wire real assets later
   let state = store.load();
   audio.setMuted(state.muted);
-  let timerState = createTimerState(state.settings);
+  // Settings-derived durations are recomputed; only the volatile part is restored.
+  let timerState = { ...createTimerState(state.settings), ...state.timer };
 
   const save = () => store.save(state);
+
+  // Persist only the volatile timer fields so a reload can resume the session.
+  const persistTimer = () => {
+    const { mode, running, remaining, endsAt } = timerState;
+    state = { ...state, timer: { mode, running, remaining, endsAt } };
+    save();
+  };
 
   const render = () => {
     if (!state.dragonId) {
@@ -49,12 +57,17 @@ export const createApp = (root, { now = () => Date.now() } = {}) => {
 
   const onStart = () => {
     timerState = start(timerState, now());
+    persistTimer();
     audio.playMusic();
     render();
   };
-  const onPause = () => { timerState = pause(timerState, now()); render(); };
+  const onPause = () => { timerState = pause(timerState, now()); persistTimer(); render(); };
 
-  const onBreak = () => { timerState = advance(timerState); timerState = start(timerState, now()); render(); };
+  const onBreak = () => {
+    timerState = start(advance(timerState), now());
+    persistTimer();
+    render();
+  };
 
   const onShop = () => {
     const dragon = getDragon(state.dragonId);
@@ -83,7 +96,6 @@ export const createApp = (root, { now = () => Date.now() } = {}) => {
       settings: state.settings, config, onChangeDragon,
       onChange: (settings) => {
         state = { ...state, settings };
-        save();
         if (!timerState.running) {
           const workSeconds = settings.workMinutes * 60;
           const breakSeconds = settings.breakMinutes * 60;
@@ -96,6 +108,7 @@ export const createApp = (root, { now = () => Date.now() } = {}) => {
             remaining: atFreshWorkStart ? workSeconds : timerState.remaining,
           };
         }
+        persistTimer();
         onSettings();
       },
       onBack: render,
@@ -114,7 +127,7 @@ export const createApp = (root, { now = () => Date.now() } = {}) => {
   const screens = createScreenManagerWithCache(root);
 
   // --- per-second driver ---
-  setInterval(() => {
+  const handleTick = () => {
     if (!timerState.running) return;
     const result = tick(timerState, now());
     timerState = result.state;
@@ -123,14 +136,17 @@ export const createApp = (root, { now = () => Date.now() } = {}) => {
       if (timerState.mode === 'work') {
         // work finished → grant coins; stays at 0:00 so the ☕ Break button shows
         state = grantWorkReward(state, config, timerState.workSeconds / 60);
-        save();
       } else {
         // break finished → return to a fresh idle work block (▶ Start shows)
         timerState = advance(timerState);
       }
+      persistTimer();
     }
     if (screens.current === 'main') render();
-  }, 1000);
+  };
+
+  setInterval(handleTick, 1000);
+  handleTick(); // settle a session restored from a previous run (completes it once)
 
   render();
 };

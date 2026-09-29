@@ -16,7 +16,8 @@ describe('store', () => {
     const s = store.load();
     expect(s.coins).toBe(0);
     expect(s.xpByDragon).toEqual({});
-    expect(s.version).toBe(2);
+    expect(s.version).toBe(3);
+    expect(s.timer).toBeNull();
     expect(s.dragonId).toBeNull();
     expect(s.settings).toEqual(config.durations.default);
   });
@@ -36,10 +37,28 @@ describe('store', () => {
         settings: config.durations.default }));
     const store = createStore(backend, config);
     const s = store.load();
-    expect(s.version).toBe(2);
+    expect(s.version).toBe(3);
     expect(s.xpByDragon).toEqual({ frost: 120 });
     expect(s.coins).toBe(40);
     expect('xp' in s).toBe(false);
+  });
+
+  it('loads an old save without a timer field with timer null and the new version', () => {
+    const backend = memoryBackend();
+    backend.write(config.storageKey, JSON.stringify(
+      { version: 2, dragonId: 'frost', coins: 5, xpByDragon: { frost: 10 }, muted: false,
+        settings: config.durations.default }));
+    const s = createStore(backend, config).load();
+    expect(s.timer).toBeNull();
+    expect(s.version).toBe(3);
+    expect(s.coins).toBe(5);
+  });
+
+  it('round-trips a persisted timer through save and load', () => {
+    const store = createStore(memoryBackend(), config);
+    const timer = { mode: 'work', running: true, remaining: 90, endsAt: 1_700_000_000_000 };
+    store.save({ ...defaultState(config), timer });
+    expect(store.load().timer).toEqual(timer);
   });
 
   it('falls back to defaults when stored data is corrupt', () => {

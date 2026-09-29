@@ -84,7 +84,7 @@ modes (the design deliberately requires a manual Break tap), XP from sessions
   `config.coinsPerMinute: 1` and make `grantWorkReward` scale with the
   completed block's duration. Update `game.test.js`.
   Route: delegated (writer trigger — 3 files incl. app.js call site).
-- [ ] **T3 — Persist and restore the timer.** Add timer fields to the store's
+- [x] **T3 — Persist and restore the timer.** Add timer fields to the store's
   default state and a migration, save on every meaningful transition, and
   restore on load, granting the reward for a work block that ended while the
   app was closed. Update `store.test.js` and `app.test.js`.
@@ -130,6 +130,14 @@ Baseline verified 2026-09-29: `npm test` -> 18 files, 63 tests, all passing.
   `docs/superpowers/` to match the new config. Those are dated records of past
   decisions, not a mirror of the code, so the parent reverted them.
 
+- **T3 done.** The timer persists as `{mode, running, remaining, endsAt}` under
+  a new store v3; durations are always recomputed from current settings so a
+  settings change is never resurrected stale. Restore reuses the normal tick
+  path (`handleTick()` runs once at startup) rather than a second completion
+  code path, so an elapsed work block grants its coins exactly once and an
+  elapsed break returns to an idle work block. Verified independently:
+  `npm test` -> 18 files, 82 tests, all passing.
+
 ## Next step
 
-T3 — persist and restore the timer.
+T4 — audible completion without assets.
