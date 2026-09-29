@@ -89,3 +89,4 @@ body {
   .sparkle { animation: none; }
   .food-card:active { transform: none; }
 }
+.session-reward { font-size: 1.6rem; font-weight: 700; text-align: center; margin: 0.25rem 0; }

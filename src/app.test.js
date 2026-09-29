@@ -188,3 +188,81 @@ describe('createApp timer persistence', () => {
     expect(coins()).toBe(0);
   });
 });
+
+describe('createApp session feedback', () => {
+  const reward = () => root.querySelector('.session-reward');
+
+  it('shows the coins earned when a work block completes, then clears it on the next start', () => {
+    createApp(root);
+    pickDragon('frost');
+    expect(reward()).toBeNull();
+
+    click('start');
+    vi.advanceTimersByTime(ONE_BLOCK_MS);
+    expect(coins()).toBeGreaterThan(0);
+    expect(reward().textContent).toContain(`+${coins()}`);
+
+    click('break');
+    expect(reward()).toBeNull();
+    vi.advanceTimersByTime(ONE_BLOCK_MS);
+    click('start');
+    expect(reward()).toBeNull();
+  });
+
+  it('labels a paused break as Resume break', () => {
+    createApp(root);
+    pickDragon('frost');
+    click('start');
+    vi.advanceTimersByTime(ONE_BLOCK_MS);
+    click('break');
+    click('pause');
+    expect(root.querySelector('[data-action="start"]').textContent).toContain('Resume break');
+  });
+});
+
+describe('createApp destroy', () => {
+  it('stops the clock so later time changes nothing', () => {
+    const app = createApp(root);
+    pickDragon('frost');
+    click('start');
+    app.destroy();
+
+    vi.advanceTimersByTime(ONE_BLOCK_MS * 2);
+    expect(coins()).toBe(0);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('is safe to call twice', () => {
+    const app = createApp(root);
+    app.destroy();
+    expect(() => app.destroy()).not.toThrow();
+  });
+});
+
+describe('createApp audio unlock', () => {
+  let resume;
+
+  beforeEach(() => {
+    resume = vi.fn(() => Promise.resolve());
+    window.AudioContext = vi.fn(() => ({ state: 'suspended', resume }));
+  });
+
+  afterEach(() => {
+    delete window.AudioContext;
+  });
+
+  it('unlocks audio on the first Start press', () => {
+    createApp(root);
+    pickDragon('frost');
+    expect(resume).not.toHaveBeenCalled();
+    click('start');
+    expect(resume).toHaveBeenCalledTimes(1);
+  });
+
+  it('unlocks audio when the mute button is pressed', () => {
+    createApp(root);
+    pickDragon('frost');
+    click('mute');
+    expect(resume).toHaveBeenCalledTimes(1);
+  });
+});

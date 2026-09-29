@@ -60,4 +60,46 @@ describe('main screen', () => {
     expect(shopIcon).not.toBeNull();
     expect(shopIcon.getAttribute('src')).toBe('/art/icons/shop.webp');
   });
+
+  describe('idle control label', () => {
+    const label = (timerState) => {
+      const el = renderMainScreen({ ...base, timerState: { workSeconds: 900, ...timerState } });
+      return el.querySelector('.controls');
+    };
+
+    it('offers Resume break for a paused break', () => {
+      const controls = label({ mode: 'break', remaining: 100, running: false });
+      expect(controls.textContent).toContain('Resume break');
+      expect(controls.textContent).not.toContain('Start studying');
+      expect(controls.querySelector('[data-action="start"]')).not.toBeNull();
+    });
+
+    it('offers Keep studying for a paused, partly-spent work block', () => {
+      const controls = label({ mode: 'work', remaining: 500, running: false });
+      expect(controls.textContent).toContain('Keep studying');
+      expect(controls.querySelector('[data-action="start"]')).not.toBeNull();
+    });
+
+    it('still offers Start studying for a fresh work block', () => {
+      const controls = label({ mode: 'work', remaining: 900, running: false });
+      expect(controls.textContent).toContain('Start studying');
+      expect(controls.querySelector('[data-action="start"]')).not.toBeNull();
+    });
+  });
+
+  describe('session reward', () => {
+    const render = (lastReward) => renderMainScreen({
+      ...base, lastReward, timerState: { mode: 'work', remaining: 0, running: false },
+    });
+
+    it('shows the amount earned when lastReward is positive', () => {
+      const reward = render(25).querySelector('.session-reward');
+      expect(reward).not.toBeNull();
+      expect(reward.textContent).toContain('+25');
+    });
+
+    it.each([null, undefined, 0])('renders nothing for lastReward %s', (value) => {
+      expect(render(value).querySelector('.session-reward')).toBeNull();
+    });
+  });
 });

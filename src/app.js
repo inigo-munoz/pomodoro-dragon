@@ -22,6 +22,7 @@ export const createApp = (root, { now = () => Date.now() } = {}) => {
   let state = store.load();
   audio.setMuted(state.muted);
   // Settings-derived durations are recomputed; only the volatile part is restored.
+  let lastReward = null; // coins from the block just completed, shown until the next one starts
   let timerState = { ...createTimerState(state.settings), ...state.timer };
 
   const save = () => store.save(state);
@@ -42,7 +43,7 @@ export const createApp = (root, { now = () => Date.now() } = {}) => {
     const theme = resolveTheme(dragon.themeId);
     applyPalette(theme.palette);
     screens.set('main', renderMainScreen({
-      state, dragon, xp: dragonXp(state), timerState, theme,
+      state, dragon, xp: dragonXp(state), timerState, lastReward, theme,
       onStart, onPause, onBreak, onShop, onSettings, onToggleMute,
     }));
     screens.show('main');
@@ -57,6 +58,7 @@ export const createApp = (root, { now = () => Date.now() } = {}) => {
   };
 
   const onStart = () => {
+    lastReward = null;
     timerState = start(timerState, now());
     persistTimer();
     audio.unlock();
@@ -66,6 +68,7 @@ export const createApp = (root, { now = () => Date.now() } = {}) => {
   const onPause = () => { timerState = pause(timerState, now()); persistTimer(); render(); };
 
   const onBreak = () => {
+    lastReward = null;
     timerState = start(advance(timerState), now());
     persistTimer();
     render();
@@ -138,7 +141,9 @@ export const createApp = (root, { now = () => Date.now() } = {}) => {
       audio.playEffect('bell');
       if (timerState.mode === 'work') {
         // work finished → grant coins; stays at 0:00 so the ☕ Break button shows
+        const before = state.coins;
         state = grantWorkReward(state, config, timerState.workSeconds / 60);
+        lastReward = state.coins - before;
       } else {
         // break finished → return to a fresh idle work block (▶ Start shows)
         timerState = advance(timerState);
@@ -148,10 +153,12 @@ export const createApp = (root, { now = () => Date.now() } = {}) => {
     if (screens.current === 'main') render();
   };
 
-  setInterval(handleTick, 1000);
+  const interval = setInterval(handleTick, 1000);
   handleTick(); // settle a session restored from a previous run (completes it once)
 
   render();
+
+  return { destroy: () => clearInterval(interval) };
 };
 
 // screen manager with a small cache so we can pre-build then show by name

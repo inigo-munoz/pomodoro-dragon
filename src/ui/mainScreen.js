@@ -8,8 +8,14 @@ const fmt = (seconds) => {
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 };
 
+const idleLabel = ({ mode, remaining, workSeconds }) => {
+  if (mode === 'break') return '▶ Resume break';
+  return remaining < workSeconds ? '▶ Keep studying' : '▶ Start studying';
+};
+
 export const renderMainScreen = (ctx) => {
   const { state, dragon, timerState, theme } = ctx;
+  const reward = ctx.lastReward > 0 ? ctx.lastReward : 0;
   const xp = ctx.xp ?? 0;
   const level = currentLevel(dragon, xp);
   const progress = levelProgress(dragon, xp);
@@ -27,6 +33,7 @@ export const renderMainScreen = (ctx) => {
     `<div class="dragon-stage"></div>` +
     `<div class="xp-bar"><div class="xp-fill" style="width:${Math.round(progress.ratio * 100)}%"></div></div>` +
     `<p class="timer-display">${fmt(timerState.remaining)}</p>` +
+    (reward ? `<p class="session-reward">+${reward} <span class="coin-icon"></span></p>` : '') +
     `<div class="controls"></div>` +
     `<footer class="nav-bar">` +
       `<button class="icon-btn" data-action="shop"></button>` +
@@ -38,6 +45,7 @@ export const renderMainScreen = (ctx) => {
   section.querySelector('.dragon-stage').appendChild(dragonArt);
 
   section.querySelector('.coin-icon').appendChild(themedIcon(theme, 'coin'));
+  section.querySelector('.session-reward .coin-icon')?.appendChild(themedIcon(theme, 'coin'));
   section.querySelector('[data-action="mute"]').appendChild(themedIcon(theme, 'mute'));
   section.querySelector('[data-action="shop"]').appendChild(themedIcon(theme, 'shop'));
   section.querySelector('[data-action="settings"]').appendChild(themedIcon(theme, 'settings'));
@@ -48,7 +56,7 @@ export const renderMainScreen = (ctx) => {
   } else if (timerState.running) {
     controls.appendChild(button('⏸ Pause', 'pause', ctx.onPause, 'primary'));
   } else {
-    controls.appendChild(button('▶ Start studying', 'start', ctx.onStart, 'primary'));
+    controls.appendChild(button(idleLabel(timerState), 'start', ctx.onStart, 'primary'));
   }
 
   section.querySelector('[data-action="mute"]').addEventListener('click', ctx.onToggleMute);

@@ -93,7 +93,7 @@ modes (the design deliberately requires a manual Break tap), XP from sessions
   WebAudio tone fallback for effects that have no asset, respecting mute, and
   wire the bell so a completed session is audible. Update `audio.test.js`.
   Route: delegated (writer trigger).
-- [ ] **T5 — Break-aware controls, completion feedback, teardown.** Fix the
+- [x] **T5 — Break-aware controls, completion feedback, teardown.** Fix the
   misleading paused-break label, surface the coins earned on completion, and
   return a `destroy()` from `createApp` that clears the interval. Update
   `mainScreen.test.js` and `app.test.js`.
@@ -151,6 +151,16 @@ Baseline verified 2026-09-29: `npm test` -> 18 files, 63 tests, all passing.
   Known test gap, to be closed in T5: no assertion that `onStart` actually
   calls `audio.unlock()`.
 
+- **T5 done.** `idleLabel()` renders "Resume break" / "Keep studying" /
+  "Start studying" while keeping `data-action="start"`, so the break no longer
+  lies. A `.session-reward` line shows `+N` coins after a completed block,
+  driven by the coins actually granted (`state.coins` delta) rather than a
+  second copy of the reward formula. `createApp` now returns `{ destroy }`,
+  which clears the interval and is safe to call twice. The T4b gap is closed:
+  the unlock tests stub `window.AudioContext` and were confirmed to fail when
+  `audio.unlock()` is removed. Verified independently: `npm test` -> 18 files,
+  109 tests, all passing.
+
 ## Next step
 
-T5 — break-aware controls, completion feedback, teardown.
+Feature complete — final verification and review.
