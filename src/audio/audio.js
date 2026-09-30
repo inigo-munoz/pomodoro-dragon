@@ -21,7 +21,29 @@ const playTone = (ctx, { freq, duration, gain: peak = PEAK }, startAt) => {
   osc.stop(startAt + duration);
 };
 
-export const createAudio = ({ music, effects, tones, createAudioContext = defaultContext }) => {
+// HTMLMediaElement.play() returns a promise in modern browsers, undefined in older ones,
+// and can throw outright where it is not implemented at all. None of that is worth
+// taking the app down for, so every call goes through here.
+const tryPlay = (el) => {
+  try { el.play()?.catch?.(() => {}); } catch { /* no playback available */ }
+};
+
+// Fisher-Yates, on a copy.
+const shuffled = (list, random) => {
+  const out = [...list];
+  for (let i = out.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+};
+
+// `music` takes a single URL or a list of them. A list is played as a shuffled
+// playlist that advances when each track ends and reshuffles when it runs out, so a
+// study block does not repeat the same two minutes a dozen times.
+export const createAudio = ({
+  music, effects, tones, createAudioContext = defaultContext, random = Math.random,
+}) => {
   let muted = false;
   let ctx = null;
   let ctxFailed = false;
@@ -31,8 +53,34 @@ export const createAudio = ({ music, effects, tones, createAudioContext = defaul
     }
     return ctx;
   };
-  const bg = music ? new Audio(music) : null;
-  if (bg) { bg.loop = true; bg.volume = 0.4; }
+
+  const tracks = Array.isArray(music) ? music.filter(Boolean) : (music ? [music] : []);
+  const bg = tracks.length ? new Audio() : null;
+  let order = [];
+  let atTrack = -1;
+
+  const reshuffle = () => {
+    const last = order[atTrack];
+    order = shuffled(tracks, random);
+    // Reshuffling can otherwise deal the track that just finished straight back.
+    if (order.length > 1 && order[0] === last) [order[0], order[1]] = [order[1], order[0]];
+    atTrack = -1;
+  };
+
+  const playNext = () => {
+    if (!bg || muted) return;
+    if (atTrack + 1 >= order.length) reshuffle();
+    atTrack += 1;
+    bg.src = order[atTrack];
+    tryPlay(bg);
+  };
+
+  if (bg) {
+    // One track at a time, not one looping track: `ended` is what drives the rotation.
+    bg.loop = false;
+    bg.volume = 0.4;
+    bg.addEventListener('ended', playNext);
+  }
 
   const makers = {};
   for (const [name, src] of Object.entries(effects ?? {})) {
@@ -47,8 +95,16 @@ export const createAudio = ({ music, effects, tones, createAudioContext = defaul
       return muted;
     },
     toggleMute() { return api.setMuted(!muted); },
-    playMusic() { if (bg && !muted) bg.play().catch(() => {}); },
+    playMusic() {
+      if (!bg || muted) return;
+      // Resume where it was paused; only pick a track when nothing is loaded yet.
+      if (bg.src) tryPlay(bg); else playNext();
+    },
     stopMusic() { if (bg) bg.pause(); },
+    // What `ended` calls. Public because moving to the next track is a real thing to
+    // want, and because the rotation is worth testing without faking media events.
+    skipTrack() { playNext(); },
+    get nowPlaying() { return bg?.src || null; },
     unlock() {
       const audioCtx = getContext();
       if (audioCtx?.state !== 'suspended') return;
@@ -56,7 +112,7 @@ export const createAudio = ({ music, effects, tones, createAudioContext = defaul
     },
     playEffect(name) {
       if (muted) return;
-      if (makers[name]) { makers[name]().play().catch(() => {}); return; }
+      if (makers[name]) { tryPlay(makers[name]()); return; }
       const notes = tones?.[name];
       const audioCtx = notes && getContext();
       if (!audioCtx) return;

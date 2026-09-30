@@ -187,3 +187,64 @@ describe('audio unlock', () => {
     expect(ctx.resume).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('music rotation', () => {
+  const list = ['/a.mp3', '/b.mp3', '/c.mp3', '/d.mp3'];
+  // Deterministic shuffle: always picks the last remaining index, reversing the list.
+  const fixedRandom = () => 0.999;
+
+  const nameOf = (a) => (a.nowPlaying || '').split('/').pop();
+
+  it('plays nothing until asked', () => {
+    const a = createAudio({ music: list, effects: {}, random: fixedRandom });
+    expect(a.nowPlaying).toBeNull();
+  });
+
+  it('starts a track when the music starts', () => {
+    const a = createAudio({ music: list, effects: {}, random: fixedRandom });
+    a.playMusic();
+    expect(list.some((t) => nameOf(a) === t.slice(1))).toBe(true);
+  });
+
+  it('moves to a different track when one ends, rather than repeating it', () => {
+    const a = createAudio({ music: list, effects: {}, random: fixedRandom });
+    a.playMusic();
+    const first = nameOf(a);
+    a.skipTrack();
+    expect(nameOf(a)).not.toBe(first);
+  });
+
+  it('plays every track before any repeats', () => {
+    const a = createAudio({ music: list, effects: {}, random: fixedRandom });
+    a.playMusic();
+    const heard = [nameOf(a)];
+    for (let i = 0; i < list.length - 1; i += 1) {
+      a.skipTrack();
+      heard.push(nameOf(a));
+    }
+    expect(new Set(heard).size).toBe(list.length);
+  });
+
+  it('does not deal the track that just finished straight back after a reshuffle', () => {
+    const a = createAudio({ music: list, effects: {}, random: fixedRandom });
+    a.playMusic();
+    // Exhaust the whole order, forcing a reshuffle on the next advance.
+    for (let i = 0; i < list.length - 1; i += 1) a.skipTrack();
+    const last = nameOf(a);
+    a.skipTrack();
+    expect(nameOf(a)).not.toBe(last);
+  });
+
+  it('a single url still works, as one track', () => {
+    const a = createAudio({ music: '/only.mp3', effects: {}, random: fixedRandom });
+    a.playMusic();
+    expect(nameOf(a)).toBe('only.mp3');
+  });
+
+  it('muted music never starts', () => {
+    const a = createAudio({ music: list, effects: {}, random: fixedRandom });
+    a.setMuted(true);
+    a.playMusic();
+    expect(a.nowPlaying).toBeNull();
+  });
+});

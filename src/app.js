@@ -18,10 +18,7 @@ import { resolveTheme, applyPalette } from './core/theme.js';
 
 export const createApp = (root, { now = () => Date.now() } = {}) => {
   const store = createStore(localStorageBackend, config);
-  // No soundtrack yet. The generated one was rejected: lo-fi is a produced genre — sampled
-// drums, Rhodes, vinyl crackle — not something oscillators get to. A licensed track goes
-// in the `music` slot when one is chosen.
-const audio = createAudio({ music: null, effects: {}, tones });
+  const audio = createAudio({ music: config.music, effects: {}, tones });
   let state = store.load();
   audio.setMuted(state.muted);
   // Settings-derived durations are recomputed; only the volatile part is restored.
