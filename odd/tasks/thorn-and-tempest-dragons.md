@@ -59,7 +59,7 @@ budget, so one slice.
       `src/data/themes.js`; confirm the suite still passes
       — route: INLINE, not delegated. Both edits are purely additive data blocks fully
       specified in the Palettes table above, so a writer brief would have restated them.
-- [ ] **T3** Generate and ingest the 12 Thorn assets
+- [x] **T3** Generate and ingest the 12 Thorn assets
       — route: inline browser work, not delegable
 - [ ] **T4** Generate and ingest the 12 Tempest assets
       — route: inline browser work, not delegable
@@ -82,5 +82,10 @@ budget, so one slice.
   error and `themedIcon` passes the default emoji as that fallback, so Thorn and Tempest
   degrade to emoji until their assets land rather than showing broken images.
 
+- **T3 done.** 12 Thorn assets generated, cut to 512px webp with alpha, in place.
+  Verified in the running app: the forest palette applies, and all five icons stay
+  legible at their rendered ~32px. The icon-rules prefix held — no repeat of the Blaze
+  first-batch failure.
+
 ## Next step
-T3 — generate and ingest the 12 Thorn assets.
+T4 — generate and ingest the 12 Tempest assets.
