@@ -1,12 +1,19 @@
 const defaultContext = () => new (window.AudioContext || window.webkitAudioContext)();
 
-const playTone = (ctx, { freq, duration }, startAt) => {
+// These play on a tablet speaker, across a room, to a child who is not watching the
+// screen. 0.25 was inaudible in practice; a note also needs long enough to register as
+// a sound rather than a tick.
+const PEAK = 0.55;
+// A hard attack at this level clicks, so open slightly slower than before.
+const ATTACK = 0.02;
+
+const playTone = (ctx, { freq, duration, gain: peak = PEAK }, startAt) => {
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
   osc.type = 'sine';
   osc.frequency.value = freq;
   gain.gain.setValueAtTime(0.0001, startAt);
-  gain.gain.linearRampToValueAtTime(0.25, startAt + 0.01);
+  gain.gain.linearRampToValueAtTime(peak, startAt + ATTACK);
   gain.gain.exponentialRampToValueAtTime(0.0001, startAt + duration);
   osc.connect(gain);
   gain.connect(ctx.destination);
