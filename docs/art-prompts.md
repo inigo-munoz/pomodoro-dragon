@@ -385,3 +385,41 @@ SUBJECT: a mute icon — a chunky speaker shape (a square body with a triangular
 ```
 SUBJECT: a rest / take-a-break icon — a chunky sleeping baby storm dragon curled into a simple round ball, head tucked down, eyes closed as two simple curved lines, one wispy wing folded over its back. Cloud-silver and pale lilac body with dark outlines, one clear round silhouette. No sparks, no clouds, nothing floating around it.
 ```
+
+## Sound-on icons — the missing second state (all four dragons)
+
+The mute button has only ever had ONE icon: a speaker that is ALREADY crossed out. So it
+reads "silenced" even while sound is playing, and the button cannot show its own state
+through its symbol. `mainScreen.js` now distinguishes the states by brightness, but the
+real fix is a second icon per theme.
+
+Save each as `art-src/icons/<name>.png` and ship the 512px webp to `public/art/icons/`.
+Frost keeps the unprefixed naming its other icons use.
+
+Prefix every prompt with the icon rules block used for that dragon's other icons — these
+sit next to the mute icon at the same size and must match it exactly in weight and finish.
+
+#### sound.png — Frost
+```
+SUBJECT: a speaker icon — a chunky speaker shape (a square body with a triangular cone) in pale ice-blue and frost-white with dark outlines, and two bold curved sound waves arcing off its right side. NO slash, NO bar across it. Nothing else.
+```
+
+#### blaze-sound.png
+```
+SUBJECT: a speaker icon — a chunky speaker shape (a square body with a triangular cone) in bright pale-gold and cream with dark outlines, and two bold curved sound waves arcing off its right side. NO slash, NO bar across it. Nothing else.
+```
+
+#### thorn-sound.png
+```
+SUBJECT: a speaker icon — a chunky speaker shape (a square body with a triangular cone) in pale cream and light leaf-green with dark outlines, and two bold curved sound waves arcing off its right side. NO slash, NO bar across it. Nothing else.
+```
+
+#### tempest-sound.png
+```
+SUBJECT: a speaker icon — a chunky speaker shape (a square body with a triangular cone) in cloud silver and pale lilac with dark outlines, and two bold curved sound waves arcing off its right side. NO slash, NO bar across it. Nothing else.
+```
+
+Wiring these up, once the four files exist:
+1. add `sound: '/art/icons/<name>.webp'` to each theme's `icons` in `src/data/themes.js`
+2. add a `sound` entry to `themes.default.icons` (a `'🔊'` emoji) so the fallback resolves
+3. in `src/ui/mainScreen.js`, pick the key by state: `themedIcon(theme, state.muted ? 'mute' : 'sound')`
