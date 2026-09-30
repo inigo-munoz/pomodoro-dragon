@@ -174,6 +174,27 @@ describe('mute button state', () => {
     expect(btn.classList.contains('is-muted')).toBe(false);
   });
 
+  it('shows the sound icon when unmuted and the crossed-out one when muted', () => {
+    const frost = { icons: { mute: '/art/icons/mute.webp', sound: '/art/icons/sound.webp' } };
+
+    const on = renderMainScreen({ ...base, theme: frost });
+    expect(on.querySelector('[data-action="mute"] img').getAttribute('src'))
+      .toBe(assetUrl('/art/icons/sound.webp'));
+
+    const off = renderMainScreen({ ...base, state: { coins: 0, muted: true }, theme: frost });
+    expect(off.querySelector('[data-action="mute"] img').getAttribute('src'))
+      .toBe(assetUrl('/art/icons/mute.webp'));
+  });
+
+  it('falls back to the default emoji for a theme with no sound art, never the wrong symbol', () => {
+    // A theme that only has the crossed-out speaker must not use it to mean "sound on".
+    const partial = { icons: { mute: '/art/icons/blaze-mute.webp' } };
+    const el = renderMainScreen({ ...base, theme: partial });
+    const btn = el.querySelector('[data-action="mute"]');
+    expect(btn.querySelector('img')).toBeNull();
+    expect(btn.textContent).toContain('🔊');
+  });
+
   it('reads as muted when sound is off, so the button shows its own state', () => {
     const el = renderMainScreen({ ...base, state: { coins: 0, muted: true } });
     const btn = el.querySelector('[data-action="mute"]');

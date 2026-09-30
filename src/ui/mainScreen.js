@@ -59,7 +59,11 @@ export const renderMainScreen = (ctx) => {
 
   section.querySelector('.coin-icon').appendChild(themedIcon(theme, 'coin'));
   section.querySelector('.session-reward .coin-icon')?.appendChild(themedIcon(theme, 'coin'));
-  section.querySelector('[data-action="mute"]').appendChild(themedIcon(theme, 'mute'));
+  // Two icons, not one dimmed icon: the mute art is a speaker that is already crossed
+  // out, so on its own it reads "silenced" in both states. Themes without their own
+  // sound art fall back to the default set's emoji rather than showing the wrong symbol.
+  section.querySelector('[data-action="mute"]')
+    .appendChild(themedIcon(theme, state.muted ? 'mute' : 'sound'));
   section.querySelector('[data-action="shop"]').appendChild(themedIcon(theme, 'shop'));
   section.querySelector('[data-action="settings"]').appendChild(themedIcon(theme, 'settings'));
 

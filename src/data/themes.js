@@ -10,7 +10,7 @@ export const themes = {
       card: '#2c1c4a',
       'back-btn': '#99aaff',
     },
-    icons: { coin: '🪙', shop: '🍎', settings: '⚙️', mute: '🔇', break: '☕' },
+    icons: { coin: '🪙', shop: '🍎', settings: '⚙️', mute: '🔇', sound: '🔊', break: '☕' },
     foods: {},
   },
   frost: {
@@ -27,6 +27,7 @@ export const themes = {
       shop: '/art/icons/shop.webp',
       settings: '/art/icons/settings.webp',
       mute: '/art/icons/mute.webp',
+      sound: '/art/icons/sound.webp',
       break: '/art/icons/break.webp',
     },
     foods: {
