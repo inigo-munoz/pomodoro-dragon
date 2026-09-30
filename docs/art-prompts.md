@@ -157,27 +157,50 @@ Dark-fantasy children's storybook watercolor, warm ember palette (charcoal-black
 
 ### UI icons — dragon-themed fire (save to art-src/icons/)
 
+**Icons follow different rules from dragons and food.** The first attempt reused the
+illustration prompt for the icons and every one of them failed: ornate lava filigree,
+flames licking around the object, every element in the same orange hue against the
+near-black theme background. At the ~32px they actually render at, they became
+undifferentiated orange blobs — a side-by-side against the frost icons at identical
+size made it obvious. Detail per pixel is the enemy at icon size.
+
+Prefix every icon prompt below with these rules:
+
+```
+These are UI ICONS, not illustrations. ONE bold simple silhouette that is instantly
+recognisable at 32x32 pixels. Thick chunky shapes. NO filigree, NO ornament, NO lava
+cracks, NO flames or sparks around the object, NO texture noise, NO thin lines. Strong
+value contrast: keep the CORE of the shape LIGHT — bright cream, pale gold, light warm
+orange — so it pops against a near-black warm background. Dark outlines only. Soft
+watercolor shading inside the silhouette only. Square 1:1, centered, front view, plain
+fully transparent background, PNG, no text, no scenery, no ground shadow.
+```
+
 #### blaze-coin.png
 ```
-Dark-fantasy children's storybook watercolor, warm ember palette (charcoal-black, ember red-brown, molten orange, gold, ash grey, amber glow). Friendly, NOT scary. Subtle ember-spark motifs. Centered, front view, square 1:1, plain fully transparent background, PNG, no text, no scenery, no ground shadow. SUBJECT: a single gold-and-ember dragon coin engraved with a dragon, warm glowing rim, amber edge — a cute game currency icon.
+SUBJECT: a single gold coin, flat-on front view, a thick round disc with a raised rim in bright pale-gold and cream with dark outlines, and one simple small dark dragon silhouette stamped in the centre. Nothing else. No flames, no sparks, no ornament around the rim.
 ```
 
 #### blaze-shop.png
 ```
-Dark-fantasy children's storybook watercolor, warm ember palette (charcoal-black, ember red-brown, molten orange, gold, ash grey, amber glow). Friendly, NOT scary. Subtle ember-spark motifs. Centered, front view, square 1:1, plain fully transparent background, PNG, no text, no scenery, no ground shadow. SUBJECT: a dragon's warm treasure hoard — a small ember-lit treasure chest with glowing gold coins and amber gems spilling out, cute.
+SUBJECT: a treasure chest, three-quarter front view, lid open, bright pale-gold coins mounded inside — a simple chunky chest shape that reads as a chest at a glance.
 ```
 
 #### blaze-settings.png
 ```
-Dark-fantasy children's storybook watercolor, warm ember palette (charcoal-black, ember red-brown, molten orange, gold, ash grey, amber glow). Friendly, NOT scary. Subtle ember-spark motifs. Centered, front view, square 1:1, plain fully transparent background, PNG, no text, no scenery, no ground shadow. SUBJECT: a glowing amber rune-circle forming a gear / cog shape, ember and gold, a cute settings icon.
+SUBJECT: a cog / gear wheel, front view, flat-on, with 8 thick chunky teeth and a big round hole in the centre — bright pale-gold and cream metal with dark outlines, unmistakably a gear at a glance. No runes, no flames, no ornament inside it.
 ```
 
 #### blaze-mute.png
 ```
-Dark-fantasy children's storybook watercolor, warm ember palette (charcoal-black, ember red-brown, molten orange, gold, ash grey, amber glow). Friendly, NOT scary. Subtle ember-spark motifs. Centered, front view, square 1:1, plain fully transparent background, PNG, no text, no scenery, no ground shadow. SUBJECT: a cute warm-amber speaker icon with a slash through it, faint embers, glowing edge — a mute icon.
+SUBJECT: a mute icon — a chunky speaker shape (a square body with a triangular cone) in bright pale-gold and cream with dark outlines, and one thick bold diagonal slash crossing straight over it. Nothing else. No sound waves, no flames, no sparks.
 ```
 
 #### blaze-break.png
 ```
-Dark-fantasy children's storybook watercolor, warm ember palette (charcoal-black, ember red-brown, molten orange, gold, ash grey, amber glow). Warm-hearted and friendly, NOT scary. Subtle ember-spark motifs. Centered, front view, square 1:1, plain fully transparent background, PNG, no text, no scenery, no ground shadow. SUBJECT: a cute baby fire dragon curled up asleep by warm glowing embers, peaceful — a rest / take-a-break icon.
+SUBJECT: a rest / take-a-break icon — a chunky sleeping baby dragon curled into a simple round ball, head tucked down, eyes closed as two simple curved lines, one small wing folded over its back. Bright pale-gold and warm cream body with dark outlines, one clear round silhouette. No embers, no flames, no sparks, no scenery.
 ```
+
+Note: `break` is used twice — as the small Break button icon AND as the large resting
+dragon art shown during a break — so it has to hold up at both sizes. A clear round
+silhouette with a light core does.
