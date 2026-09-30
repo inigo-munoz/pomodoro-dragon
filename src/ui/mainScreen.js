@@ -13,14 +13,16 @@ const idleLabel = ({ mode, remaining, workSeconds }) => {
   return remaining < workSeconds ? '▶ Keep studying' : '▶ Start studying';
 };
 
-// A resting dragon shows the theme's break art; otherwise the current level art.
-const stageArt = ({ dragon, timerState, theme }, level) => {
+// During a break this shows the player's OWN dragon at its own level, resting — never a
+// different creature. Swapping in the theme's sleeping-baby art made an egg appear to
+// hatch when the break started and revert when it ended, and would have shown a baby to
+// someone who had raised an adult. Rest is a state of your dragon, not another dragon.
+const stageArt = ({ dragon, timerState }, level) => {
   const resting = timerState.mode === 'break';
-  const node = resting
-    ? themedIcon(theme, 'break')
-    : art(level.image, dragon.name, level.fallback);
+  const node = art(level.image, dragon.name, level.fallback);
   if (resting && node.tagName === 'IMG') node.alt = `${dragon.name} is resting`;
   node.classList.add('dragon-art', 'alive');
+  if (resting) node.classList.add('resting');
   return node;
 };
 
@@ -39,11 +41,13 @@ export const renderMainScreen = (ctx) => {
     `<header class="top-bar">` +
       `<span class="coin-counter"><span class="coin-icon"></span> ${state.coins}</span>` +
       `<span class="mode-label">${timerState.mode === 'work' ? 'Work' : 'Break'}</span>` +
-      `<button class="icon-btn" data-action="mute"></button>` +
+      `<button class="icon-btn${state.muted ? ' is-muted' : ''}" data-action="mute"` +
+        ` aria-pressed="${state.muted}"` +
+        ` aria-label="${state.muted ? 'Unmute' : 'Mute'}"></button>` +
     `</header>` +
     `<p class="timer-display">${fmt(timerState.remaining)}</p>` +
     (reward ? `<p class="session-reward">+${reward} <span class="coin-icon"></span></p>` : '') +
-    `<div class="dragon-stage"></div>` +
+    `<div class="dragon-stage${timerState.mode === 'break' ? ' resting' : ''}"></div>` +
     `<div class="xp-bar"><div class="xp-fill" style="width:${Math.round(progress.ratio * 100)}%"></div></div>` +
     `<div class="controls"></div>` +
     `<footer class="nav-bar">` +

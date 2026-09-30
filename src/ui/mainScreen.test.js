@@ -132,12 +132,21 @@ describe('main screen', () => {
       ...base, theme, timerState: { mode, remaining: 100, running: false },
     }).querySelector('.dragon-stage');
 
-    it('shows the break art instead of the dragon during a break', () => {
-      const img = stage('break').querySelector('img.dragon-art.alive');
+    it('keeps the player\'s own dragon on screen during a break, marked as resting', () => {
+      // Swapping in the theme's sleeping-baby art made an egg look like it hatched when
+      // the break began and reverted when it ended, and would show a baby to a player
+      // who had raised an adult.
+      const el = stage('break');
+      const img = el.querySelector('img.dragon-art.alive.resting');
       expect(img).not.toBeNull();
-      expect(img.getAttribute('src')).toBe(assetUrl('/art/icons/break.webp'));
+      expect(img.getAttribute('src')).toBe(assetUrl('/art/dragons/frost-baby.webp'));
       expect(img.getAttribute('alt')).toBe(`${dragon.name} is resting`);
-      expect(stage('break').innerHTML).not.toContain('frost-baby.webp');
+      expect(el.innerHTML).not.toContain('break.webp');
+    });
+
+    it('marks the stage as resting so the break can be shown without changing the art', () => {
+      expect(stage('break').classList.contains('resting')).toBe(true);
+      expect(stage('work').classList.contains('resting')).toBe(false);
     });
 
     it('shows the current level art, not the break art, while working', () => {
@@ -145,5 +154,31 @@ describe('main screen', () => {
       expect(el.querySelector('img.dragon-art').getAttribute('src')).toContain('frost-baby.webp');
       expect(el.innerHTML).not.toContain('break.webp');
     });
+  });
+});
+
+describe('mute button state', () => {
+  const base = {
+    state: { coins: 0, muted: false },
+    dragon: getDragon('frost'),
+    xp: 0,
+    timerState: { mode: 'work', remaining: 900, workSeconds: 900, running: false },
+    lastReward: 0,
+  };
+
+  it('reads as not muted when sound is on', () => {
+    const el = renderMainScreen({ ...base });
+    const btn = el.querySelector('[data-action="mute"]');
+    expect(btn.getAttribute('aria-pressed')).toBe('false');
+    expect(btn.getAttribute('aria-label')).toBe('Mute');
+    expect(btn.classList.contains('is-muted')).toBe(false);
+  });
+
+  it('reads as muted when sound is off, so the button shows its own state', () => {
+    const el = renderMainScreen({ ...base, state: { coins: 0, muted: true } });
+    const btn = el.querySelector('[data-action="mute"]');
+    expect(btn.getAttribute('aria-pressed')).toBe('true');
+    expect(btn.getAttribute('aria-label')).toBe('Unmute');
+    expect(btn.classList.contains('is-muted')).toBe(true);
   });
 });

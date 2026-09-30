@@ -33,6 +33,9 @@ body {
 .big-btn { font-size: 1.5rem; padding: 18px 28px; border: none; border-radius: 16px; background: var(--accent); color: var(--accent-fg); font-weight: 700; }
 .big-btn.primary { min-width: 240px; }
 .icon-btn { font-size: 1.6rem; background: none; border: none; padding: 8px; }
+/* Muted has to be visible at a glance, not inferred from whether sound is coming out.
+   Colour alone would fail a colour-blind child, so this also drops the brightness. */
+.icon-btn.is-muted { opacity: 0.4; filter: grayscale(1); }
 
 .food-grid, .dragon-grid { display: grid; gap: 12px; width: 100%; }
 .food-grid { grid-template-columns: repeat(3, 1fr); }
@@ -67,7 +70,24 @@ body {
 
 /* --- art elements --- */
 .art-img { width: 100%; height: 100%; object-fit: contain; }
-.dragon-stage { width: 60vw; max-width: 260px; aspect-ratio: 1; margin: auto; }
+.dragon-stage { width: 60vw; max-width: 260px; aspect-ratio: 1; margin: auto; position: relative; }
+
+/* Resting is shown as a state OF the dragon: dimmed, breathing slower, with a drifting
+   💤. The stage carries the marker because ::after does not render on an <img>. */
+.dragon-stage.resting::after {
+  content: '💤';
+  position: absolute;
+  top: 4%;
+  right: 4%;
+  font-size: 2rem;
+  animation: drift 3.6s ease-in-out infinite;
+}
+.dragon-art.resting { opacity: 0.75; }
+.dragon-art.resting.alive { animation: float 7s ease-in-out infinite, breathe 5s ease-in-out infinite; }
+@keyframes drift {
+  0%, 100% { transform: translateY(0) scale(1); opacity: 0.45; }
+  50%      { transform: translateY(-10px) scale(1.1); opacity: 0.9; }
+}
 .dragon-art { display: flex; width: 100%; height: 100%; align-items: center; justify-content: center; }
 .icon-btn .art-img { width: 1.8rem; height: 1.8rem; }
 .big-btn .art-img { width: 1.2em; height: 1.2em; vertical-align: -0.15em; }
@@ -98,6 +118,8 @@ body {
 /* accessibility: calm everything if the user asked for reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .dragon-art.alive,
+  .dragon-art.resting.alive,
+  .dragon-stage.resting::after,
   .level-up-art .art-img, .level-up-art .art-emoji,
   .sparkle { animation: none; }
   .food-card:active { transform: none; }
