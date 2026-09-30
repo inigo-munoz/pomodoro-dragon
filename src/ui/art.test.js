@@ -1,11 +1,18 @@
-import { describe, it, expect } from 'vitest';
+import { vi, describe, it, expect, afterEach } from 'vitest';
 import { art, isImagePath, assetUrl } from './art.js';
+
+afterEach(() => vi.unstubAllEnvs());
 
 describe('art helper', () => {
   it('resolves a root-relative path against the deploy prefix, without doubling slashes', () => {
     const resolved = assetUrl('/art/foods/apple.webp');
     expect(resolved.endsWith('/art/foods/apple.webp')).toBe(true);
     expect(resolved).not.toMatch(/\/\/+/);
+  });
+
+  it('prefixes a subpath deploy base', () => {
+    vi.stubEnv('BASE_URL', '/pomodoro-dragon/');
+    expect(assetUrl('/art/icons/coin.webp')).toBe('/pomodoro-dragon/art/icons/coin.webp');
   });
 
   it('does not touch a value that is not root-relative', () => {

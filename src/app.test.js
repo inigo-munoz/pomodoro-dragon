@@ -299,3 +299,18 @@ describe('createApp audio unlock', () => {
     expect(resume).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('createApp music wiring', () => {
+  afterEach(() => vi.unstubAllEnvs());
+
+  it('resolves music paths against the deploy base (regression)', () => {
+    vi.stubEnv('BASE_URL', '/pomodoro-dragon/');
+    const audioFactory = vi.fn(() => ({
+      setMuted: () => {}, unlock: () => {}, playMusic: () => {},
+      stopMusic: () => {}, playEffect: () => {}, toggleMute: () => false,
+    }));
+    createApp(root, { audioFactory });
+    const { music } = audioFactory.mock.calls[0][0];
+    expect(music).toEqual(config.music.map((path) => `/pomodoro-dragon${path}`));
+  });
+});

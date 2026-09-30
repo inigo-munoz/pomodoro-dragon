@@ -5,6 +5,7 @@ import { createStore } from './store/store.js';
 import { localStorageBackend } from './store/localStorageBackend.js';
 import { createAudio } from './audio/audio.js';
 import { tones } from './audio/tones.js';
+import { assetUrl } from './ui/art.js';
 import { createScreenManager } from './ui/screens.js';
 import { renderChooseDragon } from './ui/chooseDragon.js';
 import { renderMainScreen } from './ui/mainScreen.js';
@@ -16,9 +17,11 @@ import { grantWorkReward, buyFood, leveledUp, dragonXp } from './core/game.js';
 import { currentLevel } from './core/dragon.js';
 import { resolveTheme, applyPalette } from './core/theme.js';
 
-export const createApp = (root, { now = () => Date.now() } = {}) => {
+export const createApp = (root, { now = () => Date.now(), audioFactory = createAudio } = {}) => {
   const store = createStore(localStorageBackend, config);
-  const audio = createAudio({ music: config.music, effects: {}, tones });
+  // Music paths are authored from the site root like the art, so they must be resolved
+  // against the deploy base too, or the tracks 404 when served from a subpath.
+  const audio = audioFactory({ music: (config.music ?? []).map(assetUrl), effects: {}, tones });
   let state = store.load();
   audio.setMuted(state.muted);
   // Settings-derived durations are recomputed; only the volatile part is restored.
