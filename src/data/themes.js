@@ -57,4 +57,48 @@ export const themes = {
       cake: '/art/foods/blaze-cake.webp',
     },
   },
+  thorn: {
+    palette: {
+      bg: '#0d1a0f',
+      accent: '#7ac74f',
+      'accent-fg': '#0a1f08',
+      'xp-fill': '#c8e66b',
+      card: '#17301b',
+      'back-btn': '#a8dd8a',
+    },
+    icons: {
+      coin: '/art/icons/thorn-coin.webp',
+      shop: '/art/icons/thorn-shop.webp',
+      settings: '/art/icons/thorn-settings.webp',
+      mute: '/art/icons/thorn-mute.webp',
+      break: '/art/icons/thorn-break.webp',
+    },
+    foods: {
+      apple: '/art/foods/thorn-apple.webp',
+      meat: '/art/foods/thorn-meat.webp',
+      cake: '/art/foods/thorn-cake.webp',
+    },
+  },
+  tempest: {
+    palette: {
+      bg: '#16141f',
+      accent: '#8b7ae8',
+      'accent-fg': '#120f1c',
+      'xp-fill': '#ffe14d',
+      card: '#252235',
+      'back-btn': '#bfb4ff',
+    },
+    icons: {
+      coin: '/art/icons/tempest-coin.webp',
+      shop: '/art/icons/tempest-shop.webp',
+      settings: '/art/icons/tempest-settings.webp',
+      mute: '/art/icons/tempest-mute.webp',
+      break: '/art/icons/tempest-break.webp',
+    },
+    foods: {
+      apple: '/art/foods/tempest-apple.webp',
+      meat: '/art/foods/tempest-meat.webp',
+      cake: '/art/foods/tempest-cake.webp',
+    },
+  },
 };

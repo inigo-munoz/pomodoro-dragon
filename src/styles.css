@@ -34,7 +34,10 @@ body {
 .big-btn.primary { min-width: 240px; }
 .icon-btn { font-size: 1.6rem; background: none; border: none; padding: 8px; }
 
-.food-grid, .dragon-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%; }
+.food-grid, .dragon-grid { display: grid; gap: 12px; width: 100%; }
+.food-grid { grid-template-columns: repeat(3, 1fr); }
+/* two per row: four dragons fill a clean 2x2 and each card stays a big tap target */
+.dragon-grid { grid-template-columns: repeat(2, 1fr); }
 .food-card, .dragon-choice { display: flex; flex-direction: column; gap: 4px; padding: 14px; border: none; border-radius: 16px; background: var(--card); color: var(--fg); }
 .dragon-choice.current { outline: 3px solid var(--accent); outline-offset: 2px; }
 .food-card { transition: transform 0.08s ease; }
@@ -42,9 +45,18 @@ body {
 .food-icon, .dragon-art { font-size: 2.5rem; }
 
 .setting-group { width: 100%; }
-.preset-row, .step-row { display: flex; gap: 10px; }
-.preset, .step-row button { font-size: 1.3rem; padding: 12px 18px; border: none; border-radius: 12px; background: var(--card); color: var(--fg); }
+.setting-group h2 { margin: 0 0 10px; font-size: 1.3rem; }
+.preset-row { display: flex; flex-wrap: wrap; gap: 10px; flex: 0 1 auto; }
+.preset, .setting-control > button { min-width: 48px; min-height: 48px; font-size: 1.3rem; padding: 12px 18px; border: none; border-radius: 12px; background: var(--card); color: var(--fg); }
 .preset.active { background: var(--accent); color: var(--accent-fg); }
+
+/* settings screen: one left-aligned column, stepper and presets in one control */
+.settings { align-items: stretch; }
+.settings .screen-title { margin: 0; font-size: 1.8rem; text-align: left; }
+.settings .setting-control { display: flex; align-items: center; gap: 10px; }
+.settings .setting-control > button { flex: none; }
+.settings .big-btn { align-self: flex-start; min-height: 48px; }
+.settings .back-btn { min-width: 48px; min-height: 48px; padding: 8px 12px; margin-left: -12px; }
 
 .back-btn { align-self: flex-start; font-size: 1.1rem; background: none; border: none; color: var(--back-btn); }
 

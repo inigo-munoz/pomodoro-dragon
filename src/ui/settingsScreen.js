@@ -7,12 +7,20 @@ export const renderSettingsScreen = ({ settings, config, onChange, onBack, onCha
   const section = document.createElement('section');
   section.className = 'screen settings';
 
+  const title = document.createElement('h1');
+  title.className = 'screen-title';
+  title.textContent = 'Settings';
+  section.appendChild(title);
+
   const emit = (next) => onChange({ ...settings, ...next });
 
   const group = (label, key, presets, stepPrefix) => {
     const wrap = document.createElement('div');
     wrap.className = 'setting-group';
     wrap.innerHTML = `<h2>${label}: <span class="value">${settings[key]}</span> min</h2>`;
+
+    const control = document.createElement('div');
+    control.className = 'setting-control';
 
     const presetRow = document.createElement('div');
     presetRow.className = 'preset-row';
@@ -24,10 +32,7 @@ export const renderSettingsScreen = ({ settings, config, onChange, onBack, onCha
       btn.addEventListener('click', () => emit({ [key]: p }));
       presetRow.appendChild(btn);
     }
-    wrap.appendChild(presetRow);
 
-    const stepRow = document.createElement('div');
-    stepRow.className = 'step-row';
     const minus = document.createElement('button');
     minus.dataset.step = `${stepPrefix}-minus`;
     minus.textContent = '−';
@@ -42,8 +47,8 @@ export const renderSettingsScreen = ({ settings, config, onChange, onBack, onCha
       const next = clamp(settings[key] + 1, range);
       if (next !== settings[key]) emit({ [key]: next });
     });
-    stepRow.append(minus, plus);
-    wrap.appendChild(stepRow);
+    control.append(minus, presetRow, plus);
+    wrap.appendChild(control);
     return wrap;
   };
 
@@ -53,7 +58,7 @@ export const renderSettingsScreen = ({ settings, config, onChange, onBack, onCha
   const changeDragon = document.createElement('button');
   changeDragon.className = 'big-btn';
   changeDragon.dataset.action = 'change-dragon';
-  changeDragon.textContent = '🐉 Change Dragon';
+  changeDragon.textContent = 'Change Dragon';
   if (onChangeDragon) changeDragon.addEventListener('click', onChangeDragon);
   section.appendChild(changeDragon);
 
