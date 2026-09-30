@@ -42,9 +42,18 @@ body {
 .food-icon, .dragon-art { font-size: 2.5rem; }
 
 .setting-group { width: 100%; }
-.preset-row, .step-row { display: flex; gap: 10px; }
-.preset, .step-row button { font-size: 1.3rem; padding: 12px 18px; border: none; border-radius: 12px; background: var(--card); color: var(--fg); }
+.setting-group h2 { margin: 0 0 10px; font-size: 1.3rem; }
+.preset-row { display: flex; flex-wrap: wrap; gap: 10px; flex: 0 1 auto; }
+.preset, .setting-control > button { min-width: 48px; min-height: 48px; font-size: 1.3rem; padding: 12px 18px; border: none; border-radius: 12px; background: var(--card); color: var(--fg); }
 .preset.active { background: var(--accent); color: var(--accent-fg); }
+
+/* settings screen: one left-aligned column, stepper and presets in one control */
+.settings { align-items: stretch; }
+.settings .screen-title { margin: 0; font-size: 1.8rem; text-align: left; }
+.settings .setting-control { display: flex; align-items: center; gap: 10px; }
+.settings .setting-control > button { flex: none; }
+.settings .big-btn { align-self: flex-start; min-height: 48px; }
+.settings .back-btn { min-width: 48px; min-height: 48px; padding: 8px 12px; margin-left: -12px; }
 
 .back-btn { align-self: flex-start; font-size: 1.1rem; background: none; border: none; color: var(--back-btn); }
 
