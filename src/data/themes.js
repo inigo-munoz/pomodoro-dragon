@@ -73,6 +73,7 @@ export const themes = {
       shop: '/art/icons/thorn-shop.webp',
       settings: '/art/icons/thorn-settings.webp',
       mute: '/art/icons/thorn-mute.webp',
+      sound: '/art/icons/thorn-sound.webp',
       break: '/art/icons/thorn-break.webp',
     },
     foods: {
