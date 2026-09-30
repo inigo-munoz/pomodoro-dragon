@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { themedIcon } from './themedIcon.js';
+import { assetUrl } from './art.js';
 
 describe('themedIcon', () => {
   it('renders the default emoji when no theme is given', () => {
@@ -12,6 +13,6 @@ describe('themedIcon', () => {
     const theme = { icons: { coin: '/art/icons/coin.webp' } };
     const el = themedIcon(theme, 'coin');
     expect(el.tagName).toBe('IMG');
-    expect(el.getAttribute('src')).toBe('/art/icons/coin.webp');
+    expect(el.getAttribute('src')).toBe(assetUrl('/art/icons/coin.webp'));
   });
 });

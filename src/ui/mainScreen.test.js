@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { renderMainScreen } from './mainScreen.js';
+import { assetUrl } from './art.js';
 import { getDragon } from '../data/dragons.js';
 
 const dragon = getDragon('frost');
@@ -58,7 +59,7 @@ describe('main screen', () => {
     });
     const shopIcon = el.querySelector('[data-action="shop"] img.art-img');
     expect(shopIcon).not.toBeNull();
-    expect(shopIcon.getAttribute('src')).toBe('/art/icons/shop.webp');
+    expect(shopIcon.getAttribute('src')).toBe(assetUrl('/art/icons/shop.webp'));
   });
 
   describe('idle control label', () => {
@@ -134,7 +135,7 @@ describe('main screen', () => {
     it('shows the break art instead of the dragon during a break', () => {
       const img = stage('break').querySelector('img.dragon-art.alive');
       expect(img).not.toBeNull();
-      expect(img.getAttribute('src')).toBe('/art/icons/break.webp');
+      expect(img.getAttribute('src')).toBe(assetUrl('/art/icons/break.webp'));
       expect(img.getAttribute('alt')).toBe(`${dragon.name} is resting`);
       expect(stage('break').innerHTML).not.toContain('frost-baby.webp');
     });

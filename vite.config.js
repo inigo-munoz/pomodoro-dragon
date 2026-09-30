@@ -2,6 +2,8 @@ import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
+  // Served from https://inigo-munoz.github.io/pomodoro-dragon/, not from a domain root.
+  base: '/pomodoro-dragon/',
   plugins: [
     VitePWA({
       registerType: 'autoUpdate',

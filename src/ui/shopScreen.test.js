@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { renderShopScreen } from './shopScreen.js';
+import { assetUrl } from './art.js';
 
 const foods = [
   { id: 'apple', name: 'Apple', price: 10, xp: 20, icon: '🍎' },
@@ -38,6 +39,6 @@ describe('shop screen', () => {
     });
     const appleIcon = el.querySelector('[data-food="apple"] .food-icon img.art-img');
     expect(appleIcon).not.toBeNull();
-    expect(appleIcon.getAttribute('src')).toBe('/art/foods/apple.webp');
+    expect(appleIcon.getAttribute('src')).toBe(assetUrl('/art/foods/apple.webp'));
   });
 });
