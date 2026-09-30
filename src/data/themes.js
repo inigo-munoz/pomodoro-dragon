@@ -50,6 +50,7 @@ export const themes = {
       shop: '/art/icons/blaze-shop.webp',
       settings: '/art/icons/blaze-settings.webp',
       mute: '/art/icons/blaze-mute.webp',
+      sound: '/art/icons/blaze-sound.webp',
       break: '/art/icons/blaze-break.webp',
     },
     foods: {
