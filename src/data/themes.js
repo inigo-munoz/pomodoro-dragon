@@ -96,6 +96,7 @@ export const themes = {
       shop: '/art/icons/tempest-shop.webp',
       settings: '/art/icons/tempest-settings.webp',
       mute: '/art/icons/tempest-mute.webp',
+      sound: '/art/icons/tempest-sound.webp',
       break: '/art/icons/tempest-break.webp',
     },
     foods: {
