@@ -61,9 +61,9 @@ budget, so one slice.
       specified in the Palettes table above, so a writer brief would have restated them.
 - [x] **T3** Generate and ingest the 12 Thorn assets
       — route: inline browser work, not delegable
-- [ ] **T4** Generate and ingest the 12 Tempest assets
+- [x] **T4** Generate and ingest the 12 Tempest assets
       — route: inline browser work, not delegable
-- [ ] **T5** Verify in the running app: chooser shows four distinct dragons, each theme
+- [x] **T5** Verify in the running app: chooser shows four distinct dragons, each theme
       applies, every icon is legible at its rendered size; `npm test` and `npm run build`
 
 ## Acceptance criteria
@@ -87,5 +87,24 @@ budget, so one slice.
   legible at their rendered ~32px. The icon-rules prefix held — no repeat of the Blaze
   first-batch failure.
 
+- **T4 done.** 12 Tempest assets generated and in place.
+- **T5 done.** Verified in the running app, not from the source files:
+  - The chooser shows all four, each instantly distinguishable: ice blue, ember orange,
+    forest green, storm violet. The storm reading of "air" was the right call — nothing
+    about Tempest reads as Frost.
+  - Selecting Thorn and Tempest applies its palette and swaps all five icons and three
+    foods. Every icon stays legible at its rendered size.
+  - A script confirms every path referenced by `dragons.js` and `themes.js` exists on
+    disk, so nothing silently falls back to an emoji.
+  - `npm test` 63 passed, `npm run build` clean.
+- **Fixed during T5:** `.dragon-grid` was `repeat(3, 1fr)`, so the fourth dragon wrapped
+  alone onto a second row. Split from `.food-grid` and set to two columns: four dragons
+  now fill a clean 2x2 and each card is a bigger tap target on a tablet.
+
+## Status
+COMPLETE. Not pushed, not merged.
+
 ## Next step
-T4 — generate and ingest the 12 Tempest assets.
+None for this feature. Optional follow-up: the PWA manifest `theme_color`/
+`background_color` is still `#1b1030`, the old single-dragon purple, which no longer
+matches any of the four themes or the navy launcher icon.
