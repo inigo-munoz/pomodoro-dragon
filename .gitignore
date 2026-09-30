@@ -4,3 +4,9 @@ dist
 
 # High-res source art (originals). Shipped assets live in public/art/ as optimized webp.
 art-src
+
+# Local tooling output, not part of the app
+.atl
+graphify-out
+src/graphify-out
+.graphifyignore
