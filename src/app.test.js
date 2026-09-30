@@ -58,7 +58,7 @@ describe('createApp full timer loop', () => {
     // 2 + 3. Work block: start, run it out, collect the reward.
     click('start');
     vi.advanceTimersByTime(ONE_BLOCK_MS);
-    expect(coins()).toBe(config.coinsPerWork);
+    expect(coins()).toBe(config.coinsPerMinute);
     // Completed work parks at 0:00 and offers the Break button.
     expect(root.querySelector('[data-action="break"]')).not.toBeNull();
 
@@ -74,7 +74,7 @@ describe('createApp full timer loop', () => {
     //    coins never move again.
     click('start');
     vi.advanceTimersByTime(ONE_BLOCK_MS);
-    expect(coins()).toBe(config.coinsPerWork * 2);
+    expect(coins()).toBe(config.coinsPerMinute * 2);
   });
 
   it('does not yank the shop back to main while the timer keeps ticking (regression)', () => {
@@ -115,5 +115,154 @@ describe('createApp full timer loop', () => {
 
     // The break must NOT have been reset to a fresh work block.
     expect(modeLabel()).toBe('Break');
+  });
+});
+
+describe('createApp timer persistence', () => {
+  const seed = (timer) => window.localStorage.setItem(
+    config.storageKey,
+    JSON.stringify({
+      dragonId: 'frost', coins: 0, settings: { workMinutes: 1, breakMinutes: 1 }, timer,
+    }),
+  );
+
+  // Simulates closing the tab: stops the old app's interval and mounts a fresh root.
+  // clearAllTimers resets the fake clock, so the current time is restored afterwards.
+  const reopen = () => {
+    const at = Date.now();
+    vi.clearAllTimers();
+    vi.setSystemTime(at);
+    root.remove();
+    root = document.createElement('div');
+    document.body.appendChild(root);
+    createApp(root);
+  };
+
+  const display = () => root.querySelector('.timer-display').textContent.trim();
+
+  it('resumes a session abandoned mid-run with the right remaining time', () => {
+    createApp(root);
+    pickDragon('frost');
+    click('start');
+    vi.advanceTimersByTime(20_000);
+
+    reopen();
+
+    expect(display()).toBe('00:40');
+    expect(root.querySelector('[data-action="pause"]')).not.toBeNull();
+    vi.advanceTimersByTime(ONE_BLOCK_MS);
+    expect(coins()).toBe(config.coinsPerMinute);
+  });
+
+  it('grants a work block that ended while closed exactly once', () => {
+    seed({ mode: 'work', running: true, remaining: 30, endsAt: Date.now() - 5_000 });
+
+    createApp(root);
+    expect(coins()).toBe(config.coinsPerMinute);
+    expect(root.querySelector('[data-action="break"]')).not.toBeNull();
+
+    reopen();
+    expect(coins()).toBe(config.coinsPerMinute);
+    expect(root.querySelector('[data-action="break"]')).not.toBeNull();
+  });
+
+  it('restores an elapsed break as an idle work block', () => {
+    seed({ mode: 'break', running: true, remaining: 30, endsAt: Date.now() - 5_000 });
+
+    createApp(root);
+
+    expect(modeLabel()).toBe('Work');
+    expect(root.querySelector('[data-action="start"]')).not.toBeNull();
+    expect(display()).toBe('01:00');
+    expect(coins()).toBe(0);
+  });
+
+  it('restores a paused session still paused with its remaining time', () => {
+    seed({ mode: 'work', running: false, remaining: 42, endsAt: null });
+
+    createApp(root);
+    vi.advanceTimersByTime(10_000);
+
+    expect(display()).toBe('00:42');
+    expect(root.querySelector('[data-action="start"]')).not.toBeNull();
+    expect(coins()).toBe(0);
+  });
+});
+
+describe('createApp session feedback', () => {
+  const reward = () => root.querySelector('.session-reward');
+
+  it('shows the coins earned when a work block completes, then clears it on the next start', () => {
+    createApp(root);
+    pickDragon('frost');
+    expect(reward()).toBeNull();
+
+    click('start');
+    vi.advanceTimersByTime(ONE_BLOCK_MS);
+    expect(coins()).toBeGreaterThan(0);
+    expect(reward().textContent).toContain(`+${coins()}`);
+
+    click('break');
+    expect(reward()).toBeNull();
+    vi.advanceTimersByTime(ONE_BLOCK_MS);
+    click('start');
+    expect(reward()).toBeNull();
+  });
+
+  it('labels a paused break as Resume break', () => {
+    createApp(root);
+    pickDragon('frost');
+    click('start');
+    vi.advanceTimersByTime(ONE_BLOCK_MS);
+    click('break');
+    click('pause');
+    expect(root.querySelector('[data-action="start"]').textContent).toContain('Resume break');
+  });
+});
+
+describe('createApp destroy', () => {
+  it('stops the clock so later time changes nothing', () => {
+    const app = createApp(root);
+    pickDragon('frost');
+    click('start');
+    app.destroy();
+
+    vi.advanceTimersByTime(ONE_BLOCK_MS * 2);
+    expect(coins()).toBe(0);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('is safe to call twice', () => {
+    const app = createApp(root);
+    app.destroy();
+    expect(() => app.destroy()).not.toThrow();
+  });
+});
+
+describe('createApp audio unlock', () => {
+  let resume;
+
+  beforeEach(() => {
+    resume = vi.fn(() => Promise.resolve());
+    window.AudioContext = vi.fn(() => ({ state: 'suspended', resume }));
+  });
+
+  afterEach(() => {
+    delete window.AudioContext;
+  });
+
+  it('unlocks audio on the first Start press', () => {
+    createApp(root);
+    pickDragon('frost');
+    expect(resume).not.toHaveBeenCalled();
+    click('start');
+    expect(resume).toHaveBeenCalledTimes(1);
+  });
+
+  it('unlocks audio when the mute button is pressed', () => {
+    createApp(root);
+    pickDragon('frost');
+    click('mute');
+    expect(resume).toHaveBeenCalledTimes(1);
   });
 });

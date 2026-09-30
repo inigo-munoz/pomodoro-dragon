@@ -1,9 +1,11 @@
 import { addCoins, spend } from './wallet.js';
 import { currentLevel } from './dragon.js';
 
-export const grantWorkReward = (state, config) => ({
+export const grantWorkReward = (state, config, workMinutes) => ({
   ...state,
-  coins: addCoins(state.coins, config.coinsPerWork),
+  coins: workMinutes > 0
+    ? addCoins(state.coins, workMinutes * config.coinsPerMinute)
+    : state.coins,
 });
 
 // XP is stored per dragon. These read/write the ACTIVE dragon's XP.

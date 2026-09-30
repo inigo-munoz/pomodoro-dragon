@@ -4,6 +4,7 @@ import { foods } from './data/foods.js';
 import { createStore } from './store/store.js';
 import { localStorageBackend } from './store/localStorageBackend.js';
 import { createAudio } from './audio/audio.js';
+import { tones } from './audio/tones.js';
 import { createScreenManager } from './ui/screens.js';
 import { renderChooseDragon } from './ui/chooseDragon.js';
 import { renderMainScreen } from './ui/mainScreen.js';
@@ -15,14 +16,23 @@ import { grantWorkReward, buyFood, leveledUp, dragonXp } from './core/game.js';
 import { currentLevel } from './core/dragon.js';
 import { resolveTheme, applyPalette } from './core/theme.js';
 
-export const createApp = (root) => {
+export const createApp = (root, { now = () => Date.now() } = {}) => {
   const store = createStore(localStorageBackend, config);
-  const audio = createAudio({ music: null, effects: {} }); // wire real assets later
+  const audio = createAudio({ music: null, effects: {}, tones }); // music assets still pending
   let state = store.load();
   audio.setMuted(state.muted);
-  let timerState = createTimerState(state.settings);
+  // Settings-derived durations are recomputed; only the volatile part is restored.
+  let lastReward = null; // coins from the block just completed, shown until the next one starts
+  let timerState = { ...createTimerState(state.settings), ...state.timer };
 
   const save = () => store.save(state);
+
+  // Persist only the volatile timer fields so a reload can resume the session.
+  const persistTimer = () => {
+    const { mode, running, remaining, endsAt } = timerState;
+    state = { ...state, timer: { mode, running, remaining, endsAt } };
+    save();
+  };
 
   const render = () => {
     if (!state.dragonId) {
@@ -33,7 +43,7 @@ export const createApp = (root) => {
     const theme = resolveTheme(dragon.themeId);
     applyPalette(theme.palette);
     screens.set('main', renderMainScreen({
-      state, dragon, xp: dragonXp(state), timerState, theme,
+      state, dragon, xp: dragonXp(state), timerState, lastReward, theme,
       onStart, onPause, onBreak, onShop, onSettings, onToggleMute,
     }));
     screens.show('main');
@@ -48,13 +58,21 @@ export const createApp = (root) => {
   };
 
   const onStart = () => {
-    timerState = start(timerState);
+    lastReward = null;
+    timerState = start(timerState, now());
+    persistTimer();
+    audio.unlock();
     audio.playMusic();
     render();
   };
-  const onPause = () => { timerState = pause(timerState); render(); };
+  const onPause = () => { timerState = pause(timerState, now()); persistTimer(); render(); };
 
-  const onBreak = () => { timerState = advance(timerState); timerState = start(timerState); render(); };
+  const onBreak = () => {
+    lastReward = null;
+    timerState = start(advance(timerState), now());
+    persistTimer();
+    render();
+  };
 
   const onShop = () => {
     const dragon = getDragon(state.dragonId);
@@ -83,7 +101,6 @@ export const createApp = (root) => {
       settings: state.settings, config, onChangeDragon,
       onChange: (settings) => {
         state = { ...state, settings };
-        save();
         if (!timerState.running) {
           const workSeconds = settings.workMinutes * 60;
           const breakSeconds = settings.breakMinutes * 60;
@@ -96,6 +113,7 @@ export const createApp = (root) => {
             remaining: atFreshWorkStart ? workSeconds : timerState.remaining,
           };
         }
+        persistTimer();
         onSettings();
       },
       onBack: render,
@@ -104,6 +122,7 @@ export const createApp = (root) => {
   };
 
   const onToggleMute = () => {
+    audio.unlock();
     const muted = audio.toggleMute();
     state = { ...state, muted };
     save();
@@ -114,25 +133,32 @@ export const createApp = (root) => {
   const screens = createScreenManagerWithCache(root);
 
   // --- per-second driver ---
-  setInterval(() => {
+  const handleTick = () => {
     if (!timerState.running) return;
-    const result = tick(timerState);
+    const result = tick(timerState, now());
     timerState = result.state;
     if (result.completed) {
       audio.playEffect('bell');
       if (timerState.mode === 'work') {
         // work finished → grant coins; stays at 0:00 so the ☕ Break button shows
-        state = grantWorkReward(state, config);
-        save();
+        const before = state.coins;
+        state = grantWorkReward(state, config, timerState.workSeconds / 60);
+        lastReward = state.coins - before;
       } else {
         // break finished → return to a fresh idle work block (▶ Start shows)
         timerState = advance(timerState);
       }
+      persistTimer();
     }
     if (screens.current === 'main') render();
-  }, 1000);
+  };
+
+  const interval = setInterval(handleTick, 1000);
+  handleTick(); // settle a session restored from a previous run (completes it once)
 
   render();
+
+  return { destroy: () => clearInterval(interval) };
 };
 
 // screen manager with a small cache so we can pre-build then show by name

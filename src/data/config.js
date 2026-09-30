@@ -1,5 +1,5 @@
 export const config = {
-  coinsPerWork: 10,
+  coinsPerMinute: 1,
   durations: {
     workPresets: [10, 15, 25],   // minutes
     breakPresets: [3, 5, 10],    // minutes
