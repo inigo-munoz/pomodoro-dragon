@@ -18,12 +18,26 @@ import { resolveTheme, applyPalette } from './core/theme.js';
 
 export const createApp = (root, { now = () => Date.now() } = {}) => {
   const store = createStore(localStorageBackend, config);
-  const audio = createAudio({ music: null, effects: {}, tones }); // music assets still pending
+  // No soundtrack yet. The generated one was rejected: lo-fi is a produced genre — sampled
+// drums, Rhodes, vinyl crackle — not something oscillators get to. A licensed track goes
+// in the `music` slot when one is chosen.
+const audio = createAudio({ music: null, effects: {}, tones });
   let state = store.load();
   audio.setMuted(state.muted);
   // Settings-derived durations are recomputed; only the volatile part is restored.
   let lastReward = null; // coins from the block just completed, shown until the next one starts
-  let timerState = { ...createTimerState(state.settings), ...state.timer };
+  // The saved countdown can outlive the length it belongs to: durations come from the
+  // settings, `remaining` comes from the save, and nothing tied them together. Clamp on
+  // load so a state written by an older build cannot start the timer out at fourteen
+  // minutes inside a one-minute block.
+  const restored = { ...createTimerState(state.settings), ...state.timer };
+  let timerState = {
+    ...restored,
+    remaining: Math.min(
+      restored.remaining,
+      restored.mode === 'work' ? restored.workSeconds : restored.breakSeconds,
+    ),
+  };
 
   const save = () => store.save(state);
 
@@ -106,11 +120,18 @@ export const createApp = (root, { now = () => Date.now() } = {}) => {
           const breakSeconds = settings.breakMinutes * 60;
           const atFreshWorkStart =
             timerState.mode === 'work' && timerState.remaining === timerState.workSeconds;
+          // Never leave the countdown longer than the length it now belongs to. Keeping
+          // a part-used block intact is worth doing, but a few seconds of accidental
+          // progress used to lock the new duration out entirely: set work to 1 minute
+          // with 14:48 on the clock and the clock stayed at 14:48.
+          const limit = timerState.mode === 'work' ? workSeconds : breakSeconds;
           timerState = {
             ...timerState,
             workSeconds,
             breakSeconds,
-            remaining: atFreshWorkStart ? workSeconds : timerState.remaining,
+            remaining: atFreshWorkStart
+              ? workSeconds
+              : Math.min(timerState.remaining, limit),
           };
         }
         persistTimer();

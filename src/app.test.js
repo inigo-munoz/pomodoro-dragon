@@ -26,6 +26,8 @@ const coins = () =>
 
 const modeLabel = () => root.querySelector('.mode-label').textContent.trim();
 
+const timerText = () => root.querySelector('.timer-display').textContent.trim();
+
 beforeEach(() => {
   vi.useFakeTimers();
   window.localStorage.clear();
@@ -115,6 +117,37 @@ describe('createApp full timer loop', () => {
 
     // The break must NOT have been reset to a fresh work block.
     expect(modeLabel()).toBe('Break');
+  });
+
+  it('shortening the work time applies even to a part-used block (regression)', () => {
+    // A few seconds of accidental progress used to lock the new duration out: the guard
+    // that protects a session in progress kept a countdown longer than the length it
+    // now belonged to, so setting 1 minute left 14:48 on the clock.
+    window.localStorage.setItem(
+      'pomodoro-dragon-save-v1',
+      JSON.stringify({ settings: { workMinutes: 15, breakMinutes: 5 } }),
+    );
+    createApp(root);
+    pickDragon('frost');
+
+    // Consume a few seconds of the block, then stop.
+    click('start');
+    vi.advanceTimersByTime(12_000);
+    click('pause');
+    expect(timerText()).not.toBe('15:00');
+
+    // Drop the work length well below what is left on the clock.
+    click('settings');
+    // The settings screen re-renders on every change, so the button must be looked up
+    // again each time — a held reference is detached after the first click.
+    for (let i = 0; i < 14; i += 1) {
+      root.querySelector('[data-step="work-minus"]').click();
+    }
+    root.querySelector('.back-btn').click();
+
+    // The clock must never show more than the length it belongs to.
+    const [mm, ss] = timerText().split(':').map(Number);
+    expect(mm * 60 + ss).toBeLessThanOrEqual(60);
   });
 });
 
