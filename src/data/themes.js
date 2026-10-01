@@ -39,6 +39,18 @@ export const themes = {
       cake: '/art/foods/cake.webp',
     },
     room: '/art/lair/frost-room.webp',
+    furniture: {
+      banner: '/art/lair/frost-banner.webp',
+      painting: '/art/lair/frost-painting.webp',
+      trophy: '/art/lair/frost-trophy.webp',
+      bed: '/art/lair/frost-bed.webp',
+      nest: '/art/lair/frost-nest.webp',
+      lamp: '/art/lair/frost-lamp.webp',
+      chest: '/art/lair/frost-chest.webp',
+      shelf: '/art/lair/frost-shelf.webp',
+      imp: '/art/lair/frost-imp.webp',
+      hatchling: '/art/lair/frost-hatchling.webp',
+    },
   },
   blaze: {
     palette: {

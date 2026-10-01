@@ -12,6 +12,9 @@ const slotButton = (slot, item, theme, onPickSlot) => {
   btn.dataset.slot = slot;
   btn.setAttribute('aria-label', item ? `Change the ${slot}` : `Add something to the ${slot}`);
   if (item) {
+    // the id, not the art: a slot's contents must be identifiable whether the theme has
+    // real art or is still falling back to an emoji
+    btn.dataset.item = item.id;
     btn.appendChild(art(theme?.furniture?.[item.id] ?? item.fallback, item.name, item.fallback));
   } else {
     btn.textContent = '+';

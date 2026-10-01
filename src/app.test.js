@@ -465,7 +465,8 @@ describe('createApp lair', () => {
     openLair();
 
     expect(slot('wall').classList.contains('is-empty')).toBe(false);
-    expect(slot('wall').textContent).toContain('🚩');
+    // by id, not by glyph: asserting the emoji would break the moment the theme gains art
+    expect(slot('wall').dataset.item).toBe('banner');
     expect(saved().lairs.frost.owned).toEqual(['banner', 'painting']);
     expect(saved().coins).toBe(100 - 30 - 45);
   });
