@@ -32,6 +32,9 @@ export const renderMainScreen = (ctx) => {
   const xp = ctx.xp ?? 0;
   const level = currentLevel(dragon, xp);
   const progress = levelProgress(dragon, xp);
+  // The button is always rendered and always calls onLair; whether it opens the room or
+  // the offer is routed in app.js. Locked is only presentation, so no second callback.
+  const lairLocked = !state.lairUnlocked;
   const justFinishedWork =
     timerState.mode === 'work' && timerState.remaining === 0 && !timerState.running;
 
@@ -52,7 +55,11 @@ export const renderMainScreen = (ctx) => {
     `<div class="controls"></div>` +
     `<footer class="nav-bar">` +
       `<button class="icon-btn" data-action="shop"></button>` +
-      `<button class="icon-btn" data-action="lair" aria-label="Lair"></button>` +
+      `<button class="icon-btn${lairLocked ? ' is-locked' : ''}" data-action="lair"` +
+        ` aria-label="${lairLocked ? `Lair, locked, ${ctx.lairPrice} coins` : 'Lair'}">` +
+        // lairPrice is the one new interpolation: a numeric literal from config, never the save.
+        (lairLocked ? `<span class="lock-price"><span class="price-coin"></span> ${ctx.lairPrice}</span>` : '') +
+      `</button>` +
       `<button class="icon-btn" data-action="settings"></button>` +
     `</footer>`;
 
@@ -68,6 +75,7 @@ export const renderMainScreen = (ctx) => {
   section.querySelector('[data-action="shop"]').appendChild(themedIcon(theme, 'shop'));
   section.querySelector('[data-action="lair"]').appendChild(themedIcon(theme, 'lair'));
   section.querySelector('[data-action="settings"]').appendChild(themedIcon(theme, 'settings'));
+  section.querySelector('.lock-price .price-coin')?.appendChild(themedIcon(theme, 'coin'));
 
   const controls = section.querySelector('.controls');
   if (justFinishedWork) {

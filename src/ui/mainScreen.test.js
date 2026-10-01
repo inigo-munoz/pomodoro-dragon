@@ -6,6 +6,7 @@ import { getDragon } from '../data/dragons.js';
 const dragon = getDragon('frost');
 const base = {
   state: { coins: 30 },
+  lairPrice: 50,
   xp: 150,
   dragon,
   onStart: vi.fn(), onPause: vi.fn(), onBreak: vi.fn(),
@@ -160,6 +161,7 @@ describe('main screen', () => {
 describe('mute button state', () => {
   const base = {
     state: { coins: 0, muted: false },
+    lairPrice: 50,
     dragon: getDragon('frost'),
     xp: 0,
     timerState: { mode: 'work', remaining: 900, workSeconds: 900, running: false },
@@ -224,5 +226,42 @@ describe('lair navigation', () => {
     // The existing destinations are untouched and the lair sits between them.
     const actions = [...el.querySelectorAll('.nav-bar [data-action]')].map((b) => b.dataset.action);
     expect(actions).toEqual(['shop', 'lair', 'settings']);
+  });
+
+  describe('lock state', () => {
+    const timerState = { mode: 'work', remaining: 900, running: false };
+
+    it('shows a locked button with the price, and still calls onLair', () => {
+      const onLair = vi.fn();
+      const el = renderMainScreen({ ...base, onLair, timerState });
+      const buttons = el.querySelectorAll('[data-action="lair"]');
+      expect(buttons).toHaveLength(1);
+      const btn = buttons[0];
+      expect(btn.classList.contains('is-locked')).toBe(true);
+      expect(btn.querySelector('.lock-price').textContent).toContain('50');
+      expect(btn.getAttribute('aria-label')).toBe('Lair, locked, 50 coins');
+      btn.click();
+      expect(onLair).toHaveBeenCalledTimes(1);
+      const actions = [...el.querySelectorAll('.nav-bar [data-action]')].map((b) => b.dataset.action);
+      expect(actions).toEqual(['shop', 'lair', 'settings']);
+    });
+
+    it('shows no lock and no price once unlocked, and still calls onLair', () => {
+      const onLair = vi.fn();
+      const el = renderMainScreen({
+        ...base, onLair, timerState, state: { ...base.state, lairUnlocked: true },
+      });
+      const buttons = el.querySelectorAll('[data-action="lair"]');
+      expect(buttons).toHaveLength(1);
+      const btn = buttons[0];
+      expect(btn.classList.contains('is-locked')).toBe(false);
+      expect(btn.querySelector('.lock-price')).toBeNull();
+      expect(btn.textContent).not.toContain('50');
+      expect(btn.getAttribute('aria-label')).toBe('Lair');
+      btn.click();
+      expect(onLair).toHaveBeenCalledTimes(1);
+      const actions = [...el.querySelectorAll('.nav-bar [data-action]')].map((b) => b.dataset.action);
+      expect(actions).toEqual(['shop', 'lair', 'settings']);
+    });
   });
 });

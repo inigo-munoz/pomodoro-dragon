@@ -45,3 +45,18 @@ export const placeItem = (state, item) => {
   if (!lair.owned.includes(item.id)) throw new Error('Item not owned');
   return withLair(state, { ...lair, slots: { ...lair.slots, [item.slot]: item.id } });
 };
+
+/**
+ * Pay once, open the lair for every dragon, forever.
+ *
+ * Idempotent on purpose, and deliberately unlike buyFurniture (which throws on a repeat):
+ * that throw guards a routing choice between two sibling functions, and this one has no
+ * sibling to mis-route. A double tap must cost nothing, and the flag is a one-way latch,
+ * so the guard lives here rather than in every caller. The price is a parameter because
+ * core never imports data/config.
+ * @throws {Error} 'Insufficient coins'
+ */
+export const unlockLair = (state, price) => {
+  if (state.lairUnlocked) return state;
+  return { ...state, coins: spend(state.coins, price), lairUnlocked: true };
+};

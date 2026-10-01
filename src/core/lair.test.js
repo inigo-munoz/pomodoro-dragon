@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  itemsForSlot, findItem, emptyLair, lairOf, itemInSlot, buyFurniture, placeItem,
+  itemsForSlot, findItem, emptyLair, lairOf, itemInSlot, buyFurniture, placeItem, unlockLair,
 } from './lair.js';
 import { furniture, slots } from '../data/furniture.js';
 
@@ -210,5 +210,66 @@ describe('placeItem', () => {
     const state = buyFurniture(stateWith({ lairs }), item('painting'));
     const next = placeItem(buyFurniture(state, item('banner')), item('painting'));
     expect(JSON.stringify(next.lairs.blaze)).toBe(JSON.stringify(lairs.blaze));
+  });
+});
+
+describe('unlockLair', () => {
+  const locked = (coins, extra = {}) => ({ dragonId: 'frost', coins, lairs: {}, ...extra });
+
+  it('spends the price and sets the flag', () => {
+    const next = unlockLair(locked(80), 50);
+    expect(next.coins).toBe(30);
+    expect(next.lairUnlocked).toBe(true);
+  });
+
+  it('succeeds on exact change, leaving 0', () => {
+    const next = unlockLair(locked(50), 50);
+    expect(next.coins).toBe(0);
+    expect(next.lairUnlocked).toBe(true);
+  });
+
+  it('throws one coin short and leaves the input untouched', () => {
+    const state = locked(49);
+    const before = JSON.stringify(state);
+    expect(() => unlockLair(state, 50)).toThrow('Insufficient coins');
+    expect(JSON.stringify(state)).toBe(before);
+  });
+
+  it('does not mutate a frozen input', () => {
+    const state = Object.freeze(locked(100));
+    expect(() => unlockLair(state, 50)).not.toThrow();
+  });
+
+  it('treats a state with no lairUnlocked key as locked', () => {
+    const state = { coins: 60 };
+    expect('lairUnlocked' in state).toBe(false);
+    expect(unlockLair(state, 50).lairUnlocked).toBe(true);
+  });
+
+  it('returns the same reference when already unlocked, however many times, even when short', () => {
+    const state = locked(200, { lairUnlocked: true });
+    expect(unlockLair(state, 50)).toBe(state);
+    expect(unlockLair(unlockLair(state, 50), 50)).toBe(state);
+    const poor = locked(0, { lairUnlocked: true });
+    expect(() => unlockLair(poor, 50)).not.toThrow();
+    expect(unlockLair(poor, 50)).toBe(poor);
+    expect(unlockLair(poor, 50).coins).toBe(0);
+  });
+
+  it('leaves the lairs map reference-equal', () => {
+    const lairs = { blaze: { owned: ['trophy'], slots: { wall: 'trophy' } } };
+    const next = unlockLair(locked(80, { lairs }), 50);
+    expect(next.lairs).toBe(lairs);
+  });
+
+  it('is not furniture: the catalogue stays at ten items and no unlock id is ownable', () => {
+    expect(furniture).toHaveLength(10);
+    const next = unlockLair(locked(80, { lairs: { frost: { owned: ['bed'], slots: {} } } }), 50);
+    expect(next.lairs.frost.owned).toEqual(['bed']);
+  });
+
+  it('has no counterpart that locks again', async () => {
+    const mod = await import('./lair.js');
+    expect(Object.keys(mod).filter((k) => /^(re)?lock/i.test(k))).toEqual([]);
   });
 });

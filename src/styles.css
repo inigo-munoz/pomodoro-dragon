@@ -61,7 +61,7 @@ body {
 .food-card, .dragon-choice { display: flex; flex-direction: column; gap: 4px; padding: 14px; border: none; border-radius: 16px; background: var(--card); color: var(--fg); }
 .dragon-choice.current { outline: 3px solid var(--accent); outline-offset: 2px; }
 .food-card { transition: transform 0.08s ease; }
-.food-card.dimmed { opacity: 0.4; }
+.food-card.dimmed, .big-btn.dimmed { opacity: 0.4; }
 .food-icon, .dragon-art { font-size: 2.5rem; }
 
 .setting-group { width: 100%; }
@@ -161,3 +161,19 @@ body {
 .lair-slot[data-slot="corner"] { top: 6%; right: 6%; }
 .lair-slot.is-empty { border: 2px dashed var(--accent); background: rgba(0, 0, 0, 0.25); opacity: 0.75; }
 .food-owned { font-weight: 700; color: var(--accent); }
+
+/* the lair unlock: a locked nav button, a price badge, and the offer screen. The padlock
+   uses ::before because ::after is already the mute stroke. */
+.icon-btn.is-locked .art-img, .icon-btn.is-locked .art-emoji { opacity: 0.55; filter: grayscale(1); }
+.icon-btn.is-locked::before { content: "🔒"; position: absolute; top: 0; right: 0; font-size: 1.1rem; line-height: 1; }
+/* Absolute so the badge adds no layout width: at 320px the nav bar is exactly full, and a
+   badge in flow is the one thing that could push it over. */
+.lock-price { position: absolute; right: 0; bottom: 2px; display: inline-flex; align-items: center; gap: 2px; font-size: 0.95rem; font-weight: 700; line-height: 1; padding: 2px 5px; border-radius: 9px; background: var(--card); color: var(--fg); }
+/* .price-coin .art-img (1.8em) would otherwise win by source order. */
+.lock-price .price-coin .art-img { width: 1.1em; height: 1.1em; }
+.unlock-card { display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 16px; border-radius: 20px; background: var(--card); }
+.unlock-title { margin: 0; font-size: 1.6rem; font-weight: 700; }
+.unlock-art { position: relative; width: 100%; max-width: 320px; aspect-ratio: 1; border-radius: 16px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+.unlock-art .art-img { width: 100%; height: 100%; object-fit: cover; }
+.unlock-art .art-emoji { font-size: 7rem; opacity: 0.5; }
+.unlock-blurb { margin: 0; text-align: center; }

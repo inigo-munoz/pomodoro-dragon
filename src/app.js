@@ -13,12 +13,13 @@ import { renderMainScreen, updateMainScreen } from './ui/mainScreen.js';
 import { renderShopScreen } from './ui/shopScreen.js';
 import { renderLairScreen } from './ui/lairScreen.js';
 import { renderSlotPicker } from './ui/slotPicker.js';
+import { renderUnlockLair } from './ui/unlockLairScreen.js';
 import { renderSettingsScreen } from './ui/settingsScreen.js';
 import { showLevelUp } from './ui/levelUp.js';
 import { createTimerState, start, pause, tick, advance } from './core/timer.js';
 import { grantWorkReward, buyFood, leveledUp, dragonXp } from './core/game.js';
 import { currentLevel } from './core/dragon.js';
-import { lairOf, buyFurniture, placeItem } from './core/lair.js';
+import { lairOf, buyFurniture, placeItem, unlockLair } from './core/lair.js';
 import { resolveTheme, applyPalette } from './core/theme.js';
 
 export const createApp = (root, { now = () => Date.now(), audioFactory = createAudio } = {}) => {
@@ -62,6 +63,7 @@ export const createApp = (root, { now = () => Date.now(), audioFactory = createA
     applyPalette(theme.palette);
     screens.set('main', renderMainScreen({
       state, dragon, xp: dragonXp(state), timerState, lastReward, theme,
+      lairPrice: config.lairUnlockPrice,
       onStart, onPause, onBreak, onShop, onLair, onSettings, onToggleMute,
     }));
     screens.show('main');
@@ -114,13 +116,34 @@ export const createApp = (root, { now = () => Date.now(), audioFactory = createA
     screens.show('shop');
   };
 
+  // The one place the lair is gated: it is the only place that shows the lair screen, so a
+  // single check is a complete gate. The core rules are deliberately not gated; with no
+  // screen there is no path to them.
   const onLair = () => {
+    if (!state.lairUnlocked) return onUnlockOffer();
     const dragon = getDragon(state.dragonId);
     screens.set('lair', renderLairScreen({
       state, dragon, xp: dragonXp(state), theme: resolveTheme(dragon.themeId), furniture,
       onPickSlot, onBack: render,
     }));
     screens.show('lair');
+  };
+
+  const onUnlockOffer = () => {
+    const dragon = getDragon(state.dragonId);
+    screens.set('unlock', renderUnlockLair({
+      state, price: config.lairUnlockPrice, theme: resolveTheme(dragon.themeId),
+      onConfirm: onConfirmUnlock, onBack: render,
+    }));
+    screens.show('unlock');
+  };
+
+  // Re-enter onLair rather than opening the room here, so the post-unlock path and the
+  // already-unlocked path are the same lines and cannot drift.
+  const onConfirmUnlock = () => {
+    state = unlockLair(state, config.lairUnlockPrice);
+    save();
+    onLair();
   };
 
   const onPickSlot = (slot) => {

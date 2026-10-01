@@ -1,5 +1,6 @@
 export const config = {
   coinsPerMinute: 1,
+  lairUnlockPrice: 50,
   durations: {
     workPresets: [10, 15, 25],   // minutes
     breakPresets: [3, 5, 10],    // minutes
