@@ -75,6 +75,18 @@ export const themes = {
       cake: '/art/foods/blaze-cake.webp',
     },
     room: '/art/lair/blaze-room.webp',
+    furniture: {
+      banner: '/art/lair/blaze-banner.webp',
+      painting: '/art/lair/blaze-painting.webp',
+      trophy: '/art/lair/blaze-trophy.webp',
+      bed: '/art/lair/blaze-bed.webp',
+      nest: '/art/lair/blaze-nest.webp',
+      lamp: '/art/lair/blaze-lamp.webp',
+      chest: '/art/lair/blaze-chest.webp',
+      shelf: '/art/lair/blaze-shelf.webp',
+      imp: '/art/lair/blaze-imp.webp',
+      hatchling: '/art/lair/blaze-hatchling.webp',
+    },
   },
   thorn: {
     palette: {
@@ -99,6 +111,18 @@ export const themes = {
       cake: '/art/foods/thorn-cake.webp',
     },
     room: '/art/lair/thorn-room.webp',
+    furniture: {
+      banner: '/art/lair/thorn-banner.webp',
+      painting: '/art/lair/thorn-painting.webp',
+      trophy: '/art/lair/thorn-trophy.webp',
+      bed: '/art/lair/thorn-bed.webp',
+      nest: '/art/lair/thorn-nest.webp',
+      lamp: '/art/lair/thorn-lamp.webp',
+      chest: '/art/lair/thorn-chest.webp',
+      shelf: '/art/lair/thorn-shelf.webp',
+      imp: '/art/lair/thorn-imp.webp',
+      hatchling: '/art/lair/thorn-hatchling.webp',
+    },
   },
   tempest: {
     palette: {
@@ -123,5 +147,17 @@ export const themes = {
       cake: '/art/foods/tempest-cake.webp',
     },
     room: '/art/lair/tempest-room.webp',
+    furniture: {
+      banner: '/art/lair/tempest-banner.webp',
+      painting: '/art/lair/tempest-painting.webp',
+      trophy: '/art/lair/tempest-trophy.webp',
+      bed: '/art/lair/tempest-bed.webp',
+      nest: '/art/lair/tempest-nest.webp',
+      lamp: '/art/lair/tempest-lamp.webp',
+      chest: '/art/lair/tempest-chest.webp',
+      shelf: '/art/lair/tempest-shelf.webp',
+      imp: '/art/lair/tempest-imp.webp',
+      hatchling: '/art/lair/tempest-hatchling.webp',
+    },
   },
 };
