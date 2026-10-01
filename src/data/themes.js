@@ -10,8 +10,11 @@ export const themes = {
       card: '#2c1c4a',
       'back-btn': '#99aaff',
     },
-    icons: { coin: '🪙', shop: '🍎', settings: '⚙️', mute: '🔇', sound: '🔊', break: '☕' },
+    icons: { coin: '🪙', shop: '🍎', settings: '⚙️', mute: '🔇', sound: '🔊', break: '☕', lair: '🕳️' },
     foods: {},
+    // Item emoji live on the catalogue (`item.fallback`); only the room needs one here.
+    furniture: {},
+    room: '🕳️',
   },
   frost: {
     palette: {
