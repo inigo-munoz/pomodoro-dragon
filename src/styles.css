@@ -153,7 +153,9 @@ body {
 .lair-bg .art-emoji { font-size: 7rem; opacity: 0.5; }
 /* the dragon never takes taps, so a slot overlapping it stays reachable */
 .lair-room > .dragon-art { position: absolute; left: 18%; top: 22%; width: 64%; height: 56%; object-fit: contain; font-size: 5rem; pointer-events: none; }
-.lair-slot { position: absolute; width: 4.5rem; height: 4.5rem; padding: 4px; border: none; border-radius: 16px; background: transparent; color: var(--fg); font-size: 2.6rem; display: flex; align-items: center; justify-content: center; }
+/* sized as a share of the room, not a fixed rem: the room shrinks on a narrow screen
+   and fixed slots would collide. 21% is what the art was drawn for. */
+.lair-slot { position: absolute; width: 21%; height: 21%; padding: 4px; border: none; border-radius: 16px; background: transparent; color: var(--fg); font-size: 2.6rem; display: flex; align-items: center; justify-content: center; }
 .lair-slot .art-img { width: 100%; height: 100%; object-fit: contain; }
 .lair-slot[data-slot="wall"] { top: 6%; left: 50%; transform: translateX(-50%); }
 .lair-slot[data-slot="floorLeft"] { bottom: 6%; left: 6%; }

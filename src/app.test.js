@@ -402,7 +402,7 @@ describe('createApp lair', () => {
 
     slot('floorLeft').click();
     expect([...root.querySelectorAll('[data-item]')].map((c) => c.dataset.item))
-      .toEqual(['bed', 'nest']);
+      .toEqual(['bed', 'nest', 'cushion']);
   });
 
   it('buys an affordable item through the picker and returns to the lair with the slot filled', () => {

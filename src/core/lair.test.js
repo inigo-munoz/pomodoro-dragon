@@ -9,9 +9,11 @@ describe('furniture catalogue', () => {
     expect(slots).toEqual(['wall', 'floorLeft', 'floorRight', 'corner']);
   });
 
-  it('holds ten items split 3/2/3/2 across the slots', () => {
-    expect(furniture).toHaveLength(10);
-    expect(slots.map((s) => itemsForSlot(furniture, s).length)).toEqual([3, 2, 3, 2]);
+  // Every slot offers the same number of choices on purpose. An uneven split means two
+  // slots run out of things to want long before the others, so the balance is pinned here.
+  it('holds twelve items, three in every slot', () => {
+    expect(furniture).toHaveLength(12);
+    expect(slots.map((s) => itemsForSlot(furniture, s).length)).toEqual([3, 3, 3, 3]);
   });
 
   it('places every item in a slot the room actually has', () => {
@@ -41,9 +43,9 @@ describe('furniture catalogue', () => {
     }
   });
 
-  it('marks exactly two pets, both in the corner', () => {
+  it('marks exactly three pets, all in the corner', () => {
     const pets = furniture.filter((i) => i.pet === true);
-    expect(pets).toHaveLength(2);
+    expect(pets).toHaveLength(3);
     expect(pets.every((i) => i.slot === 'corner')).toBe(true);
   });
 });
@@ -262,8 +264,8 @@ describe('unlockLair', () => {
     expect(next.lairs).toBe(lairs);
   });
 
-  it('is not furniture: the catalogue stays at ten items and no unlock id is ownable', () => {
-    expect(furniture).toHaveLength(10);
+  it('is not furniture: the catalogue stays at twelve items and no unlock id is ownable', () => {
+    expect(furniture).toHaveLength(12);
     const next = unlockLair(locked(80, { lairs: { frost: { owned: ['bed'], slots: {} } } }), 50);
     expect(next.lairs.frost.owned).toEqual(['bed']);
   });

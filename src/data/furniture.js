@@ -11,9 +11,11 @@ export const furniture = [
   { id: 'trophy',    slot: 'wall',       name: 'Trophy',    price: 70, fallback: '🏆' },
   { id: 'bed',       slot: 'floorLeft',  name: 'Bed',       price: 40, fallback: '🛏️' },
   { id: 'nest',      slot: 'floorLeft',  name: 'Nest',      price: 60, fallback: '🪹' },
+  { id: 'cushion',   slot: 'floorLeft',  name: 'Cushion',   price: 30, fallback: '🛋️' },
   { id: 'lamp',      slot: 'floorRight', name: 'Lamp',      price: 25, fallback: '🪔' },
   { id: 'chest',     slot: 'floorRight', name: 'Chest',     price: 35, fallback: '🧰' },
   { id: 'shelf',     slot: 'floorRight', name: 'Bookshelf', price: 55, fallback: '📚' },
   { id: 'imp',       slot: 'corner',     name: 'Imp',       price: 80, fallback: '👺', pet: true },
+  { id: 'bird',      slot: 'corner',     name: 'Bird',      price: 65, fallback: '🐦', pet: true },
   { id: 'hatchling', slot: 'corner',     name: 'Hatchling', price: 90, fallback: '🐣', pet: true },
 ];
