@@ -8,7 +8,7 @@ import { tones } from './audio/tones.js';
 import { assetUrl } from './ui/art.js';
 import { createScreenManager } from './ui/screens.js';
 import { renderChooseDragon } from './ui/chooseDragon.js';
-import { renderMainScreen } from './ui/mainScreen.js';
+import { renderMainScreen, updateMainScreen } from './ui/mainScreen.js';
 import { renderShopScreen } from './ui/shopScreen.js';
 import { renderSettingsScreen } from './ui/settingsScreen.js';
 import { showLevelUp } from './ui/levelUp.js';
@@ -171,7 +171,10 @@ export const createApp = (root, { now = () => Date.now(), audioFactory = createA
       }
       persistTimer();
     }
-    if (screens.current === 'main') render();
+    if (screens.current !== 'main') return;
+    // Completion changes structure (reward, mode label, controls); a plain tick only the clock.
+    if (result.completed) render();
+    else updateMainScreen(screens.get('main'), { timerState });
   };
 
   const interval = setInterval(handleTick, 1000);
@@ -190,6 +193,7 @@ const createScreenManagerWithCache = (root) => {
   return {
     set: (name, el) => { cache[name] = el; },
     show: (name) => { current = name; mgr.show(name); },
+    get: (name) => cache[name],
     get current() { return current; },
   };
 };

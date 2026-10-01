@@ -59,11 +59,11 @@ export const renderMainScreen = (ctx) => {
 
   section.querySelector('.coin-icon').appendChild(themedIcon(theme, 'coin'));
   section.querySelector('.session-reward .coin-icon')?.appendChild(themedIcon(theme, 'coin'));
-  // Two icons, not one dimmed icon: the mute art is a speaker that is already crossed
-  // out, so on its own it reads "silenced" in both states. Themes without their own
-  // sound art fall back to the default set's emoji rather than showing the wrong symbol.
+  // Always the sound icon: muted is the same speaker with a CSS stroke through it
+  // (.icon-btn.is-muted::after), so the symbol stays one thing the child recognises
+  // and a theme only has to supply one piece of art for the button.
   section.querySelector('[data-action="mute"]')
-    .appendChild(themedIcon(theme, state.muted ? 'mute' : 'sound'));
+    .appendChild(themedIcon(theme, 'sound'));
   section.querySelector('[data-action="shop"]').appendChild(themedIcon(theme, 'shop'));
   section.querySelector('[data-action="settings"]').appendChild(themedIcon(theme, 'settings'));
 
@@ -80,6 +80,14 @@ export const renderMainScreen = (ctx) => {
   section.querySelector('[data-action="shop"]').addEventListener('click', ctx.onShop);
   section.querySelector('[data-action="settings"]').addEventListener('click', ctx.onSettings);
   return section;
+};
+
+// A plain tick only changes the clock. Patching it in place (rather than rebuilding the
+// screen) keeps the dragon <img> mounted, so its float/breathe animation is not restarted
+// at 0% every second, which read as a jump.
+export const updateMainScreen = (section, { timerState }) => {
+  const display = section?.querySelector('.timer-display');
+  if (display) display.textContent = fmt(timerState.remaining);
 };
 
 const button = (label, action, handler, cls = '', iconNode = null) => {

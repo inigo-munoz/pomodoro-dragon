@@ -174,16 +174,21 @@ describe('mute button state', () => {
     expect(btn.classList.contains('is-muted')).toBe(false);
   });
 
-  it('shows the sound icon when unmuted and the crossed-out one when muted', () => {
+  it('keeps the same speaker art in both states, because muted is a stroke over it', () => {
     const frost = { icons: { mute: '/art/icons/mute.webp', sound: '/art/icons/sound.webp' } };
 
     const on = renderMainScreen({ ...base, theme: frost });
+    const off = renderMainScreen({ ...base, state: { coins: 0, muted: true }, theme: frost });
+
+    // One symbol, not two: the separately drawn crossed-out art is never used for the
+    // button any more, even for a theme that still ships it.
     expect(on.querySelector('[data-action="mute"] img').getAttribute('src'))
       .toBe(assetUrl('/art/icons/sound.webp'));
-
-    const off = renderMainScreen({ ...base, state: { coins: 0, muted: true }, theme: frost });
     expect(off.querySelector('[data-action="mute"] img').getAttribute('src'))
-      .toBe(assetUrl('/art/icons/mute.webp'));
+      .toBe(assetUrl('/art/icons/sound.webp'));
+
+    // The muted state rides on the class, which is what .icon-btn.is-muted::after strokes.
+    expect(off.querySelector('[data-action="mute"]').classList.contains('is-muted')).toBe(true);
   });
 
   it('falls back to the default emoji for a theme with no sound art, never the wrong symbol', () => {
