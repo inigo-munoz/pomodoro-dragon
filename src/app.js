@@ -26,8 +26,12 @@ export const createApp = (root, { now = () => Date.now(), audioFactory = createA
   const store = createStore(localStorageBackend, config);
   // Music paths are authored from the site root like the art, so they must be resolved
   // against the deploy base too, or the tracks 404 when served from a subpath.
-  const audio = audioFactory({ music: (config.music ?? []).map(assetUrl), effects: {}, tones });
   let state = store.load();
+  // A save can name a style this build no longer ships; fall back rather than hand the
+  // audio an undefined playlist and lose the music silently.
+  const playlistFor = (style) =>
+    (config.music[style] ?? config.music[config.musicStyles[0]]).map(assetUrl);
+  const audio = audioFactory({ music: playlistFor(state.settings.musicStyle), effects: {}, tones });
   audio.setMuted(state.muted);
   // Settings-derived durations are recomputed; only the volatile part is restored.
   let lastReward = null; // coins from the block just completed, shown until the next one starts
@@ -169,7 +173,9 @@ export const createApp = (root, { now = () => Date.now(), audioFactory = createA
     screens.set('settings', renderSettingsScreen({
       settings: state.settings, config, onChangeDragon,
       onChange: (settings) => {
+        const styleChanged = settings.musicStyle !== state.settings.musicStyle;
         state = { ...state, settings };
+        if (styleChanged) audio.setPlaylist(playlistFor(settings.musicStyle));
         if (!timerState.running) {
           const workSeconds = settings.workMinutes * 60;
           const breakSeconds = settings.breakMinutes * 60;
