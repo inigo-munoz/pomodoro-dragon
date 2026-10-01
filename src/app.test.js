@@ -355,3 +355,146 @@ describe('createApp per-second tick', () => {
     expect(root.querySelector('.session-reward')).not.toBeNull();
   });
 });
+
+describe('createApp lair', () => {
+  // A bed costs 40 and a one-minute block earns 1 coin, so a seeded purse is the only
+  // practical way to reach a purchase without simulating forty blocks.
+  const seedSave = (extra = {}) => window.localStorage.setItem(
+    config.storageKey,
+    JSON.stringify({
+      dragonId: 'frost', coins: 100, settings: { workMinutes: 1, breakMinutes: 1 }, ...extra,
+    }),
+  );
+  const saved = () => JSON.parse(window.localStorage.getItem(config.storageKey));
+  const slot = (name) => root.querySelector(`[data-slot="${name}"]`);
+  const choose = (id) => root.querySelector(`[data-item="${id}"]`).click();
+  const openLair = () => click('lair');
+
+  it('opens the lair for the active dragon from the nav bar and returns with state unchanged', () => {
+    seedSave();
+    createApp(root);
+    openLair();
+    expect(root.querySelector('.screen.lair')).not.toBeNull();
+    expect(root.querySelectorAll('[data-slot]')).toHaveLength(4);
+
+    root.querySelector('.back-btn').click();
+    expect(root.querySelector('.screen.main')).not.toBeNull();
+    expect(coins()).toBe(100);
+    // Nothing was saved at all, so no lair data was written.
+    expect(saved().lairs).toBeUndefined();
+  });
+
+  it('opens the picker for an empty slot and for a filled slot', () => {
+    seedSave({ lairs: { frost: { owned: ['bed'], slots: { floorLeft: 'bed' } } } });
+    createApp(root);
+    openLair();
+
+    slot('wall').click();
+    expect(root.querySelector('.screen.picker')).not.toBeNull();
+    expect([...root.querySelectorAll('[data-item]')].map((c) => c.dataset.item))
+      .toEqual(['banner', 'painting', 'trophy']);
+
+    root.querySelector('.back-btn').click();
+    expect(root.querySelector('.screen.lair')).not.toBeNull();
+
+    slot('floorLeft').click();
+    expect([...root.querySelectorAll('[data-item]')].map((c) => c.dataset.item))
+      .toEqual(['bed', 'nest']);
+  });
+
+  it('buys an affordable item through the picker and returns to the lair with the slot filled', () => {
+    seedSave();
+    createApp(root);
+    openLair();
+    slot('floorLeft').click();
+    choose('bed');
+
+    expect(root.querySelector('.screen.lair')).not.toBeNull();
+    expect(slot('floorLeft').classList.contains('is-empty')).toBe(false);
+    expect(saved().coins).toBe(60);
+    expect(saved().lairs.frost).toEqual({ owned: ['bed'], slots: { floorLeft: 'bed' } });
+  });
+
+  it('puts an owned item back on display for free without throwing or spending', () => {
+    seedSave({
+      coins: 5,
+      lairs: { frost: { owned: ['banner', 'painting'], slots: { wall: 'painting' } } },
+    });
+    createApp(root);
+    openLair();
+    slot('wall').click();
+    expect(() => choose('banner')).not.toThrow();
+
+    expect(saved().coins).toBe(5);
+    expect(saved().lairs.frost.owned).toEqual(['banner', 'painting']);
+    expect(saved().lairs.frost.slots.wall).toBe('banner');
+  });
+
+  it('leaves an unaffordable item inert', () => {
+    seedSave({ coins: 39 });
+    createApp(root);
+    openLair();
+    slot('floorLeft').click();
+    choose('bed');
+
+    expect(root.querySelector('.screen.picker')).not.toBeNull();
+    expect(saved().coins).toBe(39);
+    // Nothing was saved at all, so no lair data was written.
+    expect(saved().lairs).toBeUndefined();
+  });
+
+  it('keeps a purchase and a later placement across a reload', () => {
+    seedSave();
+    const first = createApp(root);
+    openLair();
+    slot('wall').click();
+    choose('banner');
+    slot('wall').click();
+    choose('painting');
+    slot('wall').click();
+    choose('banner'); // free swap back
+    first.destroy();
+
+    root.remove();
+    root = document.createElement('div');
+    document.body.appendChild(root);
+    createApp(root);
+    openLair();
+
+    expect(slot('wall').classList.contains('is-empty')).toBe(false);
+    expect(slot('wall').textContent).toContain('🚩');
+    expect(saved().lairs.frost.owned).toEqual(['banner', 'painting']);
+    expect(saved().coins).toBe(100 - 30 - 45);
+  });
+
+  it('leaves a sibling dragon\'s saved lair byte-identical after a purchase', () => {
+    const blaze = { owned: ['trophy'], slots: { wall: 'trophy' } };
+    seedSave({ lairs: { blaze } });
+    createApp(root);
+    openLair();
+    slot('floorLeft').click();
+    choose('bed');
+
+    expect(JSON.stringify(saved().lairs.blaze)).toBe(JSON.stringify(blaze));
+  });
+
+  it('boots and opens an empty lair from an old save with no lairs field', () => {
+    window.localStorage.setItem(
+      config.storageKey,
+      JSON.stringify({ dragonId: 'frost', coins: 0, settings: { workMinutes: 1, breakMinutes: 1 } }),
+    );
+    createApp(root);
+    openLair();
+    expect(root.querySelectorAll('.lair-slot.is-empty')).toHaveLength(4);
+  });
+
+  it('keeps furniture out of the food shop', () => {
+    seedSave();
+    createApp(root);
+    click('shop');
+    const ids = [...root.querySelectorAll('[data-food]')].map((c) => c.dataset.food);
+    expect(ids.length).toBeGreaterThan(0);
+    expect(ids).not.toContain('bed');
+    expect(root.querySelector('[data-item]')).toBeNull();
+  });
+});

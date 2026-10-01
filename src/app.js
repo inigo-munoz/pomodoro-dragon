@@ -1,6 +1,7 @@
 import { config } from './data/config.js';
 import { dragons, getDragon } from './data/dragons.js';
 import { foods } from './data/foods.js';
+import { furniture } from './data/furniture.js';
 import { createStore } from './store/store.js';
 import { localStorageBackend } from './store/localStorageBackend.js';
 import { createAudio } from './audio/audio.js';
@@ -10,11 +11,14 @@ import { createScreenManager } from './ui/screens.js';
 import { renderChooseDragon } from './ui/chooseDragon.js';
 import { renderMainScreen, updateMainScreen } from './ui/mainScreen.js';
 import { renderShopScreen } from './ui/shopScreen.js';
+import { renderLairScreen } from './ui/lairScreen.js';
+import { renderSlotPicker } from './ui/slotPicker.js';
 import { renderSettingsScreen } from './ui/settingsScreen.js';
 import { showLevelUp } from './ui/levelUp.js';
 import { createTimerState, start, pause, tick, advance } from './core/timer.js';
 import { grantWorkReward, buyFood, leveledUp, dragonXp } from './core/game.js';
 import { currentLevel } from './core/dragon.js';
+import { lairOf, buyFurniture, placeItem } from './core/lair.js';
 import { resolveTheme, applyPalette } from './core/theme.js';
 
 export const createApp = (root, { now = () => Date.now(), audioFactory = createAudio } = {}) => {
@@ -58,7 +62,7 @@ export const createApp = (root, { now = () => Date.now(), audioFactory = createA
     applyPalette(theme.palette);
     screens.set('main', renderMainScreen({
       state, dragon, xp: dragonXp(state), timerState, lastReward, theme,
-      onStart, onPause, onBreak, onShop, onSettings, onToggleMute,
+      onStart, onPause, onBreak, onShop, onLair, onSettings, onToggleMute,
     }));
     screens.show('main');
   };
@@ -108,6 +112,34 @@ export const createApp = (root, { now = () => Date.now(), audioFactory = createA
       onBack: render,
     }));
     screens.show('shop');
+  };
+
+  const onLair = () => {
+    const dragon = getDragon(state.dragonId);
+    screens.set('lair', renderLairScreen({
+      state, dragon, xp: dragonXp(state), theme: resolveTheme(dragon.themeId), furniture,
+      onPickSlot, onBack: render,
+    }));
+    screens.show('lair');
+  };
+
+  const onPickSlot = (slot) => {
+    const dragon = getDragon(state.dragonId);
+    screens.set('picker', renderSlotPicker({
+      state, slot, furniture, theme: resolveTheme(dragon.themeId),
+      onChoose: onChooseItem, onBack: onLair,
+    }));
+    screens.show('picker');
+  };
+
+  // The two core contracts are mutually exclusive on purpose: placing needs an owned
+  // item, buying needs an unowned one. Routing on `owned` here keeps a re-display free,
+  // and a wrong branch would throw rather than quietly charge twice, so nothing is caught.
+  const onChooseItem = (item) => {
+    const { owned } = lairOf(state, state.dragonId);
+    state = owned.includes(item.id) ? placeItem(state, item) : buyFurniture(state, item);
+    save();
+    onLair(); // rebuild so the filled slot shows
   };
 
   const onSettings = () => {

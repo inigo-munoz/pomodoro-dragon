@@ -52,6 +52,7 @@ export const renderMainScreen = (ctx) => {
     `<div class="controls"></div>` +
     `<footer class="nav-bar">` +
       `<button class="icon-btn" data-action="shop"></button>` +
+      `<button class="icon-btn" data-action="lair" aria-label="Lair"></button>` +
       `<button class="icon-btn" data-action="settings"></button>` +
     `</footer>`;
 
@@ -65,6 +66,7 @@ export const renderMainScreen = (ctx) => {
   section.querySelector('[data-action="mute"]')
     .appendChild(themedIcon(theme, 'sound'));
   section.querySelector('[data-action="shop"]').appendChild(themedIcon(theme, 'shop'));
+  section.querySelector('[data-action="lair"]').appendChild(themedIcon(theme, 'lair'));
   section.querySelector('[data-action="settings"]').appendChild(themedIcon(theme, 'settings'));
 
   const controls = section.querySelector('.controls');
@@ -78,6 +80,7 @@ export const renderMainScreen = (ctx) => {
 
   section.querySelector('[data-action="mute"]').addEventListener('click', ctx.onToggleMute);
   section.querySelector('[data-action="shop"]').addEventListener('click', ctx.onShop);
+  section.querySelector('[data-action="lair"]').addEventListener('click', ctx.onLair);
   section.querySelector('[data-action="settings"]').addEventListener('click', ctx.onSettings);
   return section;
 };

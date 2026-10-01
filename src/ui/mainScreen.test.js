@@ -208,3 +208,21 @@ describe('mute button state', () => {
     expect(btn.classList.contains('is-muted')).toBe(true);
   });
 });
+
+describe('lair navigation', () => {
+  it('offers exactly one lair button in the nav bar, with an icon, that calls onLair', () => {
+    const onLair = vi.fn();
+    const el = renderMainScreen({
+      ...base, onLair, timerState: { mode: 'work', remaining: 900, running: false },
+    });
+    const buttons = el.querySelectorAll('.nav-bar [data-action="lair"]');
+    expect(buttons).toHaveLength(1);
+    expect(buttons[0].textContent.trim()).not.toBe('');
+    buttons[0].click();
+    expect(onLair).toHaveBeenCalledTimes(1);
+
+    // The existing destinations are untouched and the lair sits between them.
+    const actions = [...el.querySelectorAll('.nav-bar [data-action]')].map((b) => b.dataset.action);
+    expect(actions).toEqual(['shop', 'lair', 'settings']);
+  });
+});
