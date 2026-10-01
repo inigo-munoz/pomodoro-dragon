@@ -82,6 +82,14 @@ export const renderMainScreen = (ctx) => {
   return section;
 };
 
+// A plain tick only changes the clock. Patching it in place (rather than rebuilding the
+// screen) keeps the dragon <img> mounted, so its float/breathe animation is not restarted
+// at 0% every second, which read as a jump.
+export const updateMainScreen = (section, { timerState }) => {
+  const display = section?.querySelector('.timer-display');
+  if (display) display.textContent = fmt(timerState.remaining);
+};
+
 const button = (label, action, handler, cls = '', iconNode = null) => {
   const b = document.createElement('button');
   b.className = `big-btn ${cls}`.trim();

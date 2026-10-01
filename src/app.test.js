@@ -314,3 +314,44 @@ describe('createApp music wiring', () => {
     expect(music).toEqual(config.music.map((path) => `/pomodoro-dragon${path}`));
   });
 });
+
+describe('createApp per-second tick', () => {
+  const dragonImg = () => root.querySelector('.dragon-stage img');
+
+  it('keeps the dragon node alive so its CSS animation is not restarted (regression)', () => {
+    createApp(root);
+    pickDragon('frost');
+    click('start');
+
+    const before = dragonImg();
+    expect(before).not.toBeNull();
+    vi.advanceTimersByTime(1000);
+
+    // A recreated <img> restarts float/breathe at 0%, which reads as a jump every second.
+    expect(dragonImg()).toBe(before);
+  });
+
+  it('still updates the clock on a tick that does not complete the block', () => {
+    createApp(root);
+    pickDragon('frost');
+    click('start');
+    const before = timerText();
+
+    vi.advanceTimersByTime(1000);
+
+    expect(timerText()).not.toBe(before);
+    expect(timerText()).toBe('00:59');
+  });
+
+  it('fully re-renders on the tick that completes the block', () => {
+    createApp(root);
+    pickDragon('frost');
+    click('start');
+
+    vi.advanceTimersByTime(ONE_BLOCK_MS);
+
+    expect(root.querySelector('[data-action="break"]')).not.toBeNull();
+    expect(root.querySelector('[data-action="pause"]')).toBeNull();
+    expect(root.querySelector('.session-reward')).not.toBeNull();
+  });
+});
