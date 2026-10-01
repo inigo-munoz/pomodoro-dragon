@@ -423,3 +423,403 @@ Wiring these up, once the four files exist:
 1. add `sound: '/art/icons/<name>.webp'` to each theme's `icons` in `src/data/themes.js`
 2. add a `sound` entry to `themes.default.icons` (a `'🔊'` emoji) so the fallback resolves
 3. in `src/ui/mainScreen.js`, pick the key by state: `themedIcon(theme, state.muted ? 'mute' : 'sound')`
+
+## The Dragon Lair — room backgrounds and furniture (44 assets)
+
+Art direction: the lair is the dragon's home. Each of the four themes gets ONE room
+background plus ten pieces that are placed into it — SAME dark-fantasy children's
+storybook watercolor style, SAME friendly-not-scary mood, each theme in its own palette
+and setting: Frost = ice cave, Blaze = lava cave, Thorn = forest hollow, Tempest = storm
+eyrie. Cosy, warm-hearted, lived-in — NOT scary, NOT gory, NOT gloomy.
+
+44 assets in total: 4 room backgrounds (`<theme>-room.png`) + 10 items x 4 themes
+(`<theme>-<id>.png`). The ten ids are the ones in `src/data/furniture.js`: `banner`,
+`painting`, `trophy` (wall); `bed`, `nest` (floorLeft); `lamp`, `chest`, `shelf`
+(floorRight); `imp`, `hatchling` (corner — these two are PETS).
+
+### How to use (lair)
+1. Work ONE THEME AT A TIME. Generate the **room** first (attach the reference character
+   illustration as the style reference, as in "How to use" above). Regenerate until the
+   room is calm and lovely.
+2. Then generate that theme's ten items, **attaching the finished room image as the
+   style reference** (plus the reference character for the first one if the style drifts).
+   Say: "Match the art style, brushwork, lighting and colour palette of the attached
+   room. The SUBJECT is a piece of furniture for that room." This is the same chaining
+   idea as egg -> baby -> young -> adult: a theme's furniture must belong to its own
+   room, not just to the app. Do not mix themes — never attach a Frost room while
+   making a Blaze item.
+3. Items are saved as PNG into `art-src/lair/` (high-res originals, git-ignored, kept
+   only on disk), alongside the rooms.
+4. These are hard requirements that come from how the code composites the art, not
+   matters of taste:
+   - **Transparent background for every ITEM.** The four room backgrounds are the ONLY
+     opaque assets in this pack. Ask explicitly for a transparent background on items and
+     remove any that appears afterwards. No floor, no wall, no cast shadow, no glow halo
+     baked into the item.
+   - **The room is square** (rendered 420x420 CSS px) and the dragon stands at its centre,
+     about 40% of the width. The **centre of every room background must stay visually
+     calm** — no busy focal point, no pool, bolt, fire or bright light where the dragon
+     will stand. Put detail at the edges and corners.
+   - **Items sit at fixed positions** over the room: `wall` sits high and centred;
+     `floorLeft` and `floorRight` sit low at the sides; `corner` sits at a corner. Each
+     item is drawn at roughly **22% of the room's width**, on a tablet, at arm's length.
+     **Silhouette matters more than detail at that size.** One bold readable shape, thick
+     chunky forms, strong value contrast, no tiny parts, no thin lines, and keep the item
+     centred with a little margin inside a square 1:1 canvas.
+   - **Pets (`imp`, `hatchling`) must look ALIVE and CONTENT.** Awake, smiling, bright-eyed,
+     round and well-fed, relaxed and happy where they are. NEVER hungry, sad, sleepy-lonely,
+     sick, thin, scared, caged, chained, leashed, tied up, in a bowl, or in need of care. No
+     tears, no drooping posture, no empty food dish, no cage bars. The game rejects any
+     mechanic that makes a child feel guilty, and the art must not bring that feeling back.
+5. Optimize each PNG to a small `.webp` (512px, same as everywhere else):
+   ```
+   convert art-src/lair/<theme>-<name>.png -resize 512x512 -quality 82 \
+     -define webp:method=6 public/art/lair/<theme>-<name>.webp
+   ```
+   Shipping paths are `/art/lair/<theme>-<id>.webp` (rooms: `/art/lair/<theme>-room.webp`).
+   Items must keep their alpha channel; the room can be flattened. Cutout model if a
+   background has to be removed: `isnet-general-use` for furniture, `isnet-anime` for
+   the two pets.
+
+Each prompt below is COMPLETE and standalone — attach the reference image(s) named in its
+step and paste one prompt as-is. Save with the filename in its heading.
+
+
+### Frost — ice cave (save to art-src/lair/)
+
+Palette for every prompt in this theme: glacial palette (indigo, ice blue, frost white, bone grey, aurora teal, cyan glow).
+
+#### frost-room.png
+Opaque. Generate this FIRST for Frost; it becomes the style reference for the ten items below.
+```
+Match the art style, mood and colour palette of the attached reference image. Dark-fantasy children's storybook illustration, moody painterly watercolor. Glacial winter palette: deep indigo and midnight blue, ice blue, frost white, bone grey, soft aurora-borealis teal and green glow, gentle glowing cyan highlights. Subtle snowflake and frost motifs. Enchanted, cosy, friendly — NOT scary, NOT gory, NOT gloomy. Square 1:1 composition, FULL-BLEED OPAQUE background (no transparency), no text, no characters, no creatures, no furniture, no props. SUBJECT: the inside of a glacial ice cave seen straight on, as a calm square room — walls and a vaulted ceiling of pale blue ice with soft frozen ridges, a smooth frosted floor, a few distant icicles at the very top corners, a faint aurora glow seeping in from the upper left. Keep the CENTRE of the image a soft, empty, softly lit floor and wall with no focal point. The image is an empty room, waiting for a dragon to be placed in the middle: soft and quiet in the centre, gentle detail only toward the edges and corners, a clear floor area along the bottom third and a plain wall area high in the middle.
+```
+
+#### frost-banner.png
+Slot `wall`. Attach the finished `frost-room.png` as the style reference.
+```
+Attach the finished frost room image as the style reference. Match its art style, brushwork, lighting and colour palette exactly — this item belongs in that room. Dark-fantasy children's storybook watercolor, glacial palette (indigo, ice blue, frost white, bone grey, aurora teal, cyan glow). Friendly, cosy, NOT scary. Centered, front view, square 1:1, plain fully transparent background, PNG, no text, no scenery, no room, no wall, no floor, no ground shadow, nothing around it. ONE bold simple silhouette that stays instantly readable at about 22% of a tablet screen: thick chunky shapes, strong value contrast, no tiny parts, no thin lines. Leave a small margin around it. In the room this item hangs high and centred on the back wall. SUBJECT: A hanging wall banner of deep indigo cloth with a simple pale-blue snowflake emblem, a frost-white fringe, hanging from a short antler-bone rod. It is a sturdy, cosy piece of furniture, not a ruin: whole, clean and welcoming.
+```
+
+#### frost-painting.png
+Slot `wall`. Attach the finished `frost-room.png` as the style reference.
+```
+Attach the finished frost room image as the style reference. Match its art style, brushwork, lighting and colour palette exactly — this item belongs in that room. Dark-fantasy children's storybook watercolor, glacial palette (indigo, ice blue, frost white, bone grey, aurora teal, cyan glow). Friendly, cosy, NOT scary. Centered, front view, square 1:1, plain fully transparent background, PNG, no text, no scenery, no room, no wall, no floor, no ground shadow, nothing around it. ONE bold simple silhouette that stays instantly readable at about 22% of a tablet screen: thick chunky shapes, strong value contrast, no tiny parts, no thin lines. Leave a small margin around it. In the room this item hangs high and centred on the back wall. SUBJECT: A framed painting in a carved ice-blue frame showing one simple bold picture: a glowing aurora over a snowy mountain, big flat shapes. It is a sturdy, cosy piece of furniture, not a ruin: whole, clean and welcoming.
+```
+
+#### frost-trophy.png
+Slot `wall`. Attach the finished `frost-room.png` as the style reference.
+```
+Attach the finished frost room image as the style reference. Match its art style, brushwork, lighting and colour palette exactly — this item belongs in that room. Dark-fantasy children's storybook watercolor, glacial palette (indigo, ice blue, frost white, bone grey, aurora teal, cyan glow). Friendly, cosy, NOT scary. Centered, front view, square 1:1, plain fully transparent background, PNG, no text, no scenery, no room, no wall, no floor, no ground shadow, nothing around it. ONE bold simple silhouette that stays instantly readable at about 22% of a tablet screen: thick chunky shapes, strong value contrast, no tiny parts, no thin lines. Leave a small margin around it. In the room this item hangs high and centred on the back wall. SUBJECT: A chunky trophy cup carved from clear ice with two big handles and a glowing cyan gem on its front, on a small bone-white base. It is a sturdy, cosy piece of furniture, not a ruin: whole, clean and welcoming.
+```
+
+#### frost-bed.png
+Slot `floorLeft`. Attach the finished `frost-room.png` as the style reference.
+```
+Attach the finished frost room image as the style reference. Match its art style, brushwork, lighting and colour palette exactly — this item belongs in that room. Dark-fantasy children's storybook watercolor, glacial palette (indigo, ice blue, frost white, bone grey, aurora teal, cyan glow). Friendly, cosy, NOT scary. Centered, front view, square 1:1, plain fully transparent background, PNG, no text, no scenery, no room, no wall, no floor, no ground shadow, nothing around it. ONE bold simple silhouette that stays instantly readable at about 22% of a tablet screen: thick chunky shapes, strong value contrast, no tiny parts, no thin lines. Leave a small margin around it. In the room this item stands on the floor at the left side. SUBJECT: A cosy dragon bed: a low round nest-cushion of thick pale-blue fur and frost-white blankets with a rim of soft snow, plump and inviting. It is a sturdy, cosy piece of furniture, not a ruin: whole, clean and welcoming.
+```
+
+#### frost-nest.png
+Slot `floorLeft`. Attach the finished `frost-room.png` as the style reference.
+```
+Attach the finished frost room image as the style reference. Match its art style, brushwork, lighting and colour palette exactly — this item belongs in that room. Dark-fantasy children's storybook watercolor, glacial palette (indigo, ice blue, frost white, bone grey, aurora teal, cyan glow). Friendly, cosy, NOT scary. Centered, front view, square 1:1, plain fully transparent background, PNG, no text, no scenery, no room, no wall, no floor, no ground shadow, nothing around it. ONE bold simple silhouette that stays instantly readable at about 22% of a tablet screen: thick chunky shapes, strong value contrast, no tiny parts, no thin lines. Leave a small margin around it. In the room this item stands on the floor at the left side. SUBJECT: A round nest woven of pale silver twigs and soft white feathers, lined with downy snow-white fluff, a few small blue crystals tucked in the rim. It is a sturdy, cosy piece of furniture, not a ruin: whole, clean and welcoming.
+```
+
+#### frost-lamp.png
+Slot `floorRight`. Attach the finished `frost-room.png` as the style reference.
+```
+Attach the finished frost room image as the style reference. Match its art style, brushwork, lighting and colour palette exactly — this item belongs in that room. Dark-fantasy children's storybook watercolor, glacial palette (indigo, ice blue, frost white, bone grey, aurora teal, cyan glow). Friendly, cosy, NOT scary. Centered, front view, square 1:1, plain fully transparent background, PNG, no text, no scenery, no room, no wall, no floor, no ground shadow, nothing around it. ONE bold simple silhouette that stays instantly readable at about 22% of a tablet screen: thick chunky shapes, strong value contrast, no tiny parts, no thin lines. Leave a small margin around it. In the room this item stands on the floor at the right side. SUBJECT: A tall standing lamp: a slim bone-white pole topped by a big glowing cyan ice-crystal lantern giving off a soft light. It is a sturdy, cosy piece of furniture, not a ruin: whole, clean and welcoming.
+```
+
+#### frost-chest.png
+Slot `floorRight`. Attach the finished `frost-room.png` as the style reference.
+```
+Attach the finished frost room image as the style reference. Match its art style, brushwork, lighting and colour palette exactly — this item belongs in that room. Dark-fantasy children's storybook watercolor, glacial palette (indigo, ice blue, frost white, bone grey, aurora teal, cyan glow). Friendly, cosy, NOT scary. Centered, front view, square 1:1, plain fully transparent background, PNG, no text, no scenery, no room, no wall, no floor, no ground shadow, nothing around it. ONE bold simple silhouette that stays instantly readable at about 22% of a tablet screen: thick chunky shapes, strong value contrast, no tiny parts, no thin lines. Leave a small margin around it. In the room this item stands on the floor at the right side. SUBJECT: A sturdy treasure chest of dark-blue wood bound with frosted silver bands, closed, with a small glowing cyan lock. It is a sturdy, cosy piece of furniture, not a ruin: whole, clean and welcoming.
+```
+
+#### frost-shelf.png
+Slot `floorRight`. Attach the finished `frost-room.png` as the style reference.
+```
+Attach the finished frost room image as the style reference. Match its art style, brushwork, lighting and colour palette exactly — this item belongs in that room. Dark-fantasy children's storybook watercolor, glacial palette (indigo, ice blue, frost white, bone grey, aurora teal, cyan glow). Friendly, cosy, NOT scary. Centered, front view, square 1:1, plain fully transparent background, PNG, no text, no scenery, no room, no wall, no floor, no ground shadow, nothing around it. ONE bold simple silhouette that stays instantly readable at about 22% of a tablet screen: thick chunky shapes, strong value contrast, no tiny parts, no thin lines. Leave a small margin around it. In the room this item stands on the floor at the right side. SUBJECT: A small chunky bookshelf of pale driftwood with three shelves holding a few fat storybooks in indigo and teal, and one glowing crystal. It is a sturdy, cosy piece of furniture, not a ruin: whole, clean and welcoming.
+```
+
+#### frost-imp.png
+Slot `corner` — PET. Attach the finished `frost-room.png` as the style reference.
+```
+Attach the finished frost room image as the style reference. Match its art style, brushwork, lighting and colour palette exactly — this item belongs in that room. Dark-fantasy children's storybook watercolor, glacial palette (indigo, ice blue, frost white, bone grey, aurora teal, cyan glow). Friendly, cosy, NOT scary. Centered, front view, square 1:1, plain fully transparent background, PNG, no text, no scenery, no room, no wall, no floor, no ground shadow, nothing around it. ONE bold simple silhouette that stays instantly readable at about 22% of a tablet screen: thick chunky shapes, strong value contrast, no tiny parts, no thin lines. Leave a small margin around it. This is a living PET and must look ALIVE and CONTENT: awake, bright-eyed, smiling, plump and well-fed, relaxed and proud of its spot. NOT hungry, NOT sad, NOT sleepy, NOT sick, NOT scared, NOT caged, chained, leashed or in a bowl, no tears, no drooping posture, no food dish. SUBJECT: A small friendly ice imp, round and chubby, pale-blue skin with tiny frosted horns, big happy eyes and a wide smile, sitting upright and waving one hand.
+```
+
+#### frost-hatchling.png
+Slot `corner` — PET. Attach the finished `frost-room.png` as the style reference.
+```
+Attach the finished frost room image as the style reference. Match its art style, brushwork, lighting and colour palette exactly — this item belongs in that room. Dark-fantasy children's storybook watercolor, glacial palette (indigo, ice blue, frost white, bone grey, aurora teal, cyan glow). Friendly, cosy, NOT scary. Centered, front view, square 1:1, plain fully transparent background, PNG, no text, no scenery, no room, no wall, no floor, no ground shadow, nothing around it. ONE bold simple silhouette that stays instantly readable at about 22% of a tablet screen: thick chunky shapes, strong value contrast, no tiny parts, no thin lines. Leave a small margin around it. This is a living PET and must look ALIVE and CONTENT: awake, bright-eyed, smiling, plump and well-fed, relaxed and proud of its spot. NOT hungry, NOT sad, NOT sleepy, NOT sick, NOT scared, NOT caged, chained, leashed or in a bowl, no tears, no drooping posture, no food dish. SUBJECT: A tiny frost-dragon hatchling with big round glowing cyan eyes, sitting up beside a cracked pale-blue eggshell, with a happy open smile and a small wagging tail.
+```
+
+
+### Blaze — lava cave (save to art-src/lair/)
+
+Palette for every prompt in this theme: warm ember palette (charcoal-black, ember red-brown, molten orange, gold, ash grey, amber glow).
+
+#### blaze-room.png
+Opaque. Generate this FIRST for Blaze; it becomes the style reference for the ten items below.
+```
+Match the art style, mood and colour palette of the attached reference image. Dark-fantasy children's storybook illustration, moody painterly watercolor. Warm ember palette: deep charcoal-black and ember red-brown, molten orange, gold, ash grey, soft warm glow, gentle glowing amber highlights. Subtle ember-spark and soft flame motifs. Enchanted, cosy, friendly — NOT scary, NOT gory, NOT gloomy. Square 1:1 composition, FULL-BLEED OPAQUE background (no transparency), no text, no characters, no creatures, no furniture, no props. SUBJECT: the inside of a volcanic lava cave seen straight on, as a calm square room — walls and a rounded ceiling of dark basalt rock with a few faint glowing orange veins, a smooth warm stone floor, a soft glow of distant lava at the very bottom edge, a few dim ember specks at the top corners. Keep the CENTRE of the image a soft, empty, warmly lit floor and wall with no focal point and no lava pool. The image is an empty room, waiting for a dragon to be placed in the middle: soft and quiet in the centre, gentle detail only toward the edges and corners, a clear floor area along the bottom third and a plain wall area high in the middle.
+```
+
+#### blaze-banner.png
+Slot `wall`. Attach the finished `blaze-room.png` as the style reference.
+```
+Attach the finished blaze room image as the style reference. Match its art style, brushwork, lighting and colour palette exactly — this item belongs in that room. Dark-fantasy children's storybook watercolor, warm ember palette (charcoal-black, ember red-brown, molten orange, gold, ash grey, amber glow). Friendly, cosy, NOT scary. Centered, front view, square 1:1, plain fully transparent background, PNG, no text, no scenery, no room, no wall, no floor, no ground shadow, nothing around it. ONE bold simple silhouette that stays instantly readable at about 22% of a tablet screen: thick chunky shapes, strong value contrast, no tiny parts, no thin lines. Leave a small margin around it. In the room this item hangs high and centred on the back wall. SUBJECT: A hanging wall banner of deep ember-red cloth with a simple gold flame emblem, a gold-thread fringe, hanging from a dark iron rod. It is a sturdy, cosy piece of furniture, not a ruin: whole, clean and welcoming.
+```
+
+#### blaze-painting.png
+Slot `wall`. Attach the finished `blaze-room.png` as the style reference.
+```
+Attach the finished blaze room image as the style reference. Match its art style, brushwork, lighting and colour palette exactly — this item belongs in that room. Dark-fantasy children's storybook watercolor, warm ember palette (charcoal-black, ember red-brown, molten orange, gold, ash grey, amber glow). Friendly, cosy, NOT scary. Centered, front view, square 1:1, plain fully transparent background, PNG, no text, no scenery, no room, no wall, no floor, no ground shadow, nothing around it. ONE bold simple silhouette that stays instantly readable at about 22% of a tablet screen: thick chunky shapes, strong value contrast, no tiny parts, no thin lines. Leave a small margin around it. In the room this item hangs high and centred on the back wall. SUBJECT: A framed painting in a chunky dark-iron frame showing one simple bold picture: a sleeping dragon on a golden hill at sunset, big flat shapes. It is a sturdy, cosy piece of furniture, not a ruin: whole, clean and welcoming.
+```
+
+#### blaze-trophy.png
+Slot `wall`. Attach the finished `blaze-room.png` as the style reference.
+```
+Attach the finished blaze room image as the style reference. Match its art style, brushwork, lighting and colour palette exactly — this item belongs in that room. Dark-fantasy children's storybook watercolor, warm ember palette (charcoal-black, ember red-brown, molten orange, gold, ash grey, amber glow). Friendly, cosy, NOT scary. Centered, front view, square 1:1, plain fully transparent background, PNG, no text, no scenery, no room, no wall, no floor, no ground shadow, nothing around it. ONE bold simple silhouette that stays instantly readable at about 22% of a tablet screen: thick chunky shapes, strong value contrast, no tiny parts, no thin lines. Leave a small margin around it. In the room this item hangs high and centred on the back wall. SUBJECT: A chunky trophy cup of polished gold with two big handles and a glowing amber gem on its front, on a small dark-stone base. It is a sturdy, cosy piece of furniture, not a ruin: whole, clean and welcoming.
+```
+
+#### blaze-bed.png
+Slot `floorLeft`. Attach the finished `blaze-room.png` as the style reference.
+```
+Attach the finished blaze room image as the style reference. Match its art style, brushwork, lighting and colour palette exactly — this item belongs in that room. Dark-fantasy children's storybook watercolor, warm ember palette (charcoal-black, ember red-brown, molten orange, gold, ash grey, amber glow). Friendly, cosy, NOT scary. Centered, front view, square 1:1, plain fully transparent background, PNG, no text, no scenery, no room, no wall, no floor, no ground shadow, nothing around it. ONE bold simple silhouette that stays instantly readable at about 22% of a tablet screen: thick chunky shapes, strong value contrast, no tiny parts, no thin lines. Leave a small margin around it. In the room this item stands on the floor at the left side. SUBJECT: A cosy dragon bed: a low round cushion of thick ember-red cloth and cream blankets with a dark-stone rim, plump and inviting. It is a sturdy, cosy piece of furniture, not a ruin: whole, clean and welcoming.
+```
+
+#### blaze-nest.png
+Slot `floorLeft`. Attach the finished `blaze-room.png` as the style reference.
+```
+Attach the finished blaze room image as the style reference. Match its art style, brushwork, lighting and colour palette exactly — this item belongs in that room. Dark-fantasy children's storybook watercolor, warm ember palette (charcoal-black, ember red-brown, molten orange, gold, ash grey, amber glow). Friendly, cosy, NOT scary. Centered, front view, square 1:1, plain fully transparent background, PNG, no text, no scenery, no room, no wall, no floor, no ground shadow, nothing around it. ONE bold simple silhouette that stays instantly readable at about 22% of a tablet screen: thick chunky shapes, strong value contrast, no tiny parts, no thin lines. Leave a small margin around it. In the room this item stands on the floor at the left side. SUBJECT: A round nest woven of dark branches and soft ash-grey and orange feathers, lined with warm cream fluff, a couple of small warm amber stones in the rim. It is a sturdy, cosy piece of furniture, not a ruin: whole, clean and welcoming.
+```
+
+#### blaze-lamp.png
+Slot `floorRight`. Attach the finished `blaze-room.png` as the style reference.
+```
+Attach the finished blaze room image as the style reference. Match its art style, brushwork, lighting and colour palette exactly — this item belongs in that room. Dark-fantasy children's storybook watercolor, warm ember palette (charcoal-black, ember red-brown, molten orange, gold, ash grey, amber glow). Friendly, cosy, NOT scary. Centered, front view, square 1:1, plain fully transparent background, PNG, no text, no scenery, no room, no wall, no floor, no ground shadow, nothing around it. ONE bold simple silhouette that stays instantly readable at about 22% of a tablet screen: thick chunky shapes, strong value contrast, no tiny parts, no thin lines. Leave a small margin around it. In the room this item stands on the floor at the right side. SUBJECT: A tall standing lamp: a slim dark-iron pole topped by a big lantern holding a calm, steady, friendly golden flame behind glass. It is a sturdy, cosy piece of furniture, not a ruin: whole, clean and welcoming.
+```
+
+#### blaze-chest.png
+Slot `floorRight`. Attach the finished `blaze-room.png` as the style reference.
+```
+Attach the finished blaze room image as the style reference. Match its art style, brushwork, lighting and colour palette exactly — this item belongs in that room. Dark-fantasy children's storybook watercolor, warm ember palette (charcoal-black, ember red-brown, molten orange, gold, ash grey, amber glow). Friendly, cosy, NOT scary. Centered, front view, square 1:1, plain fully transparent background, PNG, no text, no scenery, no room, no wall, no floor, no ground shadow, nothing around it. ONE bold simple silhouette that stays instantly readable at about 22% of a tablet screen: thick chunky shapes, strong value contrast, no tiny parts, no thin lines. Leave a small margin around it. In the room this item stands on the floor at the right side. SUBJECT: A sturdy treasure chest of dark wood bound with gold-trimmed iron bands, closed, with a small glowing amber lock. It is a sturdy, cosy piece of furniture, not a ruin: whole, clean and welcoming.
+```
+
+#### blaze-shelf.png
+Slot `floorRight`. Attach the finished `blaze-room.png` as the style reference.
+```
+Attach the finished blaze room image as the style reference. Match its art style, brushwork, lighting and colour palette exactly — this item belongs in that room. Dark-fantasy children's storybook watercolor, warm ember palette (charcoal-black, ember red-brown, molten orange, gold, ash grey, amber glow). Friendly, cosy, NOT scary. Centered, front view, square 1:1, plain fully transparent background, PNG, no text, no scenery, no room, no wall, no floor, no ground shadow, nothing around it. ONE bold simple silhouette that stays instantly readable at about 22% of a tablet screen: thick chunky shapes, strong value contrast, no tiny parts, no thin lines. Leave a small margin around it. In the room this item stands on the floor at the right side. SUBJECT: A small chunky bookshelf of dark wood with three shelves holding a few fat storybooks in red and gold, and one glowing ember-stone. It is a sturdy, cosy piece of furniture, not a ruin: whole, clean and welcoming.
+```
+
+#### blaze-imp.png
+Slot `corner` — PET. Attach the finished `blaze-room.png` as the style reference.
+```
+Attach the finished blaze room image as the style reference. Match its art style, brushwork, lighting and colour palette exactly — this item belongs in that room. Dark-fantasy children's storybook watercolor, warm ember palette (charcoal-black, ember red-brown, molten orange, gold, ash grey, amber glow). Friendly, cosy, NOT scary. Centered, front view, square 1:1, plain fully transparent background, PNG, no text, no scenery, no room, no wall, no floor, no ground shadow, nothing around it. ONE bold simple silhouette that stays instantly readable at about 22% of a tablet screen: thick chunky shapes, strong value contrast, no tiny parts, no thin lines. Leave a small margin around it. This is a living PET and must look ALIVE and CONTENT: awake, bright-eyed, smiling, plump and well-fed, relaxed and proud of its spot. NOT hungry, NOT sad, NOT sleepy, NOT sick, NOT scared, NOT caged, chained, leashed or in a bowl, no tears, no drooping posture, no food dish. SUBJECT: A small friendly fire imp, round and chubby, warm orange skin with tiny curved horns, big happy eyes and a wide smile, sitting upright and waving one hand.
+```
+
+#### blaze-hatchling.png
+Slot `corner` — PET. Attach the finished `blaze-room.png` as the style reference.
+```
+Attach the finished blaze room image as the style reference. Match its art style, brushwork, lighting and colour palette exactly — this item belongs in that room. Dark-fantasy children's storybook watercolor, warm ember palette (charcoal-black, ember red-brown, molten orange, gold, ash grey, amber glow). Friendly, cosy, NOT scary. Centered, front view, square 1:1, plain fully transparent background, PNG, no text, no scenery, no room, no wall, no floor, no ground shadow, nothing around it. ONE bold simple silhouette that stays instantly readable at about 22% of a tablet screen: thick chunky shapes, strong value contrast, no tiny parts, no thin lines. Leave a small margin around it. This is a living PET and must look ALIVE and CONTENT: awake, bright-eyed, smiling, plump and well-fed, relaxed and proud of its spot. NOT hungry, NOT sad, NOT sleepy, NOT sick, NOT scared, NOT caged, chained, leashed or in a bowl, no tears, no drooping posture, no food dish. SUBJECT: A tiny fire-dragon hatchling with big round glowing amber eyes, sitting up beside a cracked cream-and-orange eggshell, with a happy open smile and a small wagging tail.
+```
+
+
+### Thorn — forest hollow (save to art-src/lair/)
+
+Palette for every prompt in this theme: deep woodland palette (forest green, moss, bark brown, fern, amber light, golden pollen).
+
+#### thorn-room.png
+Opaque. Generate this FIRST for Thorn; it becomes the style reference for the ten items below.
+```
+Match the art style, mood and colour palette of the attached reference image. Dark-fantasy children's storybook illustration, moody painterly watercolor. Deep woodland palette: dark forest green and moss, bark brown, fern and new-leaf green, warm amber light, soft golden pollen motes. Subtle leaf, vine and tiny-flower motifs. Enchanted, cosy, friendly — NOT scary, NOT gory, NOT gloomy. Square 1:1 composition, FULL-BLEED OPAQUE background (no transparency), no text, no characters, no creatures, no furniture, no props. SUBJECT: the inside of a hollow in a giant ancient tree seen straight on, as a calm square room — curved walls of warm bark with a few soft roots and tiny flowers, a mossy floor, thin shafts of amber light and floating golden pollen near the top corners. Keep the CENTRE of the image a soft, empty, softly lit mossy floor and bark wall with no focal point. The image is an empty room, waiting for a dragon to be placed in the middle: soft and quiet in the centre, gentle detail only toward the edges and corners, a clear floor area along the bottom third and a plain wall area high in the middle.
+```
+
+#### thorn-banner.png
+Slot `wall`. Attach the finished `thorn-room.png` as the style reference.
+```
+Attach the finished thorn room image as the style reference. Match its art style, brushwork, lighting and colour palette exactly — this item belongs in that room. Dark-fantasy children's storybook watercolor, deep woodland palette (forest green, moss, bark brown, fern, amber light, golden pollen). Friendly, cosy, NOT scary. Centered, front view, square 1:1, plain fully transparent background, PNG, no text, no scenery, no room, no wall, no floor, no ground shadow, nothing around it. ONE bold simple silhouette that stays instantly readable at about 22% of a tablet screen: thick chunky shapes, strong value contrast, no tiny parts, no thin lines. Leave a small margin around it. In the room this item hangs high and centred on the back wall. SUBJECT: A hanging wall banner of deep green cloth with a simple pale-gold leaf emblem, a fringe of tiny leaves, hanging from a curved twig. It is a sturdy, cosy piece of furniture, not a ruin: whole, clean and welcoming.
+```
+
+#### thorn-painting.png
+Slot `wall`. Attach the finished `thorn-room.png` as the style reference.
+```
+Attach the finished thorn room image as the style reference. Match its art style, brushwork, lighting and colour palette exactly — this item belongs in that room. Dark-fantasy children's storybook watercolor, deep woodland palette (forest green, moss, bark brown, fern, amber light, golden pollen). Friendly, cosy, NOT scary. Centered, front view, square 1:1, plain fully transparent background, PNG, no text, no scenery, no room, no wall, no floor, no ground shadow, nothing around it. ONE bold simple silhouette that stays instantly readable at about 22% of a tablet screen: thick chunky shapes, strong value contrast, no tiny parts, no thin lines. Leave a small margin around it. In the room this item hangs high and centred on the back wall. SUBJECT: A framed painting in a rough wooden frame wrapped with a little ivy showing one simple bold picture: a sunlit forest clearing, big flat shapes. It is a sturdy, cosy piece of furniture, not a ruin: whole, clean and welcoming.
+```
+
+#### thorn-trophy.png
+Slot `wall`. Attach the finished `thorn-room.png` as the style reference.
+```
+Attach the finished thorn room image as the style reference. Match its art style, brushwork, lighting and colour palette exactly — this item belongs in that room. Dark-fantasy children's storybook watercolor, deep woodland palette (forest green, moss, bark brown, fern, amber light, golden pollen). Friendly, cosy, NOT scary. Centered, front view, square 1:1, plain fully transparent background, PNG, no text, no scenery, no room, no wall, no floor, no ground shadow, nothing around it. ONE bold simple silhouette that stays instantly readable at about 22% of a tablet screen: thick chunky shapes, strong value contrast, no tiny parts, no thin lines. Leave a small margin around it. In the room this item hangs high and centred on the back wall. SUBJECT: A chunky trophy cup carved from pale polished wood with two big handles and a glowing amber gem on its front, a sprouting leaf at the rim, on a small mossy base. It is a sturdy, cosy piece of furniture, not a ruin: whole, clean and welcoming.
+```
+
+#### thorn-bed.png
+Slot `floorLeft`. Attach the finished `thorn-room.png` as the style reference.
+```
+Attach the finished thorn room image as the style reference. Match its art style, brushwork, lighting and colour palette exactly — this item belongs in that room. Dark-fantasy children's storybook watercolor, deep woodland palette (forest green, moss, bark brown, fern, amber light, golden pollen). Friendly, cosy, NOT scary. Centered, front view, square 1:1, plain fully transparent background, PNG, no text, no scenery, no room, no wall, no floor, no ground shadow, nothing around it. ONE bold simple silhouette that stays instantly readable at about 22% of a tablet screen: thick chunky shapes, strong value contrast, no tiny parts, no thin lines. Leave a small margin around it. In the room this item stands on the floor at the left side. SUBJECT: A cosy dragon bed: a low round bed of thick green moss and soft cream blankets inside a ring of curved bark, plump and inviting. It is a sturdy, cosy piece of furniture, not a ruin: whole, clean and welcoming.
+```
+
+#### thorn-nest.png
+Slot `floorLeft`. Attach the finished `thorn-room.png` as the style reference.
+```
+Attach the finished thorn room image as the style reference. Match its art style, brushwork, lighting and colour palette exactly — this item belongs in that room. Dark-fantasy children's storybook watercolor, deep woodland palette (forest green, moss, bark brown, fern, amber light, golden pollen). Friendly, cosy, NOT scary. Centered, front view, square 1:1, plain fully transparent background, PNG, no text, no scenery, no room, no wall, no floor, no ground shadow, nothing around it. ONE bold simple silhouette that stays instantly readable at about 22% of a tablet screen: thick chunky shapes, strong value contrast, no tiny parts, no thin lines. Leave a small margin around it. In the room this item stands on the floor at the left side. SUBJECT: A round nest woven of fresh twigs and vines with soft feathers and dried leaves, lined with downy moss, a few tiny flowers tucked in the rim. It is a sturdy, cosy piece of furniture, not a ruin: whole, clean and welcoming.
+```
+
+#### thorn-lamp.png
+Slot `floorRight`. Attach the finished `thorn-room.png` as the style reference.
+```
+Attach the finished thorn room image as the style reference. Match its art style, brushwork, lighting and colour palette exactly — this item belongs in that room. Dark-fantasy children's storybook watercolor, deep woodland palette (forest green, moss, bark brown, fern, amber light, golden pollen). Friendly, cosy, NOT scary. Centered, front view, square 1:1, plain fully transparent background, PNG, no text, no scenery, no room, no wall, no floor, no ground shadow, nothing around it. ONE bold simple silhouette that stays instantly readable at about 22% of a tablet screen: thick chunky shapes, strong value contrast, no tiny parts, no thin lines. Leave a small margin around it. In the room this item stands on the floor at the right side. SUBJECT: A tall standing lamp: a slim twisting wooden pole topped by a big glass-and-leaf lantern holding a cluster of softly glowing fireflies. It is a sturdy, cosy piece of furniture, not a ruin: whole, clean and welcoming.
+```
+
+#### thorn-chest.png
+Slot `floorRight`. Attach the finished `thorn-room.png` as the style reference.
+```
+Attach the finished thorn room image as the style reference. Match its art style, brushwork, lighting and colour palette exactly — this item belongs in that room. Dark-fantasy children's storybook watercolor, deep woodland palette (forest green, moss, bark brown, fern, amber light, golden pollen). Friendly, cosy, NOT scary. Centered, front view, square 1:1, plain fully transparent background, PNG, no text, no scenery, no room, no wall, no floor, no ground shadow, nothing around it. ONE bold simple silhouette that stays instantly readable at about 22% of a tablet screen: thick chunky shapes, strong value contrast, no tiny parts, no thin lines. Leave a small margin around it. In the room this item stands on the floor at the right side. SUBJECT: A sturdy treasure chest of bark-brown wood bound with green-patinated bronze bands, closed, with a small glowing amber lock and a little vine curling over the lid. It is a sturdy, cosy piece of furniture, not a ruin: whole, clean and welcoming.
+```
+
+#### thorn-shelf.png
+Slot `floorRight`. Attach the finished `thorn-room.png` as the style reference.
+```
+Attach the finished thorn room image as the style reference. Match its art style, brushwork, lighting and colour palette exactly — this item belongs in that room. Dark-fantasy children's storybook watercolor, deep woodland palette (forest green, moss, bark brown, fern, amber light, golden pollen). Friendly, cosy, NOT scary. Centered, front view, square 1:1, plain fully transparent background, PNG, no text, no scenery, no room, no wall, no floor, no ground shadow, nothing around it. ONE bold simple silhouette that stays instantly readable at about 22% of a tablet screen: thick chunky shapes, strong value contrast, no tiny parts, no thin lines. Leave a small margin around it. In the room this item stands on the floor at the right side. SUBJECT: A small chunky bookshelf grown from pale wood and branches with three shelves holding a few fat storybooks in green and brown, and one glowing acorn. It is a sturdy, cosy piece of furniture, not a ruin: whole, clean and welcoming.
+```
+
+#### thorn-imp.png
+Slot `corner` — PET. Attach the finished `thorn-room.png` as the style reference.
+```
+Attach the finished thorn room image as the style reference. Match its art style, brushwork, lighting and colour palette exactly — this item belongs in that room. Dark-fantasy children's storybook watercolor, deep woodland palette (forest green, moss, bark brown, fern, amber light, golden pollen). Friendly, cosy, NOT scary. Centered, front view, square 1:1, plain fully transparent background, PNG, no text, no scenery, no room, no wall, no floor, no ground shadow, nothing around it. ONE bold simple silhouette that stays instantly readable at about 22% of a tablet screen: thick chunky shapes, strong value contrast, no tiny parts, no thin lines. Leave a small margin around it. This is a living PET and must look ALIVE and CONTENT: awake, bright-eyed, smiling, plump and well-fed, relaxed and proud of its spot. NOT hungry, NOT sad, NOT sleepy, NOT sick, NOT scared, NOT caged, chained, leashed or in a bowl, no tears, no drooping posture, no food dish. SUBJECT: A small friendly forest imp, round and chubby, soft moss-green skin with tiny leaf-shaped horns, big happy eyes and a wide smile, sitting upright and waving one hand.
+```
+
+#### thorn-hatchling.png
+Slot `corner` — PET. Attach the finished `thorn-room.png` as the style reference.
+```
+Attach the finished thorn room image as the style reference. Match its art style, brushwork, lighting and colour palette exactly — this item belongs in that room. Dark-fantasy children's storybook watercolor, deep woodland palette (forest green, moss, bark brown, fern, amber light, golden pollen). Friendly, cosy, NOT scary. Centered, front view, square 1:1, plain fully transparent background, PNG, no text, no scenery, no room, no wall, no floor, no ground shadow, nothing around it. ONE bold simple silhouette that stays instantly readable at about 22% of a tablet screen: thick chunky shapes, strong value contrast, no tiny parts, no thin lines. Leave a small margin around it. This is a living PET and must look ALIVE and CONTENT: awake, bright-eyed, smiling, plump and well-fed, relaxed and proud of its spot. NOT hungry, NOT sad, NOT sleepy, NOT sick, NOT scared, NOT caged, chained, leashed or in a bowl, no tears, no drooping posture, no food dish. SUBJECT: A tiny forest-dragon hatchling with big round glowing amber eyes, sitting up beside a cracked pale-green eggshell, with a happy open smile and a small wagging tail with a leaf at the tip.
+```
+
+
+### Tempest — storm eyrie (save to art-src/lair/)
+
+Palette for every prompt in this theme: storm palette (deep slate, charcoal violet, electric violet-indigo, cloud silver, lightning yellow).
+
+#### tempest-room.png
+Opaque. Generate this FIRST for Tempest; it becomes the style reference for the ten items below.
+```
+Match the art style, mood and colour palette of the attached reference image. Dark-fantasy children's storybook illustration, moody painterly watercolor. Storm palette: deep slate and charcoal violet, electric violet-indigo, cloud silver and pale grey, bright lightning-yellow accents. Subtle swirling-wind and small lightning-arc motifs. Enchanted, cosy, friendly — NOT scary, NOT gory, NOT gloomy. Square 1:1 composition, FULL-BLEED OPAQUE background (no transparency), no text, no characters, no creatures, no furniture, no props. SUBJECT: a high mountain-top eyrie seen straight on, as a calm square room — a rounded open nook of slate-grey rock with a smooth stone floor, soft violet storm clouds drifting at the edges with one or two tiny distant lightning glints at the very top corners. Keep the CENTRE of the image a soft, empty, calmly lit floor and sky with no focal point and no lightning bolt. The image is an empty room, waiting for a dragon to be placed in the middle: soft and quiet in the centre, gentle detail only toward the edges and corners, a clear floor area along the bottom third and a plain wall area high in the middle.
+```
+
+#### tempest-banner.png
+Slot `wall`. Attach the finished `tempest-room.png` as the style reference.
+```
+Attach the finished tempest room image as the style reference. Match its art style, brushwork, lighting and colour palette exactly — this item belongs in that room. Dark-fantasy children's storybook watercolor, storm palette (deep slate, charcoal violet, electric violet-indigo, cloud silver, lightning yellow). Friendly, cosy, NOT scary. Centered, front view, square 1:1, plain fully transparent background, PNG, no text, no scenery, no room, no wall, no floor, no ground shadow, nothing around it. ONE bold simple silhouette that stays instantly readable at about 22% of a tablet screen: thick chunky shapes, strong value contrast, no tiny parts, no thin lines. Leave a small margin around it. In the room this item hangs high and centred on the back wall. SUBJECT: A hanging wall banner of deep violet-indigo cloth with a simple cloud-silver lightning-bolt emblem, a silver fringe, hanging from a slate-grey rod. It is a sturdy, cosy piece of furniture, not a ruin: whole, clean and welcoming.
+```
+
+#### tempest-painting.png
+Slot `wall`. Attach the finished `tempest-room.png` as the style reference.
+```
+Attach the finished tempest room image as the style reference. Match its art style, brushwork, lighting and colour palette exactly — this item belongs in that room. Dark-fantasy children's storybook watercolor, storm palette (deep slate, charcoal violet, electric violet-indigo, cloud silver, lightning yellow). Friendly, cosy, NOT scary. Centered, front view, square 1:1, plain fully transparent background, PNG, no text, no scenery, no room, no wall, no floor, no ground shadow, nothing around it. ONE bold simple silhouette that stays instantly readable at about 22% of a tablet screen: thick chunky shapes, strong value contrast, no tiny parts, no thin lines. Leave a small margin around it. In the room this item hangs high and centred on the back wall. SUBJECT: A framed painting in a chunky silver frame showing one simple bold picture: a dragon silhouette soaring through violet clouds, big flat shapes. It is a sturdy, cosy piece of furniture, not a ruin: whole, clean and welcoming.
+```
+
+#### tempest-trophy.png
+Slot `wall`. Attach the finished `tempest-room.png` as the style reference.
+```
+Attach the finished tempest room image as the style reference. Match its art style, brushwork, lighting and colour palette exactly — this item belongs in that room. Dark-fantasy children's storybook watercolor, storm palette (deep slate, charcoal violet, electric violet-indigo, cloud silver, lightning yellow). Friendly, cosy, NOT scary. Centered, front view, square 1:1, plain fully transparent background, PNG, no text, no scenery, no room, no wall, no floor, no ground shadow, nothing around it. ONE bold simple silhouette that stays instantly readable at about 22% of a tablet screen: thick chunky shapes, strong value contrast, no tiny parts, no thin lines. Leave a small margin around it. In the room this item hangs high and centred on the back wall. SUBJECT: A chunky trophy cup of polished silver with two big handles and a glowing lightning-yellow gem on its front, on a small slate base. It is a sturdy, cosy piece of furniture, not a ruin: whole, clean and welcoming.
+```
+
+#### tempest-bed.png
+Slot `floorLeft`. Attach the finished `tempest-room.png` as the style reference.
+```
+Attach the finished tempest room image as the style reference. Match its art style, brushwork, lighting and colour palette exactly — this item belongs in that room. Dark-fantasy children's storybook watercolor, storm palette (deep slate, charcoal violet, electric violet-indigo, cloud silver, lightning yellow). Friendly, cosy, NOT scary. Centered, front view, square 1:1, plain fully transparent background, PNG, no text, no scenery, no room, no wall, no floor, no ground shadow, nothing around it. ONE bold simple silhouette that stays instantly readable at about 22% of a tablet screen: thick chunky shapes, strong value contrast, no tiny parts, no thin lines. Leave a small margin around it. In the room this item stands on the floor at the left side. SUBJECT: A cosy dragon bed: a low round cushion of thick pale-violet and cloud-grey fabric with soft billowy blankets like a cloud, plump and inviting. It is a sturdy, cosy piece of furniture, not a ruin: whole, clean and welcoming.
+```
+
+#### tempest-nest.png
+Slot `floorLeft`. Attach the finished `tempest-room.png` as the style reference.
+```
+Attach the finished tempest room image as the style reference. Match its art style, brushwork, lighting and colour palette exactly — this item belongs in that room. Dark-fantasy children's storybook watercolor, storm palette (deep slate, charcoal violet, electric violet-indigo, cloud silver, lightning yellow). Friendly, cosy, NOT scary. Centered, front view, square 1:1, plain fully transparent background, PNG, no text, no scenery, no room, no wall, no floor, no ground shadow, nothing around it. ONE bold simple silhouette that stays instantly readable at about 22% of a tablet screen: thick chunky shapes, strong value contrast, no tiny parts, no thin lines. Leave a small margin around it. In the room this item stands on the floor at the left side. SUBJECT: A round nest woven of pale grey twigs and silvery-violet feathers, lined with downy cloud-white fluff, a couple of tiny yellow spark-stones in the rim. It is a sturdy, cosy piece of furniture, not a ruin: whole, clean and welcoming.
+```
+
+#### tempest-lamp.png
+Slot `floorRight`. Attach the finished `tempest-room.png` as the style reference.
+```
+Attach the finished tempest room image as the style reference. Match its art style, brushwork, lighting and colour palette exactly — this item belongs in that room. Dark-fantasy children's storybook watercolor, storm palette (deep slate, charcoal violet, electric violet-indigo, cloud silver, lightning yellow). Friendly, cosy, NOT scary. Centered, front view, square 1:1, plain fully transparent background, PNG, no text, no scenery, no room, no wall, no floor, no ground shadow, nothing around it. ONE bold simple silhouette that stays instantly readable at about 22% of a tablet screen: thick chunky shapes, strong value contrast, no tiny parts, no thin lines. Leave a small margin around it. In the room this item stands on the floor at the right side. SUBJECT: A tall standing lamp: a slim silver pole topped by a big glass lantern holding a small, calm, steady lightning-yellow glow with a gentle swirl inside. It is a sturdy, cosy piece of furniture, not a ruin: whole, clean and welcoming.
+```
+
+#### tempest-chest.png
+Slot `floorRight`. Attach the finished `tempest-room.png` as the style reference.
+```
+Attach the finished tempest room image as the style reference. Match its art style, brushwork, lighting and colour palette exactly — this item belongs in that room. Dark-fantasy children's storybook watercolor, storm palette (deep slate, charcoal violet, electric violet-indigo, cloud silver, lightning yellow). Friendly, cosy, NOT scary. Centered, front view, square 1:1, plain fully transparent background, PNG, no text, no scenery, no room, no wall, no floor, no ground shadow, nothing around it. ONE bold simple silhouette that stays instantly readable at about 22% of a tablet screen: thick chunky shapes, strong value contrast, no tiny parts, no thin lines. Leave a small margin around it. In the room this item stands on the floor at the right side. SUBJECT: A sturdy treasure chest of dark slate-blue metal bound with silver bands, closed, with a small glowing lightning-yellow lock. It is a sturdy, cosy piece of furniture, not a ruin: whole, clean and welcoming.
+```
+
+#### tempest-shelf.png
+Slot `floorRight`. Attach the finished `tempest-room.png` as the style reference.
+```
+Attach the finished tempest room image as the style reference. Match its art style, brushwork, lighting and colour palette exactly — this item belongs in that room. Dark-fantasy children's storybook watercolor, storm palette (deep slate, charcoal violet, electric violet-indigo, cloud silver, lightning yellow). Friendly, cosy, NOT scary. Centered, front view, square 1:1, plain fully transparent background, PNG, no text, no scenery, no room, no wall, no floor, no ground shadow, nothing around it. ONE bold simple silhouette that stays instantly readable at about 22% of a tablet screen: thick chunky shapes, strong value contrast, no tiny parts, no thin lines. Leave a small margin around it. In the room this item stands on the floor at the right side. SUBJECT: A small chunky bookshelf of pale grey stone with three shelves holding a few fat storybooks in violet and silver, and one glowing yellow crystal. It is a sturdy, cosy piece of furniture, not a ruin: whole, clean and welcoming.
+```
+
+#### tempest-imp.png
+Slot `corner` — PET. Attach the finished `tempest-room.png` as the style reference.
+```
+Attach the finished tempest room image as the style reference. Match its art style, brushwork, lighting and colour palette exactly — this item belongs in that room. Dark-fantasy children's storybook watercolor, storm palette (deep slate, charcoal violet, electric violet-indigo, cloud silver, lightning yellow). Friendly, cosy, NOT scary. Centered, front view, square 1:1, plain fully transparent background, PNG, no text, no scenery, no room, no wall, no floor, no ground shadow, nothing around it. ONE bold simple silhouette that stays instantly readable at about 22% of a tablet screen: thick chunky shapes, strong value contrast, no tiny parts, no thin lines. Leave a small margin around it. This is a living PET and must look ALIVE and CONTENT: awake, bright-eyed, smiling, plump and well-fed, relaxed and proud of its spot. NOT hungry, NOT sad, NOT sleepy, NOT sick, NOT scared, NOT caged, chained, leashed or in a bowl, no tears, no drooping posture, no food dish. SUBJECT: A small friendly storm imp, round and chubby, pale-violet skin with tiny swept-back horns, big happy eyes and a wide smile, sitting upright and waving one hand.
+```
+
+#### tempest-hatchling.png
+Slot `corner` — PET. Attach the finished `tempest-room.png` as the style reference.
+```
+Attach the finished tempest room image as the style reference. Match its art style, brushwork, lighting and colour palette exactly — this item belongs in that room. Dark-fantasy children's storybook watercolor, storm palette (deep slate, charcoal violet, electric violet-indigo, cloud silver, lightning yellow). Friendly, cosy, NOT scary. Centered, front view, square 1:1, plain fully transparent background, PNG, no text, no scenery, no room, no wall, no floor, no ground shadow, nothing around it. ONE bold simple silhouette that stays instantly readable at about 22% of a tablet screen: thick chunky shapes, strong value contrast, no tiny parts, no thin lines. Leave a small margin around it. This is a living PET and must look ALIVE and CONTENT: awake, bright-eyed, smiling, plump and well-fed, relaxed and proud of its spot. NOT hungry, NOT sad, NOT sleepy, NOT sick, NOT scared, NOT caged, chained, leashed or in a bowl, no tears, no drooping posture, no food dish. SUBJECT: A tiny storm-dragon hatchling with big round glowing lightning-yellow eyes, sitting up beside a cracked cloud-silver eggshell, with a happy open smile and a small wagging tail.
+```
+
+### Checklist — all 44 filenames
+
+Tick each once the PNG is in `art-src/lair/` AND the 512px webp is in `public/art/lair/`.
+
+**Frost**
+- [ ] `frost-room.png`
+- [ ] `frost-banner.png`
+- [ ] `frost-painting.png`
+- [ ] `frost-trophy.png`
+- [ ] `frost-bed.png`
+- [ ] `frost-nest.png`
+- [ ] `frost-lamp.png`
+- [ ] `frost-chest.png`
+- [ ] `frost-shelf.png`
+- [ ] `frost-imp.png`
+- [ ] `frost-hatchling.png`
+
+**Blaze**
+- [ ] `blaze-room.png`
+- [ ] `blaze-banner.png`
+- [ ] `blaze-painting.png`
+- [ ] `blaze-trophy.png`
+- [ ] `blaze-bed.png`
+- [ ] `blaze-nest.png`
+- [ ] `blaze-lamp.png`
+- [ ] `blaze-chest.png`
+- [ ] `blaze-shelf.png`
+- [ ] `blaze-imp.png`
+- [ ] `blaze-hatchling.png`
+
+**Thorn**
+- [ ] `thorn-room.png`
+- [ ] `thorn-banner.png`
+- [ ] `thorn-painting.png`
+- [ ] `thorn-trophy.png`
+- [ ] `thorn-bed.png`
+- [ ] `thorn-nest.png`
+- [ ] `thorn-lamp.png`
+- [ ] `thorn-chest.png`
+- [ ] `thorn-shelf.png`
+- [ ] `thorn-imp.png`
+- [ ] `thorn-hatchling.png`
+
+**Tempest**
+- [ ] `tempest-room.png`
+- [ ] `tempest-banner.png`
+- [ ] `tempest-painting.png`
+- [ ] `tempest-trophy.png`
+- [ ] `tempest-bed.png`
+- [ ] `tempest-nest.png`
+- [ ] `tempest-lamp.png`
+- [ ] `tempest-chest.png`
+- [ ] `tempest-shelf.png`
+- [ ] `tempest-imp.png`
+- [ ] `tempest-hatchling.png`
