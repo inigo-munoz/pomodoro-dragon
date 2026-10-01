@@ -62,6 +62,7 @@ export const themes = {
       meat: '/art/foods/blaze-meat.webp',
       cake: '/art/foods/blaze-cake.webp',
     },
+    room: '/art/lair/blaze-room.webp',
   },
   thorn: {
     palette: {
