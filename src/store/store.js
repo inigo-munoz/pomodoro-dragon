@@ -6,7 +6,7 @@ export const defaultState = (config) => ({
   lairs: {},
   lairUnlocked: false,
   muted: false,
-  settings: { ...config.durations.default },
+  settings: { ...config.durations.default, musicStyle: config.musicStyles[0] },
   timer: null,
 });
 
@@ -30,7 +30,11 @@ export const createStore = (backend, config) => {
       if (!raw) return defaultState(config);
       try {
         const parsed = JSON.parse(raw);
-        return migrate({ ...defaultState(config), ...parsed }, parsed);
+        const defaults = defaultState(config);
+        // The merge is shallow, so a saved `settings` would replace the defaults wholesale
+        // and drop any setting added since it was written. Merge that one level too.
+        const settings = { ...defaults.settings, ...parsed.settings };
+        return migrate({ ...defaults, ...parsed, settings }, parsed);
       } catch {
         return defaultState(config);
       }

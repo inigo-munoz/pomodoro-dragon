@@ -55,6 +55,27 @@ export const renderSettingsScreen = ({ settings, config, onChange, onBack, onCha
   section.appendChild(group('Work', 'workMinutes', config.durations.workPresets, 'work'));
   section.appendChild(group('Break', 'breakMinutes', config.durations.breakPresets, 'break'));
 
+  // A choice between named soundtracks, not a number, so no steppers: same row, same
+  // classes, so it reads as a sibling of Work and Break.
+  const musicGroup = () => {
+    const wrap = document.createElement('div');
+    wrap.className = 'setting-group';
+    wrap.innerHTML = '<h2>Music</h2>';
+    const presetRow = document.createElement('div');
+    presetRow.className = 'preset-row';
+    for (const style of config.musicStyles) {
+      const btn = document.createElement('button');
+      btn.className = 'preset' + (settings.musicStyle === style ? ' active' : '');
+      btn.dataset.musicPreset = style;
+      btn.textContent = style.charAt(0).toUpperCase() + style.slice(1);
+      btn.addEventListener('click', () => emit({ musicStyle: style }));
+      presetRow.appendChild(btn);
+    }
+    wrap.appendChild(presetRow);
+    return wrap;
+  };
+  section.appendChild(musicGroup());
+
   const changeDragon = document.createElement('button');
   changeDragon.className = 'big-btn';
   changeDragon.dataset.action = 'change-dragon';

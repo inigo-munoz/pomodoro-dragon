@@ -1,6 +1,7 @@
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { createApp } from './app.js';
 import { config } from './data/config.js';
+import { assetUrl } from './ui/art.js';
 
 // One full interval tick is 1000ms. Blocks are seeded to 1 minute (60s), so
 // advancing 61s guarantees we cross the completion boundary regardless of
@@ -303,15 +304,84 @@ describe('createApp audio unlock', () => {
 describe('createApp music wiring', () => {
   afterEach(() => vi.unstubAllEnvs());
 
+  const fakeAudio = () => ({
+    setMuted: () => {}, unlock: () => {}, playMusic: () => {}, setPlaylist: vi.fn(),
+    stopMusic: () => {}, playEffect: () => {}, toggleMute: () => false,
+  });
+  const withAudio = () => {
+    // A dragon is needed to get past the choose screen to one that has a settings button.
+    const saved = JSON.parse(window.localStorage.getItem(config.storageKey));
+    window.localStorage.setItem(config.storageKey, JSON.stringify({ ...saved, dragonId: 'frost' }));
+    const audio = fakeAudio();
+    const audioFactory = vi.fn(() => audio);
+    createApp(root, { audioFactory });
+    return { audio, audioFactory };
+  };
+  const chooseStyle = (style) => {
+    click('settings');
+    root.querySelector(`[data-music-preset="${style}"]`).click();
+  };
+  const savedStyle = () => JSON.parse(window.localStorage.getItem(config.storageKey)).settings.musicStyle;
+
   it('resolves music paths against the deploy base (regression)', () => {
     vi.stubEnv('BASE_URL', '/pomodoro-dragon/');
-    const audioFactory = vi.fn(() => ({
-      setMuted: () => {}, unlock: () => {}, playMusic: () => {},
-      stopMusic: () => {}, playEffect: () => {}, toggleMute: () => false,
-    }));
-    createApp(root, { audioFactory });
+    const { audioFactory } = withAudio();
     const { music } = audioFactory.mock.calls[0][0];
-    expect(music).toEqual(config.music.map((path) => `/pomodoro-dragon${path}`));
+    expect(music).toEqual(config.music.cozy.map((path) => `/pomodoro-dragon${path}`));
+  });
+
+  it('every path in every playlist resolves through assetUrl', () => {
+    vi.stubEnv('BASE_URL', '/pomodoro-dragon/');
+    for (const style of config.musicStyles) {
+      for (const path of config.music[style]) {
+        expect(assetUrl(path)).toBe(`/pomodoro-dragon${path}`);
+      }
+    }
+  });
+
+  it('starts on the saved style', () => {
+    window.localStorage.setItem(config.storageKey, JSON.stringify({
+      settings: { workMinutes: 1, breakMinutes: 1, musicStyle: 'lofi' },
+    }));
+    const { audioFactory } = withAudio();
+    expect(audioFactory.mock.calls[0][0].music).toEqual(config.music.lofi.map(assetUrl));
+  });
+
+  it('falls back to the default style when the saved one is unknown', () => {
+    window.localStorage.setItem(config.storageKey, JSON.stringify({
+      settings: { workMinutes: 1, breakMinutes: 1, musicStyle: 'jazz' },
+    }));
+    const { audioFactory } = withAudio();
+    expect(audioFactory.mock.calls[0][0].music).toEqual(config.music.cozy.map(assetUrl));
+  });
+
+  it('choosing a style swaps the playlist through assetUrl', () => {
+    vi.stubEnv('BASE_URL', '/pomodoro-dragon/');
+    const { audio } = withAudio();
+    chooseStyle('lofi');
+    expect(audio.setPlaylist).toHaveBeenCalledWith(
+      config.music.lofi.map((path) => `/pomodoro-dragon${path}`),
+    );
+  });
+
+  it('choosing a style persists it and it survives a reload', () => {
+    withAudio();
+    chooseStyle('lofi');
+    expect(savedStyle()).toBe('lofi');
+    root.remove();
+    root = document.createElement('div');
+    document.body.appendChild(root);
+    const { audioFactory } = withAudio();
+    expect(audioFactory.mock.calls[0][0].music).toEqual(config.music.lofi.map(assetUrl));
+    click('settings');
+    expect(root.querySelector('[data-music-preset="lofi"]').classList.contains('active')).toBe(true);
+  });
+
+  it('changing the durations does not touch the playlist', () => {
+    const { audio } = withAudio();
+    click('settings');
+    root.querySelector('[data-work-preset="25"]').click();
+    expect(audio.setPlaylist).not.toHaveBeenCalled();
   });
 });
 

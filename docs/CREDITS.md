@@ -2,7 +2,12 @@
 
 ## Music
 
-The four background tracks come from **Towball's Crossing Deluxe!** by **Towball**, released
+The settings screen offers two soundtracks, **Cozy** (the default) and **Lofi**. Both ship
+in `public/art/music/` and are fetched only when played.
+
+### Cozy
+
+The four tracks come from **Towball's Crossing Deluxe!** by **Towball**, released
 under the [Creative Commons Attribution 4.0 International
 licence](https://creativecommons.org/licenses/by/4.0/). That licence requires attribution,
 so this file is not a courtesy — it is the condition of use.
@@ -23,21 +28,22 @@ because these are fetched over the network rather than precached by the service 
 
 The author states that no generative AI was used in making this music.
 
-### Why these four
+#### Why these four
 
 They were chosen by measurement as well as by ear. Across the pack's 26 hourly tracks the
 integrated loudness spans 5.3 dB; these four sit within **0.2 dB of each other** (−17.8 to
 −18.0 LUFS). The playlist is a shuffled rotation that advances mid-session, so a loud track
 following a quiet one is a jolt at exactly the wrong moment.
 
-The set they replaced had a **6.3 dB spread** (−11.9 to −18.2 LUFS), which was never
+The Lofi set that Cozy replaced as the default had a **6.3 dB spread** (−11.9 to −18.2 LUFS), which was never
 measured when that rotation was built.
 
-## Music previously used
+### Lofi
 
-Four Pixabay lofi tracks shipped until this change, under the
-[Pixabay Content License](https://pixabay.com/service/license-summary/). They are recorded
-here because provenance is worth keeping after an asset is retired, not only while it ships.
+Four Pixabay lofi tracks, under the
+[Pixabay Content License](https://pixabay.com/service/license-summary/). They were the
+only soundtrack until the Cozy set replaced them, and are offered again as an alternative.
+Their provenance is recorded here in full, since it cannot be recovered from the files.
 
 | File | Title | Author | Source | AI generated |
 |------|-------|--------|--------|--------------|
@@ -46,7 +52,7 @@ here because provenance is worth keeping after an asset is retired, not only whi
 | `lofi-03.mp3` | Lofi Relax | ZephiraMusic | https://pixabay.com/music/lofi-lofi-relax-582283/ | yes |
 | `lofi-04.mp3` | Lofi Relaxing | ZephiraMusic | https://pixabay.com/music/lofi-lofi-relaxing-582284/ | yes |
 
-Those files were also transcoded from 256 kbps down to 96 kbps, which is why their
+These files were also transcoded from 256 kbps down to 96 kbps, which is why their
 checksums never matched a fresh Pixabay download. They were identified after the fact from
 their original download filenames and confirmed by track duration, because Pixabay strips
 the ID3 title and artist tags when it re-encodes an upload.

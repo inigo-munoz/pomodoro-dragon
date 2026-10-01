@@ -54,10 +54,16 @@ export const createAudio = ({
     return ctx;
   };
 
-  const tracks = Array.isArray(music) ? music.filter(Boolean) : (music ? [music] : []);
-  const bg = tracks.length ? new Audio() : null;
+  const toTracks = (list) => (Array.isArray(list) ? list.filter(Boolean) : (list ? [list] : []));
+  let tracks = toTracks(music);
+  // Always built, even with no tracks yet: the element has to outlive any playlist swap
+  // (mute state lives on it), and a later setPlaylist cannot conjure one up in its place.
+  const bg = new Audio();
   let order = [];
   let atTrack = -1;
+  // Tracks whether the soundtrack is meant to be running. The element's own `paused`
+  // is no use for this: it is also true before the first play and under test.
+  let wanted = false;
 
   const reshuffle = () => {
     const last = order[atTrack];
@@ -68,19 +74,17 @@ export const createAudio = ({
   };
 
   const playNext = () => {
-    if (!bg || muted) return;
+    if (muted || !tracks.length) return;
     if (atTrack + 1 >= order.length) reshuffle();
     atTrack += 1;
     bg.src = order[atTrack];
     tryPlay(bg);
   };
 
-  if (bg) {
-    // One track at a time, not one looping track: `ended` is what drives the rotation.
-    bg.loop = false;
-    bg.volume = 0.4;
-    bg.addEventListener('ended', playNext);
-  }
+  // One track at a time, not one looping track: `ended` is what drives the rotation.
+  bg.loop = false;
+  bg.volume = 0.4;
+  bg.addEventListener('ended', playNext);
 
   const makers = {};
   for (const [name, src] of Object.entries(effects ?? {})) {
@@ -91,20 +95,35 @@ export const createAudio = ({
     get muted() { return muted; },
     setMuted(value) {
       muted = value;
-      if (bg) bg.muted = value;
+      bg.muted = value;
       return muted;
     },
     toggleMute() { return api.setMuted(!muted); },
     playMusic() {
-      if (!bg || muted) return;
+      if (muted || !tracks.length) return;
+      wanted = true;
       // Resume where it was paused; only pick a track when nothing is loaded yet.
       if (bg.src) tryPlay(bg); else playNext();
     },
-    stopMusic() { if (bg) bg.pause(); },
+    stopMusic() { wanted = false; bg.pause(); },
+    // Swaps the soundtrack without touching the element, so mute and the element survive.
+    // A running soundtrack moves straight onto the new list; an idle one is only armed,
+    // because starting sound nobody asked for would break the autoplay-after-gesture rule.
+    setPlaylist(list) {
+      tracks = toTracks(list);
+      order = [];
+      atTrack = -1;
+      if (wanted && !muted && tracks.length) { playNext(); return; }
+      // Drop the loaded track so playMusic picks from the new list instead of resuming
+      // the old one.
+      bg.pause();
+      bg.removeAttribute('src');
+      if (!tracks.length) wanted = false;
+    },
     // What `ended` calls. Public because moving to the next track is a real thing to
     // want, and because the rotation is worth testing without faking media events.
     skipTrack() { playNext(); },
-    get nowPlaying() { return bg?.src || null; },
+    get nowPlaying() { return bg.src || null; },
     unlock() {
       const audioCtx = getContext();
       if (audioCtx?.state !== 'suspended') return;

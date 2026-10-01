@@ -248,3 +248,88 @@ describe('music rotation', () => {
     expect(a.nowPlaying).toBeNull();
   });
 });
+
+describe('swapping the playlist at runtime', () => {
+  const cozy = ['/cozy-a.mp3', '/cozy-b.mp3'];
+  const lofi = ['/lofi-a.mp3', '/lofi-b.mp3', '/lofi-c.mp3'];
+  const nameOf = (a) => (a.nowPlaying || '').split('/').pop();
+  const make = (extra = {}) => createAudio({ music: cozy, effects: {}, random: () => 0.999, ...extra });
+
+  it('moves a playing soundtrack onto a track from the new list', () => {
+    const a = make();
+    a.playMusic();
+    a.setPlaylist(lofi);
+    expect(nameOf(a)).toMatch(/^lofi-/);
+  });
+
+  it('keeps drawing from the new list on later skips', () => {
+    const a = make();
+    a.playMusic();
+    a.setPlaylist(lofi);
+    for (let i = 0; i < 6; i += 1) {
+      a.skipTrack();
+      expect(nameOf(a)).toMatch(/^lofi-/);
+    }
+  });
+
+  it('when nothing is playing, arms the new list for the next playMusic', () => {
+    const a = make();
+    a.playMusic();
+    a.stopMusic();
+    a.setPlaylist(lofi);
+    a.playMusic();
+    expect(nameOf(a)).toMatch(/^lofi-/);
+  });
+
+  it('does not start playback by itself when nothing was playing', () => {
+    const a = make();
+    a.setPlaylist(lofi);
+    expect(a.nowPlaying).toBeNull();
+  });
+
+  it('keeps the same audio element', () => {
+    const created = [];
+    const RealAudio = globalThis.Audio;
+    globalThis.Audio = function TrackedAudio(...args) {
+      const el = new RealAudio(...args);
+      created.push(el);
+      return el;
+    };
+    try {
+      const a = make();
+      a.playMusic();
+      const before = created.length;
+      a.setPlaylist(lofi);
+      a.setPlaylist(cozy);
+      expect(created.length).toBe(before);
+    } finally {
+      globalThis.Audio = RealAudio;
+    }
+  });
+
+  it('preserves the muted state, and a muted swap stays silent', () => {
+    const a = make();
+    a.setMuted(true);
+    a.setPlaylist(lofi);
+    expect(a.muted).toBe(true);
+    a.playMusic();
+    expect(a.nowPlaying).toBeNull();
+    a.setMuted(false);
+    a.playMusic();
+    expect(nameOf(a)).toMatch(/^lofi-/);
+  });
+
+  it('can arm a playlist on an instance that was built with none', () => {
+    const a = createAudio({ music: null, effects: {}, random: () => 0.999 });
+    a.setPlaylist(lofi);
+    a.playMusic();
+    expect(nameOf(a)).toMatch(/^lofi-/);
+  });
+
+  it('an empty list silences music rather than throwing', () => {
+    const a = make();
+    a.playMusic();
+    expect(() => a.setPlaylist([])).not.toThrow();
+    expect(a.nowPlaying).toBeNull();
+  });
+});

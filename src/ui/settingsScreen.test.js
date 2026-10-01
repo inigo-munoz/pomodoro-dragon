@@ -36,4 +36,36 @@ describe('settings screen', () => {
     btn.click();
     expect(onChangeDragon).toHaveBeenCalled();
   });
+
+  describe('music style', () => {
+    const withStyle = (musicStyle) => ({ ...settings, musicStyle });
+    const render = (musicStyle, onChange = () => {}) =>
+      renderSettingsScreen({ settings: withStyle(musicStyle), config, onChange, onBack: () => {} });
+
+    it('renders a Cozy and a Lofi button', () => {
+      const el = render('cozy');
+      const labels = [...el.querySelectorAll('[data-music-preset]')].map((b) => b.textContent);
+      expect(labels).toEqual(['Cozy', 'Lofi']);
+    });
+
+    it('marks only the current style active, with the shared preset classes', () => {
+      const el = render('lofi');
+      const cozy = el.querySelector('[data-music-preset="cozy"]');
+      const lofi = el.querySelector('[data-music-preset="lofi"]');
+      expect(lofi.classList.contains('preset')).toBe(true);
+      expect(lofi.classList.contains('active')).toBe(true);
+      expect(cozy.classList.contains('active')).toBe(false);
+    });
+
+    it('choosing a style reports the new settings and keeps the durations', () => {
+      const onChange = vi.fn();
+      const el = render('cozy', onChange);
+      el.querySelector('[data-music-preset="lofi"]').click();
+      expect(onChange).toHaveBeenCalledWith({ workMinutes: 15, breakMinutes: 5, musicStyle: 'lofi' });
+    });
+
+    it('has no steppers for music', () => {
+      expect(render('cozy').querySelector('[data-step^="music"]')).toBeNull();
+    });
+  });
 });

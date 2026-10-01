@@ -19,7 +19,7 @@ describe('store', () => {
     expect(s.version).toBe(3);
     expect(s.timer).toBeNull();
     expect(s.dragonId).toBeNull();
-    expect(s.settings).toEqual(config.durations.default);
+    expect(s.settings).toEqual({ ...config.durations.default, musicStyle: 'cozy' });
   });
 
   it('save then load returns the same state (roundtrip)', () => {
@@ -117,5 +117,42 @@ describe('lair unlock state', () => {
     const store = createStore(memoryBackend(), config);
     store.save({ ...defaultState(config), lairUnlocked: true });
     expect(store.load().lairUnlocked).toBe(true);
+  });
+});
+
+describe('music style setting', () => {
+  it('defaults to cozy, beside the durations, without bumping the version', () => {
+    const s = defaultState(config);
+    expect(s.settings).toEqual({ workMinutes: 15, breakMinutes: 5, musicStyle: 'cozy' });
+    expect(s.version).toBe(3);
+  });
+
+  it('loads a save written before the setting existed with the default and loses nothing', () => {
+    const backend = memoryBackend();
+    backend.write(config.storageKey, JSON.stringify({
+      version: 3, dragonId: 'frost', coins: 42, muted: true,
+      settings: { workMinutes: 25, breakMinutes: 10 },
+    }));
+    const s = createStore(backend, config).load();
+    expect(s.settings).toEqual({ workMinutes: 25, breakMinutes: 10, musicStyle: 'cozy' });
+    expect(s.dragonId).toBe('frost');
+    expect(s.coins).toBe(42);
+    expect(s.muted).toBe(true);
+  });
+
+  it('keeps a chosen style across save and load', () => {
+    const store = createStore(memoryBackend(), config);
+    const state = defaultState(config);
+    store.save({ ...state, settings: { ...state.settings, musicStyle: 'lofi' } });
+    expect(store.load().settings.musicStyle).toBe('lofi');
+  });
+});
+
+describe('music playlists in config', () => {
+  it('has a playlist for every offered style', () => {
+    expect(config.musicStyles).toEqual(['cozy', 'lofi']);
+    for (const style of config.musicStyles) {
+      expect(config.music[style].length).toBeGreaterThan(0);
+    }
   });
 });
