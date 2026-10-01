@@ -86,6 +86,7 @@ export const themes = {
       meat: '/art/foods/thorn-meat.webp',
       cake: '/art/foods/thorn-cake.webp',
     },
+    room: '/art/lair/thorn-room.webp',
   },
   tempest: {
     palette: {
@@ -109,5 +110,6 @@ export const themes = {
       meat: '/art/foods/tempest-meat.webp',
       cake: '/art/foods/tempest-cake.webp',
     },
+    room: '/art/lair/tempest-room.webp',
   },
 };
