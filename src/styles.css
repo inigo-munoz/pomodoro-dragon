@@ -32,9 +32,9 @@ body {
 
 .big-btn { font-size: 1.5rem; padding: 18px 28px; border: none; border-radius: 16px; background: var(--accent); color: var(--accent-fg); font-weight: 700; }
 .big-btn.primary { min-width: 240px; }
-/* Sized for a child tapping a tablet across a room: the glyph is 2.4rem and the padding
+/* Sized for a child tapping a tablet across a room: the glyph is 3rem and the padding
    takes the tap target past the ~44px minimum. The emoji fallback matches the art size. */
-.icon-btn { font-size: 2.1rem; background: none; border: none; padding: 10px; }
+.icon-btn { font-size: 2.6rem; background: none; border: none; padding: 10px; }
 /* Muted has to be visible at a glance, not inferred from whether sound is coming out.
    Colour alone would fail a colour-blind child, so this also drops the brightness. */
 .icon-btn.is-muted { opacity: 0.4; filter: grayscale(1); }
@@ -91,10 +91,10 @@ body {
   50%      { transform: translateY(-10px) scale(1.1); opacity: 0.9; }
 }
 .dragon-art { display: flex; width: 100%; height: 100%; align-items: center; justify-content: center; }
-.icon-btn .art-img { width: 2.4rem; height: 2.4rem; }
+.icon-btn .art-img { width: 3rem; height: 3rem; }
 .big-btn .art-img { width: 1.2em; height: 1.2em; vertical-align: -0.15em; }
 .coin-icon, .price-coin { display: inline-flex; vertical-align: -0.15em; }
-.coin-icon .art-img, .price-coin .art-img { width: 1.3em; height: 1.3em; }
+.coin-icon .art-img, .price-coin .art-img { width: 1.5em; height: 1.5em; }
 
 /* idle: gentle float + breathe on the main dragon */
 .dragon-art.alive { font-size: 6rem; animation: float 3.5s ease-in-out infinite, breathe 2.4s ease-in-out infinite; }
