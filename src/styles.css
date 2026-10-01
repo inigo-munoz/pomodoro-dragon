@@ -34,10 +34,25 @@ body {
 .big-btn.primary { min-width: 240px; }
 /* Sized for a child tapping a tablet across a room: the glyph is 3.6rem and the padding
    takes the tap target past the ~44px minimum. The emoji fallback matches the art size. */
-.icon-btn { font-size: 3.1rem; background: none; border: none; padding: 10px; }
-/* Muted has to be visible at a glance, not inferred from whether sound is coming out.
-   Colour alone would fail a colour-blind child, so this also drops the brightness. */
-.icon-btn.is-muted { opacity: 0.4; filter: grayscale(1); }
+.icon-btn { position: relative; font-size: 3.1rem; background: none; border: none; padding: 10px; }
+/* Muted is the SAME speaker with a stroke through it, not a different glyph, so the child
+   learns one symbol instead of two. The stroke is drawn here rather than shipped as art,
+   which keeps every theme consistent and halves the icons a new theme has to provide.
+   Colour alone would fail a colour-blind child, so the brightness drops too. */
+.icon-btn.is-muted { opacity: 0.65; filter: grayscale(1); }
+.icon-btn.is-muted::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 3.9rem;
+  height: 0.26rem;
+  border-radius: 0.13rem;
+  background: currentColor;
+  /* The art underneath is busy and bright, so the stroke needs its own separation. */
+  box-shadow: 0 0 0 0.12rem rgba(0, 0, 0, 0.55);
+  transform: translate(-50%, -50%) rotate(45deg);
+}
 
 .food-grid, .dragon-grid { display: grid; gap: 12px; width: 100%; }
 .food-grid { grid-template-columns: repeat(3, 1fr); }
