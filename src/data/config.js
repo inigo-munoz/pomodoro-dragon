@@ -11,10 +11,10 @@ export const config = {
   // worker's precache globs: they are fetched when played, so installing the app stays
   // small and only the music you actually hear costs anything.
   music: [
-    '/art/music/lofi-01.mp3',
-    '/art/music/lofi-02.mp3',
-    '/art/music/lofi-03.mp3',
-    '/art/music/lofi-04.mp3',
+    '/art/music/crossing-main-theme.mp3',
+    '/art/music/crossing-noon.mp3',
+    '/art/music/crossing-6pm.mp3',
+    '/art/music/crossing-9pm.mp3',
   ],
   storageKey: 'pomodoro-dragon-save-v1',
 };

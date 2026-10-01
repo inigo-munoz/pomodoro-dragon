@@ -2,25 +2,54 @@
 
 ## Music
 
-The four background tracks come from [Pixabay](https://pixabay.com/) and are used under the
-[Pixabay Content License](https://pixabay.com/service/license-summary/), which allows free
-commercial use and does not require attribution. They are credited here anyway, because
-provenance is worth keeping whether or not a licence demands it.
+The four background tracks come from **Towball's Crossing Deluxe!** by **Towball**, released
+under the [Creative Commons Attribution 4.0 International
+licence](https://creativecommons.org/licenses/by/4.0/). That licence requires attribution,
+so this file is not a courtesy — it is the condition of use.
+
+Source: https://towball.itch.io/towballs-crossing-deluxe
+
+| File | Track | Length |
+|------|-------|--------|
+| `public/art/music/crossing-main-theme.mp3` | Main Theme | 2:27 |
+| `public/art/music/crossing-noon.mp3` | Noon | 2:06 |
+| `public/art/music/crossing-6pm.mp3` | 6pm | 2:43 |
+| `public/art/music/crossing-9pm.mp3` | 9pm | 2:36 |
+
+**Changes made to the originals**, as CC-BY requires us to state: each track was transcoded
+from its original bitrate down to 96 kbps, and its embedded cover art was stripped. Nothing
+was edited, cut or remixed. The transcode took the set from 18 MB to 6.8 MB, which matters
+because these are fetched over the network rather than precached by the service worker.
+
+The author states that no generative AI was used in making this music.
+
+### Why these four
+
+They were chosen by measurement as well as by ear. Across the pack's 26 hourly tracks the
+integrated loudness spans 5.3 dB; these four sit within **0.2 dB of each other** (−17.8 to
+−18.0 LUFS). The playlist is a shuffled rotation that advances mid-session, so a loud track
+following a quiet one is a jolt at exactly the wrong moment.
+
+The set they replaced had a **6.3 dB spread** (−11.9 to −18.2 LUFS), which was never
+measured when that rotation was built.
+
+## Music previously used
+
+Four Pixabay lofi tracks shipped until this change, under the
+[Pixabay Content License](https://pixabay.com/service/license-summary/). They are recorded
+here because provenance is worth keeping after an asset is retired, not only while it ships.
 
 | File | Title | Author | Source | AI generated |
 |------|-------|--------|--------|--------------|
-| `public/art/music/lofi-01.mp3` | Study Lofi Music | APALONBeats | https://pixabay.com/music/lofi-study-lofi-music-576259/ | not stated |
-| `public/art/music/lofi-02.mp3` | Lofi Study Session | alex-morgan | https://pixabay.com/music/lofi-lofi-study-session-568160/ | yes |
-| `public/art/music/lofi-03.mp3` | Lofi Relax | ZephiraMusic | https://pixabay.com/music/lofi-lofi-relax-582283/ | yes |
-| `public/art/music/lofi-04.mp3` | Lofi Relaxing | ZephiraMusic | https://pixabay.com/music/lofi-lofi-relaxing-582284/ | yes |
+| `lofi-01.mp3` | Study Lofi Music | APALONBeats | https://pixabay.com/music/lofi-study-lofi-music-576259/ | not stated |
+| `lofi-02.mp3` | Lofi Study Session | alex-morgan | https://pixabay.com/music/lofi-lofi-study-session-568160/ | yes |
+| `lofi-03.mp3` | Lofi Relax | ZephiraMusic | https://pixabay.com/music/lofi-lofi-relax-582283/ | yes |
+| `lofi-04.mp3` | Lofi Relaxing | ZephiraMusic | https://pixabay.com/music/lofi-lofi-relaxing-582284/ | yes |
 
-The tracks in this repository are transcoded from the 256 kbps originals down to 96 kbps,
-which is why their checksums do not match a fresh Pixabay download. Nothing else was
-altered: the durations match the originals to within 25 ms. Total weight dropped from about
-19 MB to 7.1 MB, which matters because these are fetched over the network rather than
-precached by the service worker.
+Those files were also transcoded from 256 kbps down to 96 kbps, which is why their
+checksums never matched a fresh Pixabay download. They were identified after the fact from
+their original download filenames and confirmed by track duration, because Pixabay strips
+the ID3 title and artist tags when it re-encodes an upload.
 
-The identification was recovered from the original download filenames, which encode the
-author slug, the title slug and the Pixabay media ID, and then confirmed one-to-one by
-track duration — Pixabay strips the ID3 title and artist tags when it re-encodes an upload,
-so the files themselves carry no metadata beyond the encoder string.
+That recovery is the reason the current tracks are named after the music they contain
+rather than by index, and the reason their metadata was kept rather than stripped.
