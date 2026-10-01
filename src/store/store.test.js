@@ -68,3 +68,54 @@ describe('store', () => {
     expect(store.load().coins).toBe(0);
   });
 });
+
+describe('store lairs field', () => {
+  it('defaults lairs to an empty object without bumping the version', () => {
+    expect(defaultState(config).lairs).toEqual({});
+    expect(defaultState(config).version).toBe(3);
+  });
+
+  it('loads an old save without lairs, keeping every other field intact', () => {
+    const backend = memoryBackend();
+    backend.write(config.storageKey, JSON.stringify(
+      { version: 3, dragonId: 'frost', coins: 5, xpByDragon: { frost: 10 }, muted: false,
+        settings: config.durations.default, timer: null }));
+    const s = createStore(backend, config).load();
+    expect(s.lairs).toEqual({});
+    expect(s.version).toBe(3);
+    expect(s.coins).toBe(5);
+    expect(s.xpByDragon).toEqual({ frost: 10 });
+  });
+});
+
+describe('lair unlock state', () => {
+  it('defaults to locked with the version unchanged and exactly two new keys', () => {
+    const s = defaultState(config);
+    expect(s.lairUnlocked).toBe(false);
+    expect(s.lairs).toEqual({});
+    expect(s.version).toBe(3);
+  });
+
+  it('prices the unlock in config, as data', () => {
+    expect(config.lairUnlockPrice).toBe(50);
+  });
+
+  it('loads a v3 save with neither lairs nor lairUnlocked as locked, other fields intact', () => {
+    const backend = memoryBackend();
+    backend.write(config.storageKey, JSON.stringify(
+      { version: 3, dragonId: 'frost', coins: 500, xpByDragon: { frost: 80 },
+        muted: false, settings: config.durations.default, timer: null }));
+    const s = createStore(backend, config).load();
+    expect(s.lairUnlocked).toBe(false);
+    expect(s.lairs).toEqual({});
+    expect(s.coins).toBe(500);
+    expect(s.xpByDragon).toEqual({ frost: 80 });
+    expect(s.version).toBe(3);
+  });
+
+  it('keeps an unlocked flag across save and load', () => {
+    const store = createStore(memoryBackend(), config);
+    store.save({ ...defaultState(config), lairUnlocked: true });
+    expect(store.load().lairUnlocked).toBe(true);
+  });
+});

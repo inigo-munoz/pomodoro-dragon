@@ -355,3 +355,265 @@ describe('createApp per-second tick', () => {
     expect(root.querySelector('.session-reward')).not.toBeNull();
   });
 });
+
+describe('createApp lair', () => {
+  // A bed costs 40 and a one-minute block earns 1 coin, so a seeded purse is the only
+  // practical way to reach a purchase without simulating forty blocks.
+  const seedSave = (extra = {}) => window.localStorage.setItem(
+    config.storageKey,
+    JSON.stringify({
+      // Unlocked by default: the lair tests below are about the room, not the gate. A test
+      // for the locked path overrides it, and `...extra` stays last so it can.
+      dragonId: 'frost', coins: 100, lairUnlocked: true,
+      settings: { workMinutes: 1, breakMinutes: 1 }, ...extra,
+    }),
+  );
+  const saved = () => JSON.parse(window.localStorage.getItem(config.storageKey));
+  const slot = (name) => root.querySelector(`[data-slot="${name}"]`);
+  const choose = (id) => root.querySelector(`[data-item="${id}"]`).click();
+  const openLair = () => click('lair');
+
+  it('opens the lair for the active dragon from the nav bar and returns with state unchanged', () => {
+    seedSave();
+    createApp(root);
+    openLair();
+    expect(root.querySelector('.screen.lair')).not.toBeNull();
+    expect(root.querySelectorAll('[data-slot]')).toHaveLength(4);
+
+    root.querySelector('.back-btn').click();
+    expect(root.querySelector('.screen.main')).not.toBeNull();
+    expect(coins()).toBe(100);
+    // Nothing was saved at all, so no lair data was written.
+    expect(saved().lairs).toBeUndefined();
+  });
+
+  it('opens the picker for an empty slot and for a filled slot', () => {
+    seedSave({ lairs: { frost: { owned: ['bed'], slots: { floorLeft: 'bed' } } } });
+    createApp(root);
+    openLair();
+
+    slot('wall').click();
+    expect(root.querySelector('.screen.picker')).not.toBeNull();
+    expect([...root.querySelectorAll('[data-item]')].map((c) => c.dataset.item))
+      .toEqual(['banner', 'painting', 'trophy']);
+
+    root.querySelector('.back-btn').click();
+    expect(root.querySelector('.screen.lair')).not.toBeNull();
+
+    slot('floorLeft').click();
+    expect([...root.querySelectorAll('[data-item]')].map((c) => c.dataset.item))
+      .toEqual(['bed', 'nest', 'cushion']);
+  });
+
+  it('buys an affordable item through the picker and returns to the lair with the slot filled', () => {
+    seedSave();
+    createApp(root);
+    openLair();
+    slot('floorLeft').click();
+    choose('bed');
+
+    expect(root.querySelector('.screen.lair')).not.toBeNull();
+    expect(slot('floorLeft').classList.contains('is-empty')).toBe(false);
+    expect(saved().coins).toBe(60);
+    expect(saved().lairs.frost).toEqual({ owned: ['bed'], slots: { floorLeft: 'bed' } });
+  });
+
+  it('puts an owned item back on display for free without throwing or spending', () => {
+    seedSave({
+      coins: 5,
+      lairs: { frost: { owned: ['banner', 'painting'], slots: { wall: 'painting' } } },
+    });
+    createApp(root);
+    openLair();
+    slot('wall').click();
+    expect(() => choose('banner')).not.toThrow();
+
+    expect(saved().coins).toBe(5);
+    expect(saved().lairs.frost.owned).toEqual(['banner', 'painting']);
+    expect(saved().lairs.frost.slots.wall).toBe('banner');
+  });
+
+  it('leaves an unaffordable item inert', () => {
+    seedSave({ coins: 39 });
+    createApp(root);
+    openLair();
+    slot('floorLeft').click();
+    choose('bed');
+
+    expect(root.querySelector('.screen.picker')).not.toBeNull();
+    expect(saved().coins).toBe(39);
+    // Nothing was saved at all, so no lair data was written.
+    expect(saved().lairs).toBeUndefined();
+  });
+
+  it('keeps a purchase and a later placement across a reload', () => {
+    seedSave();
+    const first = createApp(root);
+    openLair();
+    slot('wall').click();
+    choose('banner');
+    slot('wall').click();
+    choose('painting');
+    slot('wall').click();
+    choose('banner'); // free swap back
+    first.destroy();
+
+    root.remove();
+    root = document.createElement('div');
+    document.body.appendChild(root);
+    createApp(root);
+    openLair();
+
+    expect(slot('wall').classList.contains('is-empty')).toBe(false);
+    // by id, not by glyph: asserting the emoji would break the moment the theme gains art
+    expect(slot('wall').dataset.item).toBe('banner');
+    expect(saved().lairs.frost.owned).toEqual(['banner', 'painting']);
+    expect(saved().coins).toBe(100 - 30 - 45);
+  });
+
+  it('leaves a sibling dragon\'s saved lair byte-identical after a purchase', () => {
+    const blaze = { owned: ['trophy'], slots: { wall: 'trophy' } };
+    seedSave({ lairs: { blaze } });
+    createApp(root);
+    openLair();
+    slot('floorLeft').click();
+    choose('bed');
+
+    expect(JSON.stringify(saved().lairs.blaze)).toBe(JSON.stringify(blaze));
+  });
+
+  it('boots and opens an empty lair from an old save with no lairs field', () => {
+    seedSave({ coins: 0 }); // still no lairs key, which is what this test is about
+    createApp(root);
+    openLair();
+    expect(root.querySelectorAll('.lair-slot.is-empty')).toHaveLength(4);
+  });
+
+  it('keeps furniture out of the food shop', () => {
+    seedSave();
+    createApp(root);
+    click('shop');
+    const ids = [...root.querySelectorAll('[data-food]')].map((c) => c.dataset.food);
+    expect(ids.length).toBeGreaterThan(0);
+    expect(ids).not.toContain('bed');
+    expect(root.querySelector('[data-item]')).toBeNull();
+  });
+
+  describe('unlock gate', () => {
+    const lockedSave = (extra = {}) => seedSave({ lairUnlocked: false, coins: 80, ...extra });
+    const confirm = () => click('unlock-confirm');
+
+    it('shows the offer, not the lair, when the lair is locked', () => {
+      lockedSave();
+      createApp(root);
+      openLair();
+      expect(root.querySelector('.screen.unlock')).not.toBeNull();
+      expect(root.querySelector('.screen.lair')).toBeNull();
+    });
+
+    it('spends 50, saves the flag and lands in the lair on confirm', () => {
+      lockedSave();
+      createApp(root);
+      openLair();
+      confirm();
+      expect(root.querySelector('.screen.lair')).not.toBeNull();
+      expect(saved().coins).toBe(30);
+      expect(saved().lairUnlocked).toBe(true);
+    });
+
+    it('unlocks on exact change, leaving 0', () => {
+      lockedSave({ coins: 50 });
+      createApp(root);
+      openLair();
+      confirm();
+      expect(saved().coins).toBe(0);
+      expect(saved().lairUnlocked).toBe(true);
+    });
+
+    it('leaves the confirm inert one coin short', () => {
+      lockedSave({ coins: 49 });
+      createApp(root);
+      openLair();
+      confirm();
+      expect(root.querySelector('.screen.unlock')).not.toBeNull();
+      expect(saved().coins).toBe(49);
+      expect(saved().lairUnlocked).not.toBe(true);
+    });
+
+    it('dismisses to the main screen with nothing changed, however often', () => {
+      lockedSave();
+      createApp(root);
+      for (let i = 0; i < 10; i += 1) {
+        openLair();
+        root.querySelector('.back-btn').click();
+        expect(root.querySelector('.screen.main')).not.toBeNull();
+      }
+      expect(coins()).toBe(80);
+      expect(saved().lairUnlocked).not.toBe(true);
+    });
+
+    it('charges once when the same confirm button is clicked twice', () => {
+      lockedSave({ coins: 100 });
+      createApp(root);
+      openLair();
+      const btn = root.querySelector('[data-action="unlock-confirm"]');
+      btn.click();
+      btn.click();
+      expect(saved().coins).toBe(50);
+    });
+
+    it('stays unlocked across a reload and a dragon switch, and never charges again', () => {
+      lockedSave({ coins: 60 });
+      const first = createApp(root);
+      openLair();
+      confirm();
+      first.destroy();
+
+      root.remove();
+      root = document.createElement('div');
+      document.body.appendChild(root);
+      createApp(root);
+      openLair();
+      expect(root.querySelector('.screen.lair')).not.toBeNull();
+      expect(root.querySelector('.screen.unlock')).toBeNull();
+
+      for (let i = 0; i < 10; i += 1) {
+        root.querySelector('.back-btn').click();
+        openLair();
+      }
+      expect(saved().coins).toBe(10);
+
+      // One payment is global: another dragon sees the same flag.
+      root.querySelector('.back-btn').click();
+      click('settings');
+      click('change-dragon');
+      pickDragon('blaze');
+      openLair();
+      expect(root.querySelector('.screen.lair')).not.toBeNull();
+      expect(saved().coins).toBe(10);
+    });
+
+    it('offers the unlock to an old save that has neither lairs nor the flag', () => {
+      seedSave({ coins: 0, lairUnlocked: false });
+      expect(saved().lairs).toBeUndefined();
+      createApp(root);
+      openLair();
+      expect(root.querySelector('.screen.unlock')).not.toBeNull();
+    });
+
+    it('shows a locked nav button on a fresh save, and an unlocked one after paying', () => {
+      lockedSave({ coins: 50 });
+      createApp(root);
+      const before = root.querySelector('[data-action="lair"]');
+      expect(before.classList.contains('is-locked')).toBe(true);
+      expect(before.textContent).toContain('50');
+
+      openLair();
+      confirm();
+      root.querySelector('.back-btn').click();
+      const after = root.querySelector('[data-action="lair"]');
+      expect(after.classList.contains('is-locked')).toBe(false);
+      expect(after.textContent).not.toContain('50');
+    });
+  });
+});

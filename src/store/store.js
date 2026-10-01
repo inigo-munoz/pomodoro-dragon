@@ -3,6 +3,8 @@ export const defaultState = (config) => ({
   dragonId: null,
   coins: 0,
   xpByDragon: {},
+  lairs: {},
+  lairUnlocked: false,
   muted: false,
   settings: { ...config.durations.default },
   timer: null,

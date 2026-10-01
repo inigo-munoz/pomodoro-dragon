@@ -9,6 +9,9 @@ export const resolveTheme = (themeId) => {
     palette: { ...base.palette, ...(override.palette ?? {}) },
     icons: { ...base.icons, ...(override.icons ?? {}) },
     foods: { ...base.foods, ...(override.foods ?? {}) },
+    furniture: { ...base.furniture, ...(override.furniture ?? {}) },
+    // A scalar, so it falls back whole rather than merging key by key.
+    room: override.room ?? base.room,
   };
 };
 

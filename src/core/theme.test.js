@@ -1,5 +1,6 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import { resolveTheme, applyPalette } from './theme.js';
+import { themes } from '../data/themes.js';
 
 describe('resolveTheme', () => {
   it('returns the default theme for an unknown or missing id', () => {
@@ -25,6 +26,36 @@ describe('resolveTheme', () => {
     expect(blaze.palette.fg).toBe('#ffffff');        // falls back to default
     expect(blaze.icons.coin).toBe('/art/icons/blaze-coin.webp');
     expect(blaze.foods.apple).toBe('/art/foods/blaze-apple.webp');
+  });
+});
+
+describe('resolveTheme furniture and room', () => {
+  // The real dragon themes carry no lair art yet, so a fixture keeps these
+  // assertions independent of which art has landed.
+  const fixture = { furniture: { bed: 'x.webp' }, room: 'r.webp' };
+
+  afterEach(() => { delete themes.fixture; });
+
+  it('exposes a theme furniture override keyed by item id', () => {
+    themes.fixture = fixture;
+    expect(resolveTheme('fixture').furniture.bed).toBe('x.webp');
+  });
+
+  it('leaves a furniture key the theme omits to the fallbacks without throwing', () => {
+    themes.fixture = fixture;
+    expect(resolveTheme('fixture').furniture.chest).toBeUndefined();
+    expect(resolveTheme('fixture').furniture).not.toBe(themes.default.furniture);
+  });
+
+  it('takes the room from the theme, and the default room otherwise', () => {
+    themes.fixture = fixture;
+    expect(resolveTheme('fixture').room).toBe('r.webp');
+    expect(resolveTheme('does-not-exist').room).toBe(themes.default.room);
+    expect(resolveTheme('does-not-exist').room.length).toBeGreaterThan(0);
+  });
+
+  it('resolves a room string for a real dragon theme', () => {
+    expect(typeof resolveTheme('frost').room).toBe('string');
   });
 });
 
