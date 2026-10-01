@@ -31,6 +31,7 @@ export const themes = {
       settings: '/art/icons/settings.webp',
       mute: '/art/icons/mute.webp',
       sound: '/art/icons/sound.webp',
+      lair: '/art/icons/frost-lair.webp',
       break: '/art/icons/break.webp',
     },
     foods: {
@@ -50,6 +51,8 @@ export const themes = {
       shelf: '/art/lair/frost-shelf.webp',
       imp: '/art/lair/frost-imp.webp',
       hatchling: '/art/lair/frost-hatchling.webp',
+      cushion: '/art/lair/frost-cushion.webp',
+      bird: '/art/lair/frost-bird.webp',
     },
   },
   blaze: {
@@ -67,6 +70,7 @@ export const themes = {
       settings: '/art/icons/blaze-settings.webp',
       mute: '/art/icons/blaze-mute.webp',
       sound: '/art/icons/blaze-sound.webp',
+      lair: '/art/icons/blaze-lair.webp',
       break: '/art/icons/blaze-break.webp',
     },
     foods: {
@@ -86,6 +90,8 @@ export const themes = {
       shelf: '/art/lair/blaze-shelf.webp',
       imp: '/art/lair/blaze-imp.webp',
       hatchling: '/art/lair/blaze-hatchling.webp',
+      cushion: '/art/lair/blaze-cushion.webp',
+      bird: '/art/lair/blaze-bird.webp',
     },
   },
   thorn: {
@@ -103,6 +109,7 @@ export const themes = {
       settings: '/art/icons/thorn-settings.webp',
       mute: '/art/icons/thorn-mute.webp',
       sound: '/art/icons/thorn-sound.webp',
+      lair: '/art/icons/thorn-lair.webp',
       break: '/art/icons/thorn-break.webp',
     },
     foods: {
@@ -122,6 +129,8 @@ export const themes = {
       shelf: '/art/lair/thorn-shelf.webp',
       imp: '/art/lair/thorn-imp.webp',
       hatchling: '/art/lair/thorn-hatchling.webp',
+      cushion: '/art/lair/thorn-cushion.webp',
+      bird: '/art/lair/thorn-bird.webp',
     },
   },
   tempest: {
@@ -139,6 +148,7 @@ export const themes = {
       settings: '/art/icons/tempest-settings.webp',
       mute: '/art/icons/tempest-mute.webp',
       sound: '/art/icons/tempest-sound.webp',
+      lair: '/art/icons/tempest-lair.webp',
       break: '/art/icons/tempest-break.webp',
     },
     foods: {
@@ -158,6 +168,8 @@ export const themes = {
       shelf: '/art/lair/tempest-shelf.webp',
       imp: '/art/lair/tempest-imp.webp',
       hatchling: '/art/lair/tempest-hatchling.webp',
+      cushion: '/art/lair/tempest-cushion.webp',
+      bird: '/art/lair/tempest-bird.webp',
     },
   },
 };
