@@ -3,7 +3,7 @@ const IMAGE_RE = /\.(png|webp|svg|jpe?g)$/i;
 export const isImagePath = (value) => IMAGE_RE.test(value);
 
 // Art paths are authored from the site root ('/art/foods/apple.webp'). When the app is
-// served from a subpath — GitHub Pages puts it under /pomodoro-dragon/ — those would
+// served from a subpath — GitHub Pages puts it under /pomodoro-fantasy/ — those would
 // resolve against the domain root and 404, silently degrading every image to its emoji
 // fallback. Vite exposes the deploy prefix as BASE_URL ('/' in tests and in dev). It is
 // read per call, not captured at load, so a test can stub the deploy base.

@@ -340,17 +340,17 @@ describe('createApp music wiring', () => {
   const savedStyle = () => JSON.parse(window.localStorage.getItem(config.storageKey)).settings.musicStyle;
 
   it('resolves music paths against the deploy base (regression)', () => {
-    vi.stubEnv('BASE_URL', '/pomodoro-dragon/');
+    vi.stubEnv('BASE_URL', '/pomodoro-fantasy/');
     const { audioFactory } = withAudio();
     const { music } = audioFactory.mock.calls[0][0];
-    expect(music).toEqual(config.music.cozy.map((path) => `/pomodoro-dragon${path}`));
+    expect(music).toEqual(config.music.cozy.map((path) => `/pomodoro-fantasy${path}`));
   });
 
   it('every path in every playlist resolves through assetUrl', () => {
-    vi.stubEnv('BASE_URL', '/pomodoro-dragon/');
+    vi.stubEnv('BASE_URL', '/pomodoro-fantasy/');
     for (const style of config.musicStyles) {
       for (const path of config.music[style]) {
-        expect(assetUrl(path)).toBe(`/pomodoro-dragon${path}`);
+        expect(assetUrl(path)).toBe(`/pomodoro-fantasy${path}`);
       }
     }
   });
@@ -372,11 +372,11 @@ describe('createApp music wiring', () => {
   });
 
   it('choosing a style swaps the playlist through assetUrl', () => {
-    vi.stubEnv('BASE_URL', '/pomodoro-dragon/');
+    vi.stubEnv('BASE_URL', '/pomodoro-fantasy/');
     const { audio } = withAudio();
     chooseStyle('lofi');
     expect(audio.setPlaylist).toHaveBeenCalledWith(
-      config.music.lofi.map((path) => `/pomodoro-dragon${path}`),
+      config.music.lofi.map((path) => `/pomodoro-fantasy${path}`),
     );
   });
 

@@ -2,8 +2,8 @@ import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
-  // Served from https://inigo-munoz.github.io/pomodoro-dragon/, not from a domain root.
-  base: '/pomodoro-dragon/',
+  // Served from https://inigo-munoz.github.io/pomodoro-fantasy/, not from a domain root.
+  base: '/pomodoro-fantasy/',
   plugins: [
     VitePWA({
       registerType: 'autoUpdate',
@@ -11,8 +11,8 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,webp,png,svg}'],
       },
       manifest: {
-        name: 'Pomodoro Dragon',
-        short_name: 'Dragon',
+        name: 'Pomodoro Fantasy',
+        short_name: 'Fantasy',
         display: 'standalone',
         orientation: 'portrait',
         background_color: '#1b1030',
