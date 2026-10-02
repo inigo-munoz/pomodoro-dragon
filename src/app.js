@@ -311,7 +311,11 @@ export const createApp = (root, {
       reminders.release();
       // In front of her, the bell and the dragon already do the job; a notification
       // would only be noise.
-      if (document.visibilityState !== 'visible') reminders.notify(endOfBlockNotice[ended]);
+      // notify is async and fire-and-forget here; the catch is a backstop so a rejection
+      // can never surface as an unhandled one.
+      if (document.visibilityState !== 'visible') {
+        Promise.resolve(reminders.notify(endOfBlockNotice[ended])).catch(() => {});
+      }
       if (timerState.mode === 'work') {
         // work finished → grant coins; stays at 0:00 so the ☕ Break button shows
         const before = state.coins;
