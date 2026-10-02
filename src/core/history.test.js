@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  dayKey, recordBlock, pruneHistory, weekOf, monthOf, totalBlocks, totalMinutes,
+  dayKey, recordBlock, pruneHistory, weekOf, monthOf, totalBlocks,
 } from './history.js';
 
 // Built from local components so the tests read the same in any timezone.
@@ -251,12 +251,10 @@ describe('totals', () => {
       '2026-10-02': { blocks: 3, minutes: 75 },
     };
     expect(totalBlocks(h)).toBe(5);
-    expect(totalMinutes(h)).toBe(125);
   });
 
   it('are zero for an empty history', () => {
     expect(totalBlocks({})).toBe(0);
-    expect(totalMinutes({})).toBe(0);
   });
 
   it('skip days that are not objects, and fields that are not finite numbers', () => {
@@ -265,13 +263,11 @@ describe('totals', () => {
       f: { blocks: 'x', minutes: NaN }, g: { blocks: 1, minutes: 25 },
     };
     expect(totalBlocks(h)).toBe(3);
-    expect(totalMinutes(h)).toBe(75);
   });
 
   it('are zero for a history that is not an object at all', () => {
     for (const h of [null, undefined, 'text', 7, []]) {
       expect(totalBlocks(h)).toBe(0);
-      expect(totalMinutes(h)).toBe(0);
     }
   });
 });

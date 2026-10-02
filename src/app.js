@@ -41,11 +41,11 @@ export const createApp = (root, {
   now = () => Date.now(), audioFactory = createAudio, remindersFactory = createReminders,
 } = {}) => {
   const store = createStore(localStorageBackend, config);
-  // Music paths are authored from the site root like the art, so they must be resolved
-  // against the deploy base too, or the tracks 404 when served from a subpath.
   let state = store.load();
   // A save can name a style this build no longer ships; fall back rather than hand the
   // audio an undefined playlist and lose the music silently.
+  // Music paths are authored from the site root like the art, so they must be resolved
+  // against the deploy base too, or the tracks 404 when served from a subpath.
   const playlistFor = (style) =>
     (config.music[style] ?? config.music[config.musicStyles[0]]).map(assetUrl);
   const audio = audioFactory({ music: playlistFor(state.settings.musicStyle), effects: {}, tones });
@@ -54,8 +54,8 @@ export const createApp = (root, {
   // The browser keeps the state as 'default' if the prompt is dismissed, so asking only
   // while undecided is not enough to avoid nagging; remember that we already asked.
   let askedPermission = false;
-  // Settings-derived durations are recomputed; only the volatile part is restored.
   let lastReward = null; // coins from the block just completed, shown until the next one starts
+  // Settings-derived durations are recomputed; only the volatile part is restored.
   // The saved countdown can outlive the length it belongs to: durations come from the
   // settings, `remaining` comes from the save, and nothing tied them together. Clamp on
   // load so a state written by an older build cannot start the timer out at fourteen

@@ -1,4 +1,3 @@
-export const addXp = (xp, amount) => xp + amount;
 
 export const currentLevel = (dragon, xp) => {
   let result = dragon.levels[0];

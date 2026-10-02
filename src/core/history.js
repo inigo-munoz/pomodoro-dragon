@@ -115,4 +115,3 @@ const sum = (history, field) => {
 };
 
 export const totalBlocks = (history) => sum(history, 'blocks');
-export const totalMinutes = (history) => sum(history, 'minutes');

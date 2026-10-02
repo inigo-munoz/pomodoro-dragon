@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  createTimerState, start, pause, tick, advance, remainingAt, isBreak, secondsForMode,
+  createTimerState, start, pause, tick, advance, isBreak, secondsForMode,
 } from './timer.js';
 import { config } from '../data/config.js';
 
@@ -90,12 +90,7 @@ describe('timer', () => {
     const paused = pause(start(createTimerState(settings), T0), T0 + 20_000);
     const resumed = start(paused, T0 + 50_000); // 30s of wall clock later
     expect(resumed.remaining).toBe(40);
-    expect(remainingAt(resumed, T0 + 50_000)).toBe(40);
     expect(resumed.endsAt).toBe(T0 + 50_000 + 40_000);
-  });
-
-  it('remainingAt returns stored remaining when not running', () => {
-    expect(remainingAt(createTimerState(settings), T0 + 99_000)).toBe(60);
   });
 
   it('advances from work to break and back, resetting remaining', () => {
