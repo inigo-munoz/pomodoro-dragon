@@ -261,6 +261,21 @@ body {
    and fixed slots would collide. 21% is what the art was drawn for. */
 .lair-slot { position: absolute; width: 21%; height: 21%; padding: 4px; border: none; border-radius: 16px; background: transparent; color: var(--fg); font-size: 2.6rem; display: flex; align-items: center; justify-content: center; }
 .lair-slot .art-img { width: 100%; height: 100%; object-fit: contain; }
+
+/* A piece of furniture is painted in its own room's palette and texture, so at the 21% size
+   a slot actually renders, its silhouette dissolves into the wall behind it: the Blaze bed
+   was deep red on lava and simply could not be found. A dark edge gives every piece its own
+   outline, and the offset shadow sets it on the floor instead of pasting it on the picture.
+   2px is the value both extremes survive: 4px reads as a black blob on the pale Frost ice,
+   and 1px is not enough to pull the Blaze bed out of the lava. Verified by looking at the
+   real room in all four themes, which is the only way this class of defect can be seen —
+   jsdom computes no colours. */
+.lair-slot .art-img, .lair-slot .art-emoji {
+  filter:
+    drop-shadow(0 0 2px rgba(0, 0, 0, 0.92))
+    drop-shadow(0 0 2px rgba(0, 0, 0, 0.7))
+    drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5));
+}
 .lair-slot[data-slot="wall"] { top: 6%; left: 50%; transform: translateX(-50%); }
 .lair-slot[data-slot="floorLeft"] { bottom: 6%; left: 6%; }
 .lair-slot[data-slot="floorRight"] { bottom: 6%; right: 6%; }
