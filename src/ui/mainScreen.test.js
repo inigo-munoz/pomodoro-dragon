@@ -223,9 +223,9 @@ describe('lair navigation', () => {
     buttons[0].click();
     expect(onLair).toHaveBeenCalledTimes(1);
 
-    // The existing destinations are untouched and the lair sits between them.
+    // The existing destinations are untouched; the record sits after the lair.
     const actions = [...el.querySelectorAll('.nav-bar [data-action]')].map((b) => b.dataset.action);
-    expect(actions).toEqual(['shop', 'lair', 'settings']);
+    expect(actions).toEqual(['shop', 'lair', 'record', 'settings']);
   });
 
   describe('lock state', () => {
@@ -243,7 +243,7 @@ describe('lair navigation', () => {
       btn.click();
       expect(onLair).toHaveBeenCalledTimes(1);
       const actions = [...el.querySelectorAll('.nav-bar [data-action]')].map((b) => b.dataset.action);
-      expect(actions).toEqual(['shop', 'lair', 'settings']);
+      expect(actions).toEqual(['shop', 'lair', 'record', 'settings']);
     });
 
     it('shows no lock and no price once unlocked, and still calls onLair', () => {
@@ -261,8 +261,22 @@ describe('lair navigation', () => {
       btn.click();
       expect(onLair).toHaveBeenCalledTimes(1);
       const actions = [...el.querySelectorAll('.nav-bar [data-action]')].map((b) => b.dataset.action);
-      expect(actions).toEqual(['shop', 'lair', 'settings']);
+      expect(actions).toEqual(['shop', 'lair', 'record', 'settings']);
     });
+  });
+});
+
+describe('record navigation', () => {
+  it('offers exactly one record button in the nav bar, with an icon, that calls onRecord', () => {
+    const onRecord = vi.fn();
+    const el = renderMainScreen({
+      ...base, onRecord, timerState: { mode: 'work', remaining: 900, running: false },
+    });
+    const buttons = el.querySelectorAll('.nav-bar [data-action="record"]');
+    expect(buttons).toHaveLength(1);
+    expect(buttons[0].textContent.trim()).not.toBe('');
+    buttons[0].click();
+    expect(onRecord).toHaveBeenCalledTimes(1);
   });
 });
 

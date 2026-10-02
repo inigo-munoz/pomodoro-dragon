@@ -12,6 +12,7 @@ import { createScreenManager } from './ui/screens.js';
 import { renderChooseDragon } from './ui/chooseDragon.js';
 import { renderMainScreen, updateMainScreen } from './ui/mainScreen.js';
 import { renderShopScreen } from './ui/shopScreen.js';
+import { renderRecordScreen } from './ui/recordScreen.js';
 import { renderLairScreen } from './ui/lairScreen.js';
 import { renderUnlockLair } from './ui/unlockLairScreen.js';
 import { renderSettingsScreen } from './ui/settingsScreen.js';
@@ -21,6 +22,7 @@ import { grantWorkReward, buyFood, leveledUp, dragonXp } from './core/game.js';
 import { currentLevel } from './core/dragon.js';
 import { lairOf, buyFurniture, placeItem, unlockLair } from './core/lair.js';
 import { canAfford } from './core/wallet.js';
+import { recordBlock, pruneHistory } from './core/history.js';
 import { resolveTheme, applyPalette, applyBackdrop } from './core/theme.js';
 
 // What she is told when a block ends while she is not looking at the screen. A finished
@@ -81,7 +83,7 @@ export const createApp = (root, {
     screens.set('main', renderMainScreen({
       state, dragon, xp: dragonXp(state), timerState, lastReward, theme,
       lairPrice: config.lairUnlockPrice,
-      onStart, onPause, onBreak, onShop, onLair, onSettings, onToggleMute,
+      onStart, onPause, onBreak, onShop, onLair, onRecord, onSettings, onToggleMute,
     }));
     screens.show('main');
   };
@@ -195,6 +197,15 @@ export const createApp = (root, {
     onLair();
   };
 
+  // Read-only: nothing here changes the save, so there is nothing to re-render on return.
+  const onRecord = () => {
+    const dragon = getDragon(state.dragonId);
+    screens.set('record', renderRecordScreen({
+      state, now: now(), theme: resolveTheme(dragon.themeId), onBack: render,
+    }));
+    screens.show('record');
+  };
+
   const onSettings = () => {
     screens.set('settings', renderSettingsScreen({
       settings: state.settings, config, onChangeDragon,
@@ -262,6 +273,14 @@ export const createApp = (root, {
         const before = state.coins;
         state = grantWorkReward(state, config, timerState.workSeconds / 60);
         lastReward = state.coins - before;
+        // Only work is an achievement: a finished break records nothing.
+        const minutes = timerState.workSeconds / 60;
+        state = {
+          ...state,
+          history: pruneHistory(
+            recordBlock(state.history, now(), minutes), now(), config.historyDays,
+          ),
+        };
       } else {
         // break finished → return to a fresh idle work block (▶ Start shows)
         timerState = advance(timerState);

@@ -105,3 +105,20 @@ describe('applyBackdrop', () => {
     expect(root.style.getPropertyValue('--backdrop')).toBe('');
   });
 });
+
+describe('the record icon', () => {
+  // The nav button shipped with an emoji fallback while the art was being made. Every real
+  // theme must now resolve its own, or one dragon silently keeps the placeholder.
+  it.each(['frost', 'blaze', 'thorn', 'tempest'])('gives %s its own record icon', (id) => {
+    expect(resolveTheme(id).icons.record).toMatch(/^\/art\/icons\/[a-z-]*record\.webp$/);
+  });
+
+  it('keeps an emoji on the default theme, which the chooser screen uses', () => {
+    expect(resolveTheme('nope').icons.record).toBe('📖');
+  });
+
+  it('never gives two themes the same record icon', () => {
+    const used = ['frost', 'blaze', 'thorn', 'tempest'].map((id) => resolveTheme(id).icons.record);
+    expect(new Set(used).size).toBe(4);
+  });
+});

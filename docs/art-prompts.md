@@ -823,3 +823,31 @@ Tick each once the PNG is in `art-src/lair/` AND the 512px webp is in `public/ar
 - [ ] `tempest-shelf.png`
 - [ ] `tempest-imp.png`
 - [ ] `tempest-hatchling.png`
+
+## Record icon (the study record screen) — save to art-src/icons/
+
+Added 2026-10-02 with the fourth nav button. These follow the ICON rules, not the
+illustration rules: one bold silhouette legible at 32x32, a LIGHT core so it reads against a
+near-black background, and no ornament of any kind. Verify every one by rendering it at 32px
+over its own theme background before accepting it — not at 1024.
+
+Subject for all four: a rolled-open parchment scroll, front on, a rod top and bottom, nothing
+written on it. Only the rods and the outline carry the theme; the parchment core stays pale
+cream in every theme.
+
+### frost (the default set, saved as record.webp)
+
+Generate a UI ICON, square 1:1, fully transparent background, PNG, centred, no text, no scenery, no ground shadow. SUBJECT: a rolled-open parchment scroll seen front-on, with a wooden rod at the top and bottom — a "record of what you did" icon for a children's app. This is an ICON, not an illustration. These rules outrank style and beauty: ONE bold, simple silhouette that is still recognisable as a scroll at 32x32 pixels. Thick chunky shapes only. NO filigree, NO ornament, NO thin lines, NO texture noise, NO sparkles, NO surrounding effects of any kind. The CORE of the shape must be LIGHT — pale cream parchment — so it pops against a near-black background. Dark outline around the silhouette. Shading only INSIDE the silhouette. Nothing written on the parchment. It is blank. Theme, applied only as a tint at the edges and the rods, never as clutter: glacial winter — deep indigo, ice blue, frost white, bone grey, with a faint cyan edge glow. Match the painterly storybook finish of the attached reference icon, but simpler and bolder than it. Output one image only.
+
+### blaze / thorn / tempest
+
+Same prompt, changing only the tint of the rods and the outline, and repeating the rules so
+they are not forgotten:
+
+- **blaze**: dark charred wood rods with a dull ember-orange edge, near-black outline, faint
+  warm rim. Explicitly NO flames, NO lava cracks, NO sparks, and **do not make the parchment
+  orange** — that is exactly how the first blaze icon batch failed.
+- **thorn**: rods bound with dark green vine, moss-and-bark edge, deep forest outline. No
+  leaves scattered around, no vines trailing off the silhouette.
+- **tempest**: slate-grey rods with a cold violet edge, storm-dark outline. No lightning, no
+  clouds, no sparks.

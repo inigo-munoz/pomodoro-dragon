@@ -10,7 +10,7 @@ export const themes = {
       card: '#2c1c4a',
       'back-btn': '#99aaff',
     },
-    icons: { coin: '🪙', shop: '🍎', settings: '⚙️', mute: '🔇', sound: '🔊', break: '☕', lair: '🕳️' },
+    icons: { coin: '🪙', shop: '🍎', settings: '⚙️', mute: '🔇', sound: '🔊', break: '☕', lair: '🕳️', record: '📖' },
     foods: {},
     // Item emoji live on the catalogue (`item.fallback`); only the room needs one here.
     furniture: {},
@@ -34,6 +34,7 @@ export const themes = {
       mute: '/art/icons/mute.webp',
       sound: '/art/icons/sound.webp',
       lair: '/art/icons/frost-lair.webp',
+      record: '/art/icons/record.webp',
       break: '/art/icons/break.webp',
     },
     foods: {
@@ -74,6 +75,7 @@ export const themes = {
       mute: '/art/icons/blaze-mute.webp',
       sound: '/art/icons/blaze-sound.webp',
       lair: '/art/icons/blaze-lair.webp',
+      record: '/art/icons/blaze-record.webp',
       break: '/art/icons/blaze-break.webp',
     },
     foods: {
@@ -114,6 +116,7 @@ export const themes = {
       mute: '/art/icons/thorn-mute.webp',
       sound: '/art/icons/thorn-sound.webp',
       lair: '/art/icons/thorn-lair.webp',
+      record: '/art/icons/thorn-record.webp',
       break: '/art/icons/thorn-break.webp',
     },
     foods: {
@@ -154,6 +157,7 @@ export const themes = {
       mute: '/art/icons/tempest-mute.webp',
       sound: '/art/icons/tempest-sound.webp',
       lair: '/art/icons/tempest-lair.webp',
+      record: '/art/icons/tempest-record.webp',
       break: '/art/icons/tempest-break.webp',
     },
     foods: {
