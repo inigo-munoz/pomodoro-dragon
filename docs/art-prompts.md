@@ -1,4 +1,6 @@
-# Pomodoro Dragon — Art Prompt Pack (Frost / Dark-Fantasy edition)
+# Pomodoro Fantasy — Art Prompt Pack (Frost / Dark-Fantasy edition)
+
+Note: the slot once called `corner` is now `center`; the prompts below keep the old name.
 
 Art direction: the whole app is themed around ONE frost dragon, in the glacial,
 mystical, dark-fantasy watercolor world of the reference character (the antlered
