@@ -13,6 +13,9 @@ const ctx = (history = {}, over = {}) => ({
 });
 
 const days = (el) => [...el.querySelectorAll('[data-day]')];
+const weeks = (el) => [...el.querySelectorAll('[data-week]')];
+const rangeBtn = (el, range) => el.querySelector(`[data-range="${range}"]`);
+const GUILT = /hungry|lost|missed|neglect|streak|warning/i;
 
 describe('record screen', () => {
   it('follows the other screens: bar with back and coins, then a Record title', () => {
@@ -81,12 +84,12 @@ describe('record screen', () => {
     expect(h(yesterday)).toBe(50);
   });
 
-  it('renders a day with nothing as an empty slot, with no message and no number', () => {
+  it('renders a past day with nothing as a plain zero, with no message and no bar', () => {
     const el = renderRecordScreen(ctx({ '2026-10-02': { blocks: 1, minutes: 25 } }));
     const empty = days(el)[0]; // Monday, a past day
-    expect(empty.querySelector('.record-count').textContent).toBe('');
+    expect(empty.querySelector('.record-count').textContent).toBe('0');
     expect(parseFloat(empty.querySelector('.record-bar').style.height)).toBe(0);
-    expect(empty.textContent).toBe('Mon');
+    expect(empty.textContent).toBe('0Mon');
   });
 
   it('renders a whole empty week without any message', () => {
@@ -118,5 +121,152 @@ describe('record screen', () => {
       expect(el.textContent).not.toMatch(/hungry|lost|missed|neglect|streak|warning/i);
       expect(el.innerHTML).not.toMatch(/hungry|lost|missed|neglect|streak|warning/i);
     }
+  });
+});
+
+describe('record screen range', () => {
+  const history = {
+    '2026-10-02': { blocks: 4, minutes: 100 },
+    '2026-10-01': { blocks: 2, minutes: 50 },
+    '2026-09-30': { blocks: 7, minutes: 175 }, // September, same week as 1 Oct
+  };
+
+  it('offers Week and Month as buttons of the preset family, Week active on opening', () => {
+    const el = renderRecordScreen(ctx(history));
+    const week = rangeBtn(el, 'week');
+    const month = rangeBtn(el, 'month');
+    expect(week.tagName).toBe('BUTTON');
+    expect(week.textContent).toBe('Week');
+    expect(month.textContent).toBe('Month');
+    expect(week.className).toContain('preset');
+    expect(month.className).toContain('preset');
+    expect(week.classList.contains('active')).toBe(true);
+    expect(month.classList.contains('active')).toBe(false);
+    expect(week.getAttribute('aria-pressed')).toBe('true');
+    expect(month.getAttribute('aria-pressed')).toBe('false');
+    expect(days(el)).toHaveLength(7);
+    expect(weeks(el)).toHaveLength(0);
+  });
+
+  it('switching to the month redraws one bar per week and moves the active mark', () => {
+    const el = renderRecordScreen(ctx(history));
+    rangeBtn(el, 'month').click();
+    expect(weeks(el).map((w) => w.dataset.week)).toEqual([
+      '2026-09-28', '2026-10-05', '2026-10-12', '2026-10-19', '2026-10-26',
+    ]);
+    expect(days(el)).toHaveLength(0);
+    expect(weeks(el).map((w) => w.querySelector('.record-day-name').textContent))
+      .toEqual(['1-4', '', '', '', '']); // weeks still to come carry no text, like future days
+    expect(rangeBtn(el, 'month').classList.contains('active')).toBe(true);
+    expect(rangeBtn(el, 'week').classList.contains('active')).toBe(false);
+    expect(rangeBtn(el, 'month').getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('switches back to the week, and leaves a single chart on screen each time', () => {
+    const el = renderRecordScreen(ctx(history));
+    rangeBtn(el, 'month').click();
+    rangeBtn(el, 'week').click();
+    expect(days(el)).toHaveLength(7);
+    expect(weeks(el)).toHaveLength(0);
+    expect(el.querySelectorAll('.record-week')).toHaveLength(1);
+    expect(el.querySelectorAll('[data-range]')).toHaveLength(2);
+  });
+
+  it('totals the in-month days of the current week, marks it, and leaves later weeks blank', () => {
+    const el = renderRecordScreen(ctx(history));
+    rangeBtn(el, 'month').click();
+    const [first, ...rest] = weeks(el);
+    expect(first.querySelector('.record-count').textContent).toBe('6'); // 2 + 4, not the 7 in September
+    expect(first.classList.contains('is-current')).toBe(true);
+    expect(first.getAttribute('aria-current')).toBe('date');
+    expect(el.querySelectorAll('.is-current')).toHaveLength(1);
+    for (const w of rest) {
+      expect(w.classList.contains('is-future')).toBe(true);
+      expect(w.querySelector('.record-count').textContent).toBe('');
+      expect(w.textContent).toBe('');
+      expect(w.getAttribute('aria-label')).not.toMatch(/block/); // a span, never a count
+    }
+  });
+
+  it('shows a 0 on every past week with nothing, and scales bars to the best week', () => {
+    const late = new Date(2026, 9, 28, 12).getTime(); // Wednesday of the 26-31 week
+    const el = renderRecordScreen(ctx({
+      '2026-10-06': { blocks: 8, minutes: 200 },
+      '2026-10-27': { blocks: 4, minutes: 100 },
+    }, { now: late }));
+    rangeBtn(el, 'month').click();
+    expect(weeks(el).map((w) => w.querySelector('.record-count').textContent))
+      .toEqual(['0', '8', '0', '0', '4']);
+    const h = (w) => parseFloat(w.querySelector('.record-bar').style.height);
+    expect(weeks(el).map(h)).toEqual([0, 100, 0, 0, 50]);
+  });
+
+  it('shows a 0 on a past day with nothing in the week too, and a 0 in an empty month', () => {
+    const el = renderRecordScreen(ctx());
+    const counts = days(el).map((d) => d.querySelector('.record-count').textContent);
+    expect(counts).toEqual(['0', '0', '0', '0', '0', '', '']);
+    rangeBtn(el, 'month').click();
+    expect(weeks(el).map((w) => w.querySelector('.record-count').textContent))
+      .toEqual(['0', '', '', '', '']);
+  });
+
+  it('keeps the all-time total unchanged by the range', () => {
+    const el = renderRecordScreen(ctx(history));
+    const before = el.querySelector('.record-total').textContent;
+    rangeBtn(el, 'month').click();
+    expect(el.querySelector('.record-total').textContent).toBe(before);
+    expect(before).toBe('You have finished 13 blocks in all.');
+  });
+
+  it('opens on the week again on every render: the choice is not remembered', () => {
+    const first = renderRecordScreen(ctx(history));
+    rangeBtn(first, 'month').click();
+    const second = renderRecordScreen(ctx(history));
+    expect(rangeBtn(second, 'week').classList.contains('active')).toBe(true);
+    expect(days(second)).toHaveLength(7);
+  });
+
+  it('never uses the language of guilt, in either view, with or without history', () => {
+    for (const h of [{}, history]) {
+      const el = renderRecordScreen(ctx(h));
+      for (const range of ['week', 'month']) {
+        rangeBtn(el, range).click();
+        expect(el.textContent).not.toMatch(GUILT);
+        expect(el.innerHTML).not.toMatch(GUILT);
+      }
+    }
+  });
+
+  it('draws no target, average or comparison in either view', () => {
+    const el = renderRecordScreen(ctx(history));
+    for (const range of ['week', 'month']) {
+      rangeBtn(el, range).click();
+      expect(el.textContent).not.toMatch(/goal|target|average|avg|best|record of|vs|%/i);
+    }
+  });
+});
+
+describe('work that lands in the future is still shown', () => {
+  // A tablet whose clock was running fast records blocks on a date that becomes "the future"
+  // once the clock is corrected. That is real work and must not vanish from the chart: a blank
+  // bar would read as if she had never done it. Today is Fri 2 Oct, so Sun 4 Oct is ahead.
+  it('prints the count on a future day that somehow has blocks', () => {
+    const el = renderRecordScreen(ctx({ '2026-10-04': { blocks: 3, minutes: 45 } }));
+    const sunday = days(el).find((d) => d.dataset.day === '2026-10-04');
+    expect(sunday.querySelector('.record-count').textContent).toBe('3');
+  });
+
+  it('still leaves a genuinely empty future day blank', () => {
+    const el = renderRecordScreen(ctx());
+    const blanks = days(el).filter((d) => d.classList.contains('is-future'));
+    expect(blanks.length).toBeGreaterThan(0);
+    expect(blanks.every((d) => d.querySelector('.record-count').textContent === '')).toBe(true);
+  });
+
+  it('does the same for a future week in the month view', () => {
+    const el = renderRecordScreen(ctx({ '2026-10-31': { blocks: 4, minutes: 60 } }));
+    rangeBtn(el, 'month').click();
+    const last = weeks(el).at(-1);
+    expect(last.querySelector('.record-count').textContent).toBe('4');
   });
 });

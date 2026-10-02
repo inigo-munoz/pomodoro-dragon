@@ -333,10 +333,10 @@ body {
 .shelf-item[data-state="placed"] { outline: 3px solid var(--accent); outline-offset: -3px; }
 .shelf-item[data-state="locked"] { cursor: default; }
 
-/* The record: seven columns, Monday to Sunday. A day still to come is only an outline. Existing tokens only. A column with nothing
+/* The record: seven columns, Monday to Sunday, or one per week of the month. A day still to come is only an outline. Existing tokens only. A column with nothing
    in it is just an empty track, so no day reads as a gap she has to explain. */
 .record-week { display: flex; gap: 8px; width: 100%; align-items: stretch; }
-.record-day { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.record-day, .record-span { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .record-count { min-height: 1.4rem; font-size: 1.2rem; font-weight: 700; font-variant-numeric: tabular-nums; }
 .record-track {
   width: 100%; height: 38vh; max-height: 320px; display: flex; align-items: flex-end;
@@ -344,9 +344,10 @@ body {
 }
 .record-bar { width: 100%; background: var(--xp-fill); transition: height 0.3s ease; }
 .record-day-name { font-size: 0.95rem; opacity: 0.8; }
-.record-day.is-today .record-bar { background: var(--accent); }
-.record-day.is-today .record-day-name { opacity: 1; font-weight: 800; color: var(--accent); }
-.record-day.is-future .record-track { background: transparent; box-shadow: inset 0 0 0 2px var(--card); }
+.record-day.is-today .record-bar, .record-span.is-current .record-bar { background: var(--accent); }
+.record-day.is-today .record-day-name, .record-span.is-current .record-day-name { opacity: 1; font-weight: 800; color: var(--accent); }
+.record-day.is-future .record-track, .record-span.is-future .record-track { background: transparent; box-shadow: inset 0 0 0 2px var(--card); }
+.record-range { justify-content: center; }
 .record-total { margin: 0; font-size: 1.2rem; text-align: center; }
 @media (prefers-reduced-motion: reduce) { .record-bar { transition: none; } }
 

@@ -54,6 +54,56 @@ export const weekOf = (history, now) => {
   });
 };
 
+// Every calendar week that overlaps the month containing `now`, Monday first, in order. The
+// first and last weeks are usually partial, and a week's blocks and minutes count only the
+// days that fall inside the month, so the entries add up to the month and nothing leaks in
+// from the neighbouring ones. A week that begins after today is `isFuture`; the one holding
+// today is `isCurrent` even if its later days have not happened. Days are stepped through
+// calendar components at midday, like weekOf, so a daylight-saving change cannot skip or
+// repeat a date.
+export const monthOf = (history, now) => {
+  const today = new Date(now);
+  const year = today.getFullYear();
+  const month = today.getMonth();
+  const daysInMonth = new Date(year, month + 1, 0, 12).getDate();
+  const todayKey = keyOfDate(today);
+
+  const weeks = [];
+  for (let day = 1; day <= daysInMonth; day += 1) {
+    const date = new Date(year, month, day, 12);
+    const mondayOffset = (date.getDay() + 6) % 7;
+    let week = weeks[weeks.length - 1];
+    if (!week || mondayOffset === 0) {
+      week = {
+        key: keyOfDate(new Date(year, month, day - mondayOffset, 12)),
+        first: day,
+        last: day,
+        blocks: 0,
+        minutes: 0,
+        isCurrent: false,
+        isFuture: false,
+      };
+      weeks.push(week);
+    }
+    const entry = history[keyOfDate(date)];
+    week.last = day;
+    week.blocks += entry?.blocks ?? 0;
+    week.minutes += entry?.minutes ?? 0;
+    if (keyOfDate(date) === todayKey) week.isCurrent = true;
+  }
+
+  return weeks.map(({ key, first, last, blocks, minutes, isCurrent }) => ({
+    key,
+    label: first === last ? String(first) : `${first}-${last}`,
+    blocks,
+    minutes,
+    isCurrent,
+    // Keys are YYYY-MM-DD, so they compare as text. A week is still to come only when its
+    // first in-month day is after today.
+    isFuture: !isCurrent && keyOfDate(new Date(year, month, first, 12)) > todayKey,
+  }));
+};
+
 const sum = (history, field) =>
   Object.values(history).reduce((total, day) => total + day[field], 0);
 
