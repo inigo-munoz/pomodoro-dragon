@@ -40,9 +40,9 @@ in this round, is in the Engram observation "Full-app sweep: 7 verified bugs…"
 
 ## Tasks
 
-- [ ] **S1.** Dots start a new cycle after the long break — unit tests plus one real-app cycle.
-- [ ] **S2.** A save during a block reaches the timer — integration test with no reload.
-- [ ] **S3.** Change Dragon asks before discarding — four guard cases.
+- [x] **S1.** `d9eebd0` Dots start a new cycle after the long break — unit tests plus one real-app cycle.
+- [x] **S2.** `dd0a09d` A save during a block reaches the timer — integration test with no reload.
+- [x] **S3.** `ed645ad` Change Dragon asks before discarding — four guard cases.
 
 ## Acceptance
 
@@ -64,8 +64,32 @@ quoting defaults; music through pause; dead code (`addXp`, `remainingAt`, `total
 
 ## Progress
 
-- Branch `feat/sweep-fixes`, off `main`. Writer dispatched.
+Branch `feat/sweep-fixes`, off `main`. All three done; not merged.
+
+| Commit | Subject |
+|---|---|
+| `d9eebd0` | `fix(ui): the dots start a new cycle after the long break` |
+| `dd0a09d` | `fix(settings): a save during a block still reaches the timer` |
+| `ed645ad` | `fix(settings): Change Dragon asks before discarding a draft` |
+
+Observed: **32 files / 550 tests green** (baseline 542, +8), `npm run build` succeeds. No
+existing test was changed; only additions.
+
+**Verified independently, not from the report**: the vite-node reproduction that proved bug 1
+(`createTimerState` → three blocks → long break → `advance()` → real `renderMainScreen`) now
+renders **0 / 4, "Session 1 of 4"** where it rendered 4 / 4. Bug 2: the rebake is unconditional
+at `app.js:265` and only the `remaining` clamp sits under `if (!rebaked.running)`. Bug 3:
+both exits call `askBeforeLeaving(...)` (`settingsScreen.js:200,202`); one overlay, one guard.
+
+A nuance the implementer flagged: the old "multiple ⇒ all full" rule also fired during a
+SHORT break on a multiple count. The fix follows the spec literally (long break, or a parked
+work block). That combination cannot occur in normal play.
+
+**A blemish, kept on purpose.** This document was created while the writer worked and was
+swept into `d9eebd0` by a `git add -A`. The writer asked to rewrite history and was refused,
+correctly. Rewriting three unpushed commits would be safe but buys nothing: ODD documents ride
+feature commits throughout this repository. Left as is, recorded here.
 
 ## Next step
 
-S1.
+Merge and push are the user's call. Then the rest of the sweep list, in the order above.
