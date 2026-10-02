@@ -326,6 +326,18 @@ describe('long break and cycle progress', () => {
       .querySelectorAll('.session-dot.is-done')).toHaveLength(4);
   });
 
+  it('starts a new cycle after the long break: an idle work block shows no filled dots', () => {
+    const el = render({ mode: 'work', completedWork: 4 });
+    expect(el.querySelectorAll('.session-dot.is-done')).toHaveLength(0);
+    expect(el.querySelector('.session-dots').getAttribute('aria-label')).toBe('Session 1 of 4');
+  });
+
+  it('starts a new cycle after the long break: a running work block shows no filled dots', () => {
+    const el = render({ mode: 'work', completedWork: 8, running: true, remaining: 50 });
+    expect(el.querySelectorAll('.session-dot.is-done')).toHaveLength(0);
+    expect(el.querySelector('.session-dots').getAttribute('aria-label')).toBe('Session 1 of 4');
+  });
+
   it('renders no dots when the cycle length is unknown or not positive', () => {
     expect(render({ sessionsBeforeLongBreak: 0 }).querySelector('.session-dots')).toBeNull();
     expect(render({ sessionsBeforeLongBreak: undefined }).querySelector('.session-dots')).toBeNull();

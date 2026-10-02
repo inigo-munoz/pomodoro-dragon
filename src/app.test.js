@@ -759,6 +759,28 @@ describe('createApp long break cycle', () => {
     expect(timerText()).toBe('01:00');
   });
 
+  it('starts the next cycle with empty dots once the long break ends', () => {
+    seedCycle(null);
+    createApp(root);
+    for (let block = 1; block <= 3; block += 1) {
+      runWorkBlock();
+      click('break');
+      vi.advanceTimersByTime(ONE_BLOCK_MS);
+    }
+    runWorkBlock();
+    click('break');
+    expect(modeLabel()).toBe('Long break');
+    expect(root.querySelectorAll('.session-dot.is-done')).toHaveLength(4);
+
+    vi.advanceTimersByTime(3 * 60_000 + 1000);
+    expect(modeLabel()).toBe('Work');
+    expect(root.querySelectorAll('.session-dot.is-done')).toHaveLength(0);
+    expect(root.querySelector('.session-dots').getAttribute('aria-label')).toBe('Session 1 of 4');
+
+    click('start');
+    expect(root.querySelectorAll('.session-dot.is-done')).toHaveLength(0);
+  });
+
   it('remembers the cycle across a reload', () => {
     seedCycle(null);
     createApp(root);
@@ -838,6 +860,29 @@ describe('createApp settings: long break and sessions through the real UI', () =
         .querySelector('.value').textContent;
     expect(shownValue('longBreak')).toBe('5 min');
     expect(shownValue('sessions')).toBe('2');
+  });
+
+  it('saving while a block runs still reaches the next break and the next cycle', () => {
+    seed();
+    createApp(root);
+    click('start');
+    vi.advanceTimersByTime(20_000);
+    const remainingBefore = timerText();
+    expect(remainingBefore).toBe('00:40');
+
+    click('settings');
+    tap('break-plus', 1); // 1 -> 2 minutes
+    tap('sessions-minus', 2); // 4 -> 2 sessions
+    click('save-settings');
+    root.querySelector('.back-btn').click();
+    expect(timerText()).toBe(remainingBefore); // the running block is left alone
+
+    vi.advanceTimersByTime(ONE_BLOCK_MS); // let it finish
+    click('break');
+    expect(modeLabel()).toBe('Break');
+    expect(timerText()).toBe('02:00'); // the NEW break length, with no reload
+    expect(root.querySelectorAll('.session-dot')).toHaveLength(2); // the NEW cycle length
+    expect(root.querySelectorAll('.session-dot.is-done')).toHaveLength(1);
   });
 
   it('a parked long break picks up a shorter saved length', () => {

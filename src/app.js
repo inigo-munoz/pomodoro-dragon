@@ -256,29 +256,30 @@ export const createApp = (root, {
         const styleChanged = settings.musicStyle !== state.settings.musicStyle;
         state = { ...state, settings };
         if (styleChanged) audio.setPlaylist(playlistFor(settings.musicStyle));
-        if (!timerState.running) {
-          const workSeconds = settings.workMinutes * 60;
-          const breakSeconds = settings.breakMinutes * 60;
-          const longBreakSeconds = settings.longBreakMinutes * 60;
-          const atFreshWorkStart =
-            timerState.mode === 'work' && timerState.remaining === timerState.workSeconds;
+        // The baked durations always follow the saved settings, running or not: the next
+        // break and the next cycle are read from them, and a stale copy would keep using the
+        // old values until a reload.
+        const workSeconds = settings.workMinutes * 60;
+        const atFreshWorkStart =
+          timerState.mode === 'work' && timerState.remaining === timerState.workSeconds;
+        const rebaked = {
+          ...timerState,
+          workSeconds,
+          breakSeconds: settings.breakMinutes * 60,
+          longBreakSeconds: settings.longBreakMinutes * 60,
+          sessionsBeforeLongBreak: settings.sessionsBeforeLongBreak,
+        };
+        timerState = rebaked;
+        // Only the countdown is protected while a block runs: it keeps the time it has.
+        if (!rebaked.running) {
           // Never leave the countdown longer than the length it now belongs to. Keeping
           // a part-used block intact is worth doing, but a few seconds of accidental
           // progress used to lock the new duration out entirely: set work to 1 minute
           // with 14:48 on the clock and the clock stayed at 14:48.
-          const rebaked = {
-            ...timerState,
-            workSeconds,
-            breakSeconds,
-            longBreakSeconds,
-            sessionsBeforeLongBreak: settings.sessionsBeforeLongBreak,
-          };
-          const limit = secondsForMode(rebaked, timerState.mode);
+          const limit = secondsForMode(rebaked, rebaked.mode);
           timerState = {
             ...rebaked,
-            remaining: atFreshWorkStart
-              ? workSeconds
-              : Math.min(timerState.remaining, limit),
+            remaining: atFreshWorkStart ? workSeconds : Math.min(rebaked.remaining, limit),
           };
         }
         persistTimer();

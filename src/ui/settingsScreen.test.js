@@ -286,6 +286,48 @@ describe('the unsaved-changes guard', () => {
     expect(onSave).not.toHaveBeenCalled();
   });
 
+  describe('Change Dragon goes through the same guard', () => {
+    const changeDragon = (el) => el.querySelector('[data-action="change-dragon"]').click();
+
+    it('asks first with a dirty draft, and does not change dragon yet', () => {
+      const onChangeDragon = vi.fn();
+      const el = dirty({ onChangeDragon });
+      changeDragon(el);
+      expect(card(el)).not.toBeNull();
+      expect(onChangeDragon).not.toHaveBeenCalled();
+    });
+
+    it('Save applies the draft, then changes dragon', () => {
+      const calls = [];
+      const onSave = vi.fn((s) => calls.push(['save', s]));
+      const onChangeDragon = vi.fn(() => calls.push(['dragon']));
+      const onBack = vi.fn();
+      const el = dirty({ onSave, onChangeDragon, onBack });
+      changeDragon(el);
+      el.querySelector('[data-action="confirm-save"]').click();
+      expect(calls).toEqual([['save', { ...full, workMinutes: 16 }], ['dragon']]);
+      expect(onBack).not.toHaveBeenCalled();
+    });
+
+    it("Don't save changes dragon without applying the draft", () => {
+      const onSave = vi.fn();
+      const onChangeDragon = vi.fn();
+      const el = dirty({ onSave, onChangeDragon });
+      changeDragon(el);
+      el.querySelector('[data-action="confirm-discard"]').click();
+      expect(onChangeDragon).toHaveBeenCalledTimes(1);
+      expect(onSave).not.toHaveBeenCalled();
+    });
+
+    it('changes dragon at once, with no card, when nothing changed', () => {
+      const onChangeDragon = vi.fn();
+      const el = render({}, { onChangeDragon });
+      changeDragon(el);
+      expect(onChangeDragon).toHaveBeenCalledTimes(1);
+      expect(card(el)).toBeNull();
+    });
+  });
+
   it('a second Back while the card is open does not stack another card', () => {
     const el = dirty();
     back(el);
