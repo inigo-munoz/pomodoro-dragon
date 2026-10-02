@@ -138,6 +138,43 @@ The Start button is green, because the title screen runs on the DEFAULT palette 
 has been chosen yet, and `--accent` there is `#66cc33`. It is the only green on an otherwise
 indigo screen. Correct by the rules, possibly not wanted.
 
+### Follow-ups the user asked for after seeing it (`965d8ec`, `dbde0a3`)
+
+- **Start opens the egg selection**, always, not only on a first run. The chooser marks the
+  saved dragon, so carrying on is one tap. This broke 59 tests that press Start to reach the
+  timer; the test helper now taps the saved dragon too, which replays what the child does and
+  hides nothing. **It also surfaced a real defect**: confirming the dragon already in play
+  rewrote the save file. Harmless when the chooser was rare, pure churn now that every launch
+  goes through it, so `onPick` returns early on an unchanged id.
+- **A painted front door.** Its own backdrop — a twilight valley with a distant dragon — not a
+  theme backdrop, because the screen runs before a dragon exists. At mean luminance 42 against
+  16-32 for the four themed ones it is the brightest of the set, so it is darkened top and
+  bottom to keep the white title winning.
+- **A fantasy display face**: Cinzel, SIL OFL, **self-hosted**. Google's CDN would be a network
+  request an offline PWA cannot make. `woff2` had to join the workbox `globPatterns` or the
+  font would not be precached and the front door would break offline — verified that the built
+  CSS carries the base: `url(/pomodoro-fantasy/fonts/cinzel-700.woff2)`.
+  It dresses `.app-title` and `.screen-title` ONLY. **The body stays on `system-ui`**: a child
+  still learning to read should not have to decode an engraved serif to follow the
+  instructions.
+- **The green Start button is gone.** It came from the default palette's `--accent`, the one
+  that runs before a dragon is chosen, and it fought the painting. The front door never changes
+  theme, so literal parchment colours are safe there and borrow the language of the scroll
+  icons.
+
+Verified live: Cinzel actually loads (`document.fonts.check` true, not a fallback), the body
+font is untouched, the backdrop layer is present, and Start reaches the four eggs.
+**443 tests green**, build succeeds, precache 127 entries.
+
+### A pipeline discovery worth keeping
+
+The clipboard route failed here: with two tabs open the ChatGPT tab never held focus, and the
+Clipboard API refuses an unfocused document. Poisoning the clipboard with a sentinel first is
+what caught it — without that it would have written a stale image and shipped the wrong art.
+**The working alternative needs no focus and no clipboard**: have the page build an
+`<a download>` from the image's blob URL and click it. The file lands in `~/Downloads`. It also
+costs nothing in context, unlike pulling base64 through the agent.
+
 ## Next step
 
 F4 — rename the repository, push, verify FROM THE SERVER, and tell the user to reinstall the
