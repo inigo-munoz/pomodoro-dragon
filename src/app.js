@@ -5,6 +5,7 @@ import { furniture } from './data/furniture.js';
 import { createStore } from './store/store.js';
 import { localStorageBackend } from './store/localStorageBackend.js';
 import { createAudio } from './audio/audio.js';
+import { createReminders } from './platform/reminders.js';
 import { tones } from './audio/tones.js';
 import { assetUrl } from './ui/art.js';
 import { createScreenManager } from './ui/screens.js';
@@ -22,7 +23,17 @@ import { lairOf, buyFurniture, placeItem, unlockLair } from './core/lair.js';
 import { canAfford } from './core/wallet.js';
 import { resolveTheme, applyPalette, applyBackdrop } from './core/theme.js';
 
-export const createApp = (root, { now = () => Date.now(), audioFactory = createAudio } = {}) => {
+// What she is told when a block ends while she is not looking at the screen. A finished
+// work block invites the break; a finished break, long or short, calls her back.
+const endOfBlockNotice = {
+  work: { title: 'Block finished!', body: 'Nice work. Time for a break.' },
+  break: { title: 'Break is over', body: 'Time to get back to studying.' },
+  longBreak: { title: 'Long break is over', body: 'Ready for a new round of studying?' },
+};
+
+export const createApp = (root, {
+  now = () => Date.now(), audioFactory = createAudio, remindersFactory = createReminders,
+} = {}) => {
   const store = createStore(localStorageBackend, config);
   // Music paths are authored from the site root like the art, so they must be resolved
   // against the deploy base too, or the tracks 404 when served from a subpath.
@@ -33,6 +44,10 @@ export const createApp = (root, { now = () => Date.now(), audioFactory = createA
     (config.music[style] ?? config.music[config.musicStyles[0]]).map(assetUrl);
   const audio = audioFactory({ music: playlistFor(state.settings.musicStyle), effects: {}, tones });
   audio.setMuted(state.muted);
+  const reminders = remindersFactory();
+  // The browser keeps the state as 'default' if the prompt is dismissed, so asking only
+  // while undecided is not enough to avoid nagging; remember that we already asked.
+  let askedPermission = false;
   // Settings-derived durations are recomputed; only the volatile part is restored.
   let lastReward = null; // coins from the block just completed, shown until the next one starts
   // The saved countdown can outlive the length it belongs to: durations come from the
@@ -85,14 +100,26 @@ export const createApp = (root, { now = () => Date.now(), audioFactory = createA
     persistTimer();
     audio.unlock();
     audio.playMusic();
+    // The first Start is the first user gesture, which a permission prompt requires.
+    if (!askedPermission && reminders.permission === 'default') {
+      askedPermission = true;
+      reminders.request();
+    }
+    reminders.keepAwake();
     render();
   };
-  const onPause = () => { timerState = pause(timerState, now()); persistTimer(); render(); };
+  const onPause = () => {
+    timerState = pause(timerState, now());
+    persistTimer();
+    reminders.release();
+    render();
+  };
 
   const onBreak = () => {
     lastReward = null;
     timerState = start(advance(timerState), now());
     persistTimer();
+    reminders.keepAwake();
     render();
   };
 
@@ -224,7 +251,12 @@ export const createApp = (root, { now = () => Date.now(), audioFactory = createA
     const result = tick(timerState, now());
     timerState = result.state;
     if (result.completed) {
+      const ended = timerState.mode;
       audio.playEffect('bell');
+      reminders.release();
+      // In front of her, the bell and the dragon already do the job; a notification
+      // would only be noise.
+      if (document.visibilityState !== 'visible') reminders.notify(endOfBlockNotice[ended]);
       if (timerState.mode === 'work') {
         // work finished → grant coins; stays at 0:00 so the ☕ Break button shows
         const before = state.coins;
@@ -242,12 +274,29 @@ export const createApp = (root, { now = () => Date.now(), audioFactory = createA
     else updateMainScreen(screens.get('main'), { timerState });
   };
 
+  // A hidden page can have its interval throttled or suspended, and the browser drops the
+  // wake lock on hide. On return, settle a block that ended meanwhile right away rather
+  // than on the next tick, then take the lock back if a block is still running.
+  const onVisibilityChange = () => {
+    if (document.visibilityState !== 'visible') return;
+    handleTick();
+    if (timerState.running) reminders.keepAwake();
+  };
+  document.addEventListener('visibilitychange', onVisibilityChange);
+
   const interval = setInterval(handleTick, 1000);
   handleTick(); // settle a session restored from a previous run (completes it once)
+  if (timerState.running) reminders.keepAwake(); // a restored block is still running
 
   render();
 
-  return { destroy: () => clearInterval(interval) };
+  return {
+    destroy: () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+      reminders.release();
+    },
+  };
 };
 
 // screen manager with a small cache so we can pre-build then show by name
