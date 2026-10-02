@@ -68,4 +68,14 @@ describe('settings screen', () => {
       expect(render('cozy').querySelector('[data-step^="music"]')).toBeNull();
     });
   });
+
+  it('names the screen "Settings" once, with the back button above it', () => {
+    const el = renderSettingsScreen({ settings, config, onChange: vi.fn(), onBack: () => {} });
+    const titles = el.querySelectorAll('.screen-title');
+    expect(titles).toHaveLength(1);
+    expect(titles[0].textContent).toBe('Settings');
+    const back = el.querySelector('.back-btn');
+    expect(back.compareDocumentPosition(titles[0]) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(el.children[0]).toBe(back);
+  });
 });

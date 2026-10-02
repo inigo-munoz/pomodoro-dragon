@@ -2,7 +2,12 @@ import { itemsForSlot, lairOf } from '../core/lair.js';
 import { canAfford } from '../core/wallet.js';
 import { backButton } from './backButton.js';
 import { art } from './art.js';
+import { screenTitle } from './screenTitle.js';
+import { slotTitle } from './slotNames.js';
 import { themedIcon } from './themedIcon.js';
+
+// The words she sees for a slot. Both floor slots read "Floor": left and right are a
+// layout detail, not something a six-year-old needs named.
 
 // Reuses the shop's grid and card classes so "too expensive" looks exactly like the
 // affordance the child already knows. Names come from the static catalogue, never from
@@ -11,6 +16,7 @@ export const renderSlotPicker = ({ state, slot, furniture, theme, onChoose, onBa
   const section = document.createElement('section');
   section.className = 'screen picker';
   section.appendChild(backButton(onBack));
+  section.appendChild(screenTitle(slotTitle(slot)));
 
   const { owned } = lairOf(state, state.dragonId);
   const grid = document.createElement('div');

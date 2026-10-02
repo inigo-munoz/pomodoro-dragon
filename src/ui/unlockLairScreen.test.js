@@ -93,4 +93,11 @@ describe('unlock offer screen', () => {
     const el = renderUnlockLair(ctx());
     expect(el.querySelector('[draggable]')).toBeNull();
   });
+
+  it('names the screen "Lair", after the back button', () => {
+    const el = renderUnlockLair(ctx());
+    expect(el.querySelector('.screen-title').textContent).toBe('Lair');
+    expect(el.children[0].classList.contains('back-btn')).toBe(true);
+    expect(el.children[1].classList.contains('screen-title')).toBe(true);
+  });
 });

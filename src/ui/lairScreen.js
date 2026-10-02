@@ -3,6 +3,8 @@ import { lairOf, itemInSlot } from '../core/lair.js';
 import { slots } from '../data/furniture.js';
 import { art } from './art.js';
 import { backButton } from './backButton.js';
+import { screenTitle } from './screenTitle.js';
+import { slotName } from './slotNames.js';
 
 // Every slot is a button, filled or empty: a filled slot must still open the picker, or
 // an owned item could never be put back on display for free.
@@ -10,7 +12,8 @@ const slotButton = (slot, item, theme, onPickSlot) => {
   const btn = document.createElement('button');
   btn.className = 'lair-slot' + (item ? '' : ' is-empty');
   btn.dataset.slot = slot;
-  btn.setAttribute('aria-label', item ? `Change the ${slot}` : `Add something to the ${slot}`);
+  const place = slotName(slot);
+  btn.setAttribute('aria-label', item ? `Change the ${place}` : `Add something to the ${place}`);
   if (item) {
     // the id, not the art: a slot's contents must be identifiable whether the theme has
     // real art or is still falling back to an emoji
@@ -27,6 +30,7 @@ export const renderLairScreen = ({ state, dragon, xp, theme, furniture, onPickSl
   const section = document.createElement('section');
   section.className = 'screen lair';
   section.appendChild(backButton(onBack));
+  section.appendChild(screenTitle('Lair'));
 
   const room = document.createElement('div');
   room.className = 'lair-room';

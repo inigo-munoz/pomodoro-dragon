@@ -88,6 +88,10 @@ describe('lair screen', () => {
   it('labels slots for assistive tech according to their state', () => {
     const el = renderLairScreen(ctx({ state: withSlots({ wall: 'banner' }) }));
     expect(el.querySelector('[data-slot="wall"]').getAttribute('aria-label')).toBe('Change the wall');
+    expect(el.querySelector('[data-slot="floorLeft"]').getAttribute('aria-label'))
+      .toBe('Add something to the left floor');
+    expect(el.querySelector('[data-slot="floorRight"]').getAttribute('aria-label'))
+      .toBe('Add something to the right floor');
     expect(el.querySelector('[data-slot="corner"]').getAttribute('aria-label'))
       .toBe('Add something to the corner');
   });
@@ -128,5 +132,13 @@ describe('lair screen', () => {
   it('uses no punitive copy', () => {
     const el = renderLairScreen(ctx());
     expect(el.textContent).not.toMatch(/hungry|lost|missed|neglect|streak|warning/i);
+  });
+
+  it('names the screen "Lair", as a sibling before the room', () => {
+    const el = renderLairScreen(ctx());
+    const title = el.querySelector('.screen-title');
+    expect(title.textContent).toBe('Lair');
+    expect(title.parentElement).toBe(el);
+    expect(title.nextElementSibling.classList.contains('lair-room')).toBe(true);
   });
 });

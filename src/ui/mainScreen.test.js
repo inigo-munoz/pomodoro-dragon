@@ -347,4 +347,11 @@ describe('a finished work block counts the moment the bell rings', () => {
     const el = parked({ mode: 'break', completedWork: 1 });
     expect(el.querySelectorAll('.session-dot.is-done')).toHaveLength(1);
   });
+
+  it('has no screen title: the top bar and the dragon already say where you are', () => {
+    const el = renderMainScreen({
+      ...base, timerState: { mode: 'work', remaining: 900, running: false },
+    });
+    expect(el.querySelector('.screen-title')).toBeNull();
+  });
 });

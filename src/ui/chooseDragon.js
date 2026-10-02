@@ -1,12 +1,16 @@
 import { art } from './art.js';
+import { screenTitle } from './screenTitle.js';
 
 export const renderChooseDragon = ({ dragons, onPick, currentId }) => {
   const section = document.createElement('section');
   section.className = 'screen choose-dragon';
 
-  const title = document.createElement('h1');
-  title.textContent = 'Choose your dragon!';
-  section.appendChild(title);
+  section.appendChild(screenTitle('Dragons'));
+
+  const lead = document.createElement('p');
+  lead.className = 'screen-lead';
+  lead.textContent = 'Choose your dragon!';
+  section.appendChild(lead);
 
   const grid = document.createElement('div');
   grid.className = 'dragon-grid';

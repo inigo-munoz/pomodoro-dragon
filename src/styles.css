@@ -76,11 +76,19 @@ body {
 
 /* settings screen: one left-aligned column, stepper and presets in one control */
 .settings { align-items: stretch; }
-.settings .screen-title { margin: 0; font-size: 1.8rem; text-align: left; }
 .settings .setting-control { display: flex; align-items: center; gap: 10px; }
 .settings .setting-control > button { flex: none; }
 .settings .big-btn { align-self: flex-start; min-height: 48px; }
 .settings .back-btn { min-width: 48px; min-height: 48px; padding: 8px 12px; margin-left: -12px; }
+
+/* One quiet word per screen, always in the same place: a chapter title, not a shout.
+   --fg at low opacity so every theme's palette carries it without a new token. */
+.screen-title {
+  align-self: flex-start; margin: 0; font-size: 2.4rem; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.12em; text-align: left;
+  color: var(--fg); opacity: 0.45;
+}
+.screen-lead { align-self: flex-start; margin: 0; font-size: 1.2rem; text-align: left; }
 
 .back-btn { align-self: flex-start; font-size: 1.1rem; background: none; border: none; color: var(--back-btn); }
 

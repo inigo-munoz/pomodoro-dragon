@@ -41,4 +41,11 @@ describe('shop screen', () => {
     expect(appleIcon).not.toBeNull();
     expect(appleIcon.getAttribute('src')).toBe(assetUrl('/art/foods/apple.webp'));
   });
+
+  it('names the screen "Shop", right after the back button', () => {
+    const el = renderShopScreen({ state: { coins: 10 }, foods, onBuy: vi.fn(), onBack: () => {} });
+    expect(el.querySelector('.screen-title').textContent).toBe('Shop');
+    expect(el.children[0].classList.contains('back-btn')).toBe(true);
+    expect(el.children[1].classList.contains('screen-title')).toBe(true);
+  });
 });
