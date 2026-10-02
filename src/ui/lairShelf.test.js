@@ -32,7 +32,7 @@ describe('lair shelf', () => {
   it('labels each row with the spoken slot name, so the two floors differ', () => {
     const { el } = build();
     const labels = [...el.querySelectorAll('[data-shelf-slot] .shelf-label')].map((l) => l.textContent);
-    expect(labels).toEqual(['wall', 'left floor', 'right floor', 'corner']);
+    expect(labels).toEqual(['wall', 'left floor', 'right floor', 'center']);
   });
 
   it('marks the item in its slot as placed and fires nothing when tapped', () => {

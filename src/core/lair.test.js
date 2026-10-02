@@ -6,7 +6,7 @@ import { furniture, slots } from '../data/furniture.js';
 
 describe('furniture catalogue', () => {
   it('has exactly four fixed slots, in order', () => {
-    expect(slots).toEqual(['wall', 'floorLeft', 'floorRight', 'corner']);
+    expect(slots).toEqual(['wall', 'floorLeft', 'floorRight', 'center']);
   });
 
   // Every slot offers the same number of choices on purpose. An uneven split means two
@@ -43,10 +43,10 @@ describe('furniture catalogue', () => {
     }
   });
 
-  it('marks exactly three pets, all in the corner', () => {
+  it('marks exactly three pets, all in the center', () => {
     const pets = furniture.filter((i) => i.pet === true);
     expect(pets).toHaveLength(3);
-    expect(pets.every((i) => i.slot === 'corner')).toBe(true);
+    expect(pets.every((i) => i.slot === 'center')).toBe(true);
   });
 });
 
@@ -171,7 +171,7 @@ describe('buyFurniture', () => {
 
   it('stores no per-pet fields', () => {
     const next = buyFurniture(stateWith(), item('imp'));
-    expect(lairOf(next, 'frost')).toEqual({ owned: ['imp'], slots: { corner: 'imp' } });
+    expect(lairOf(next, 'frost')).toEqual({ owned: ['imp'], slots: { center: 'imp' } });
   });
 });
 

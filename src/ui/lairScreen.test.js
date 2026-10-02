@@ -83,7 +83,7 @@ describe('lair screen', () => {
     const state = withSlots({ wall: 'banner' });
     const before = JSON.stringify(state);
     const el = renderLairScreen(ctx({ state, onBuy, onPlace }));
-    el.querySelector('[data-slot="corner"]').click();
+    el.querySelector('[data-slot="center"]').click();
     el.querySelector('[data-slot="wall"]').click();
     expect(onBuy).not.toHaveBeenCalled();
     expect(onPlace).not.toHaveBeenCalled();
@@ -97,8 +97,8 @@ describe('lair screen', () => {
       .toBe('Nothing on the left floor yet');
     expect(el.querySelector('[data-slot="floorRight"]').getAttribute('aria-label'))
       .toBe('Nothing on the right floor yet');
-    expect(el.querySelector('[data-slot="corner"]').getAttribute('aria-label'))
-      .toBe('Nothing on the corner yet');
+    expect(el.querySelector('[data-slot="center"]').getAttribute('aria-label'))
+      .toBe('Nothing on the center yet');
   });
 
   it('shows the shelf under the room, with all twelve pieces', () => {

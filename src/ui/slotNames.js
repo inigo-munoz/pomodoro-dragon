@@ -9,7 +9,7 @@ const names = {
   wall: { title: 'Wall', spoken: 'wall' },
   floorLeft: { title: 'Floor', spoken: 'left floor' },
   floorRight: { title: 'Floor', spoken: 'right floor' },
-  corner: { title: 'Corner', spoken: 'corner' },
+  center: { title: 'Center', spoken: 'center' },
 };
 
 export const slotTitle = (slot) => names[slot]?.title ?? slot;
