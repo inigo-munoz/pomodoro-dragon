@@ -150,6 +150,8 @@ body {
 }
 .screen-lead { align-self: flex-start; margin: 0; font-size: 1.2rem; text-align: left; }
 
+.screen-bar { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+.screen-bar .back-btn { align-self: auto; }
 .back-btn { align-self: flex-start; font-size: 1.1rem; background: none; border: none; color: var(--back-btn); }
 
 .level-up-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; }

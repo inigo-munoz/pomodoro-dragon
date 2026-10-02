@@ -1,5 +1,6 @@
 import { currentLevel, levelProgress } from '../core/dragon.js';
 import { art } from './art.js';
+import { coinCounter } from './coinCounter.js';
 import { themedIcon } from './themedIcon.js';
 import { isBreak } from '../core/timer.js';
 
@@ -66,7 +67,7 @@ export const renderMainScreen = (ctx) => {
   section.className = 'screen main';
   section.innerHTML =
     `<header class="top-bar">` +
-      `<span class="coin-counter"><span class="coin-icon"></span> ${state.coins}</span>` +
+      `<span class="coin-slot"></span>` +
       `<span class="mode-label">${MODE_LABELS[timerState.mode] ?? 'Break'}</span>` +
       `<button class="icon-btn${state.muted ? ' is-muted' : ''}" data-action="mute"` +
         ` aria-pressed="${state.muted}"` +
@@ -90,7 +91,7 @@ export const renderMainScreen = (ctx) => {
 
   section.querySelector('.dragon-stage').appendChild(stageArt(ctx, level));
 
-  section.querySelector('.coin-icon').appendChild(themedIcon(theme, 'coin'));
+  section.querySelector('.coin-slot').replaceWith(coinCounter(state.coins, theme));
   section.querySelector('.session-reward .coin-icon')?.appendChild(themedIcon(theme, 'coin'));
   // Always the sound icon: muted is the same speaker with a CSS stroke through it
   // (.icon-btn.is-muted::after), so the symbol stays one thing the child recognises

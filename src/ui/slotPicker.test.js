@@ -116,4 +116,11 @@ describe('slot picker', () => {
     expect(titleOf('floorRight')).toBe('Floor');
     expect(titleOf('corner')).toBe('Corner');
   });
+
+  it('shows how many coins she has, with the back button first in the bar', () => {
+    const { el } = render({ state: state({ coins: 61 }) });
+    const bar = el.querySelector('.screen-bar');
+    expect(bar.querySelector('.coin-counter').textContent).toContain('61');
+    expect(bar.firstElementChild.classList.contains('back-btn')).toBe(true);
+  });
 });

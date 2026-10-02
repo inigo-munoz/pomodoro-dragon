@@ -1,6 +1,7 @@
 import { itemsForSlot, lairOf } from '../core/lair.js';
 import { canAfford } from '../core/wallet.js';
 import { backButton } from './backButton.js';
+import { coinCounter } from './coinCounter.js';
 import { art } from './art.js';
 import { screenTitle } from './screenTitle.js';
 import { slotTitle } from './slotNames.js';
@@ -15,7 +16,11 @@ import { themedIcon } from './themedIcon.js';
 export const renderSlotPicker = ({ state, slot, furniture, theme, onChoose, onBack }) => {
   const section = document.createElement('section');
   section.className = 'screen picker';
-  section.appendChild(backButton(onBack));
+  // Back on the left, what she can spend on the right: prices mean little without the purse.
+  const bar = document.createElement('div');
+  bar.className = 'screen-bar';
+  bar.append(backButton(onBack), coinCounter(state.coins, theme));
+  section.appendChild(bar);
   section.appendChild(screenTitle(slotTitle(slot)));
 
   const { owned } = lairOf(state, state.dragonId);
