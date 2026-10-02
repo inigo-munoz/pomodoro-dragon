@@ -157,9 +157,10 @@ export const renderSettingsScreen = ({ settings, config, onSave, onBack, onChang
   };
 
   // Leaving with unsaved changes asks first; the card lives inside this screen so it
-  // disappears with it. A clean draft leaves at once.
-  const askBeforeLeaving = () => {
-    if (!isDirty()) { onBack(); return; }
+  // disappears with it. A clean draft leaves at once. `leave` is the exit to take, so Back
+  // and Change Dragon share this one card.
+  const askBeforeLeaving = (leave) => {
+    if (!isDirty()) { leave(); return; }
     if (section.querySelector('.confirm-overlay')) return;
 
     const button = (className, action, text, onClick) => {
@@ -177,8 +178,8 @@ export const renderSettingsScreen = ({ settings, config, onSave, onBack, onChang
     card.className = 'unlock-card';
     card.append(
       title,
-      button('big-btn', 'confirm-save', 'Save', () => { onSave({ ...draft }); onBack(); }),
-      button('big-btn secondary', 'confirm-discard', "Don't save", onBack),
+      button('big-btn', 'confirm-save', 'Save', () => { onSave({ ...draft }); leave(); }),
+      button('big-btn secondary', 'confirm-discard', "Don't save", leave),
     );
     const overlay = document.createElement('div');
     overlay.className = 'level-up-overlay confirm-overlay';
@@ -196,9 +197,9 @@ export const renderSettingsScreen = ({ settings, config, onSave, onBack, onChang
   changeDragon.className = 'big-btn';
   changeDragon.dataset.action = 'change-dragon';
   changeDragon.textContent = 'Change Dragon';
-  if (onChangeDragon) changeDragon.addEventListener('click', onChangeDragon);
+  if (onChangeDragon) changeDragon.addEventListener('click', () => askBeforeLeaving(onChangeDragon));
 
-  section.append(backButton(askBeforeLeaving), screenTitle('Settings'), panelSlot, changeDragon);
+  section.append(backButton(() => askBeforeLeaving(onBack)), screenTitle('Settings'), panelSlot, changeDragon);
   paint();
   return section;
 };
