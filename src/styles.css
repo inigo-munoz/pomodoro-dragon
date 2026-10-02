@@ -259,7 +259,7 @@ body {
 .lair-room > .dragon-art { position: absolute; left: 18%; top: 22%; width: 64%; height: 56%; object-fit: contain; font-size: 5rem; pointer-events: none; }
 /* sized as a share of the room, not a fixed rem: the room shrinks on a narrow screen
    and fixed slots would collide. 21% is what the art was drawn for. */
-.lair-slot { position: absolute; width: 21%; height: 21%; padding: 4px; border: none; border-radius: 16px; background: transparent; color: var(--fg); font-size: 2.6rem; display: flex; align-items: center; justify-content: center; }
+.lair-slot { position: absolute; width: 21%; height: 21%; padding: 4px; border: none; border-radius: 16px; background: transparent; color: var(--fg); font-size: 2.6rem; display: flex; align-items: center; justify-content: center; pointer-events: none; }
 .lair-slot .art-img { width: 100%; height: 100%; object-fit: contain; }
 
 /* A piece of furniture is painted in its own room's palette and texture, so at the 21% size
@@ -300,3 +300,21 @@ body {
 .unlock-art .art-img { width: 100%; height: 100%; object-fit: cover; }
 .unlock-art .art-emoji { font-size: 7rem; opacity: 0.5; }
 .unlock-blurb { margin: 0; text-align: center; }
+
+/* the shelf under the lair: one row per slot, its label above three cards. The cards are
+   the shop's .food-card, tightened so twelve of them fit under the room. A piece in the
+   room is outlined in the accent so it reads as "there" at a glance. */
+.lair-shelf { display: flex; flex-direction: column; gap: 6px; width: 100%; }
+/* The slot name is a fourth column rather than a line of its own: four extra lines of
+   label pushed the shelf past the bottom of a tablet screen, and the room is what the
+   child came to look at, so the room keeps its size and the shelf gives up the space. */
+.shelf-row { display: grid; grid-template-columns: 4.2rem repeat(3, 1fr); gap: 6px; align-items: center; }
+.shelf-label { font-size: 0.78rem; font-weight: 700; text-transform: capitalize; line-height: 1.1; opacity: 0.8; }
+.shelf-item { align-items: center; padding: 5px 4px; gap: 1px; min-height: 48px; }
+.shelf-item .food-icon { font-size: 1.8rem; line-height: 1; }
+.shelf-item .art-img { width: 2rem; height: 2rem; object-fit: contain; }
+.shelf-item .food-name { font-size: 0.72rem; line-height: 1.15; }
+.shelf-item .food-price, .shelf-item .shelf-tag { font-size: 0.72rem; line-height: 1.15; }
+.shelf-item .coin-icon .art-img, .shelf-item .price-coin .art-img { width: 1.1rem; height: 1.1rem; }
+.shelf-item[data-state="placed"] { outline: 3px solid var(--accent); outline-offset: -3px; }
+.shelf-item[data-state="locked"] { cursor: default; }

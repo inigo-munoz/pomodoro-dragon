@@ -11,7 +11,8 @@ const ctx = (over = {}) => ({
   xp: 0,
   theme: { furniture: {}, room: '🕳️' },
   furniture,
-  onPickSlot: vi.fn(),
+  onBuy: vi.fn(),
+  onPlace: vi.fn(),
   onBack: vi.fn(),
   ...over,
 });
@@ -22,17 +23,19 @@ const withSlots = (saved) => ({
 });
 
 describe('lair screen', () => {
-  it('renders exactly the four slots as buttons', () => {
+  it('renders exactly the four slots, in slot order, as plain elements', () => {
     const el = renderLairScreen(ctx());
-    const found = [...el.querySelectorAll('button[data-slot]')].map((b) => b.dataset.slot);
-    expect(found).toEqual(slots);
+    const found = [...el.querySelectorAll('.lair-room [data-slot]')];
+    expect(found.map((n) => n.dataset.slot)).toEqual(slots);
+    expect(el.querySelectorAll('button[data-slot]')).toHaveLength(0);
+    for (const n of found) expect(n.tagName).toBe('DIV');
   });
 
-  it('renders four empty slots with a + for an undecorated dragon', () => {
+  it('renders four empty slots, dashed but without a + that advertises a tap', () => {
     const el = renderLairScreen(ctx());
     const empties = el.querySelectorAll('[data-slot].is-empty');
     expect(empties).toHaveLength(4);
-    for (const b of empties) expect(b.textContent).toContain('+');
+    for (const b of empties) expect(b.textContent).not.toContain('+');
   });
 
   it('renders themed art for a stored item', () => {
@@ -74,26 +77,54 @@ describe('lair screen', () => {
     expect(el.querySelectorAll('[data-slot]')).toHaveLength(4);
   });
 
-  it('opens the picker for an empty slot and for a filled slot, changing nothing', () => {
+  it('does nothing when a slot is tapped', () => {
+    const onBuy = vi.fn();
+    const onPlace = vi.fn();
     const state = withSlots({ wall: 'banner' });
     const before = JSON.stringify(state);
-    const onPickSlot = vi.fn();
-    const el = renderLairScreen(ctx({ state, onPickSlot }));
+    const el = renderLairScreen(ctx({ state, onBuy, onPlace }));
     el.querySelector('[data-slot="corner"]').click();
     el.querySelector('[data-slot="wall"]').click();
-    expect(onPickSlot.mock.calls).toEqual([['corner'], ['wall']]);
+    expect(onBuy).not.toHaveBeenCalled();
+    expect(onPlace).not.toHaveBeenCalled();
     expect(JSON.stringify(state)).toBe(before);
   });
 
-  it('labels slots for assistive tech according to their state', () => {
+  it('describes what is in each slot for assistive tech, without promising a tap', () => {
     const el = renderLairScreen(ctx({ state: withSlots({ wall: 'banner' }) }));
-    expect(el.querySelector('[data-slot="wall"]').getAttribute('aria-label')).toBe('Change the wall');
+    expect(el.querySelector('[data-slot="wall"]').getAttribute('aria-label')).toBe('Banner on the wall');
     expect(el.querySelector('[data-slot="floorLeft"]').getAttribute('aria-label'))
-      .toBe('Add something to the left floor');
+      .toBe('Nothing on the left floor yet');
     expect(el.querySelector('[data-slot="floorRight"]').getAttribute('aria-label'))
-      .toBe('Add something to the right floor');
+      .toBe('Nothing on the right floor yet');
     expect(el.querySelector('[data-slot="corner"]').getAttribute('aria-label'))
-      .toBe('Add something to the corner');
+      .toBe('Nothing on the corner yet');
+  });
+
+  it('shows the shelf under the room, with all twelve pieces', () => {
+    const el = renderLairScreen(ctx());
+    const room = el.querySelector('.lair-room');
+    expect(room.nextElementSibling.classList.contains('lair-shelf')).toBe(true);
+    expect(el.querySelectorAll('.lair-shelf [data-shelf-item]')).toHaveLength(12);
+  });
+
+  it('feeds the shelf the purse and the lair, and forwards its callbacks', () => {
+    const onBuy = vi.fn();
+    const onPlace = vi.fn();
+    const el = renderLairScreen(ctx({
+      state: { ...withSlots({ wall: 'banner' }), coins: 30 }, onBuy, onPlace,
+    }));
+    expect(el.querySelector('[data-shelf-item="banner"]').dataset.state).toBe('placed');
+    el.querySelector('[data-shelf-item="cushion"]').click(); // 30 coins, price 30
+    expect(onBuy).toHaveBeenCalledOnce();
+  });
+
+  it('shows the coin counter beside the back button, above the title', () => {
+    const el = renderLairScreen(ctx({ state: { dragonId: 'frost', coins: 42, lairs: {} } }));
+    const bar = el.querySelector('.screen-bar');
+    expect(bar.querySelector('.back-btn')).not.toBeNull();
+    expect(bar.querySelector('.coin-counter').textContent).toContain('42');
+    expect(bar.nextElementSibling.classList.contains('screen-title')).toBe(true);
   });
 
   it('calls onBack from the back control', () => {
@@ -120,7 +151,8 @@ describe('lair screen', () => {
     }));
     expect(el.querySelector('[data-slot="wall"]').classList.contains('is-empty')).toBe(true);
     expect(el.querySelector('[data-slot="floorLeft"]').textContent).toContain('🛏️');
-    expect(el.textContent.split('🛏️').length - 1).toBe(1);
+    // the room only: the shelf legitimately lists the bed again
+    expect(el.querySelector('.lair-room').textContent.split('🛏️').length - 1).toBe(1);
   });
 
   it('offers no drag affordance', () => {

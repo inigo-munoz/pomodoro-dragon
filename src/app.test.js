@@ -444,7 +444,7 @@ describe('createApp lair', () => {
   );
   const saved = () => JSON.parse(window.localStorage.getItem(config.storageKey));
   const slot = (name) => root.querySelector(`[data-slot="${name}"]`);
-  const choose = (id) => root.querySelector(`[data-item="${id}"]`).click();
+  const shelf = (id) => root.querySelector(`[data-shelf-item="${id}"]`);
   const openLair = () => click('lair');
 
   it('opens the lair for the active dragon from the nav bar and returns with state unchanged', () => {
@@ -461,60 +461,71 @@ describe('createApp lair', () => {
     expect(saved().lairs).toBeUndefined();
   });
 
-  it('opens the picker for an empty slot and for a filled slot', () => {
+  it('shows the shelf with all twelve pieces and no picker screen anywhere', () => {
     seedSave({ lairs: { frost: { owned: ['bed'], slots: { floorLeft: 'bed' } } } });
     createApp(root);
     openLair();
-
-    slot('wall').click();
-    expect(root.querySelector('.screen.picker')).not.toBeNull();
-    expect([...root.querySelectorAll('[data-item]')].map((c) => c.dataset.item))
-      .toEqual(['banner', 'painting', 'trophy']);
-
-    root.querySelector('.back-btn').click();
-    expect(root.querySelector('.screen.lair')).not.toBeNull();
-
-    slot('floorLeft').click();
-    expect([...root.querySelectorAll('[data-item]')].map((c) => c.dataset.item))
-      .toEqual(['bed', 'nest', 'cushion']);
+    expect(root.querySelectorAll('.lair-shelf [data-shelf-item]')).toHaveLength(12);
+    expect(shelf('bed').dataset.state).toBe('placed');
+    expect(root.querySelector('.screen.picker')).toBeNull();
   });
 
-  it('buys an affordable item through the picker and returns to the lair with the slot filled', () => {
+  it('does nothing when a slot in the room is tapped', () => {
+    seedSave({ lairs: { frost: { owned: ['bed'], slots: { floorLeft: 'bed' } } } });
+    createApp(root);
+    openLair();
+    slot('wall').click();
+    slot('floorLeft').click();
+    expect(root.querySelector('.screen.lair')).not.toBeNull();
+    expect(saved().coins).toBe(100);
+  });
+
+  it('buys from the shelf: spends the price and the piece appears in its slot', () => {
     seedSave();
     createApp(root);
     openLair();
-    slot('floorLeft').click();
-    choose('bed');
+    expect(coins()).toBe(100);
+    expect(slot('floorLeft').classList.contains('is-empty')).toBe(true);
+
+    shelf('bed').click();
 
     expect(root.querySelector('.screen.lair')).not.toBeNull();
+    expect(coins()).toBe(60); // the counter on the lair screen itself updated
     expect(slot('floorLeft').classList.contains('is-empty')).toBe(false);
+    expect(slot('floorLeft').dataset.item).toBe('bed');
+    expect(shelf('bed').dataset.state).toBe('placed');
     expect(saved().coins).toBe(60);
     expect(saved().lairs.frost).toEqual({ owned: ['bed'], slots: { floorLeft: 'bed' } });
   });
 
-  it('puts an owned item back on display for free without throwing or spending', () => {
+  it('places an owned piece from the shelf for free, without throwing or spending', () => {
     seedSave({
       coins: 5,
       lairs: { frost: { owned: ['banner', 'painting'], slots: { wall: 'painting' } } },
     });
     createApp(root);
     openLair();
-    slot('wall').click();
-    expect(() => choose('banner')).not.toThrow();
+    expect(shelf('banner').dataset.state).toBe('owned');
+    expect(() => shelf('banner').click()).not.toThrow();
 
+    expect(slot('wall').dataset.item).toBe('banner');
+    expect(shelf('banner').dataset.state).toBe('placed');
+    expect(shelf('painting').dataset.state).toBe('owned');
     expect(saved().coins).toBe(5);
     expect(saved().lairs.frost.owned).toEqual(['banner', 'painting']);
     expect(saved().lairs.frost.slots.wall).toBe('banner');
   });
 
-  it('leaves an unaffordable item inert', () => {
+  it('cannot buy a piece the purse does not cover', () => {
     seedSave({ coins: 39 });
     createApp(root);
     openLair();
-    slot('floorLeft').click();
-    choose('bed');
+    expect(shelf('bed').dataset.state).toBe('locked');
+    expect(shelf('bed').disabled).toBe(true);
+    shelf('bed').click();
 
-    expect(root.querySelector('.screen.picker')).not.toBeNull();
+    expect(coins()).toBe(39);
+    expect(slot('floorLeft').classList.contains('is-empty')).toBe(true);
     expect(saved().coins).toBe(39);
     // Nothing was saved at all, so no lair data was written.
     expect(saved().lairs).toBeUndefined();
@@ -524,12 +535,9 @@ describe('createApp lair', () => {
     seedSave();
     const first = createApp(root);
     openLair();
-    slot('wall').click();
-    choose('banner');
-    slot('wall').click();
-    choose('painting');
-    slot('wall').click();
-    choose('banner'); // free swap back
+    shelf('banner').click();
+    shelf('painting').click();
+    shelf('banner').click(); // free swap back
     first.destroy();
 
     root.remove();
@@ -550,8 +558,7 @@ describe('createApp lair', () => {
     seedSave({ lairs: { blaze } });
     createApp(root);
     openLair();
-    slot('floorLeft').click();
-    choose('bed');
+    shelf('bed').click();
 
     expect(JSON.stringify(saved().lairs.blaze)).toBe(JSON.stringify(blaze));
   });

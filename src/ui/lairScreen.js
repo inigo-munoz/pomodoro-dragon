@@ -3,33 +3,37 @@ import { lairOf, itemInSlot } from '../core/lair.js';
 import { slots } from '../data/furniture.js';
 import { art } from './art.js';
 import { backButton } from './backButton.js';
+import { coinCounter } from './coinCounter.js';
+import { renderLairShelf } from './lairShelf.js';
 import { screenTitle } from './screenTitle.js';
 import { slotName } from './slotNames.js';
 
-// Every slot is a button, filled or empty: a filled slot must still open the picker, or
-// an owned item could never be put back on display for free.
-const slotButton = (slot, item, theme, onPickSlot) => {
-  const btn = document.createElement('button');
-  btn.className = 'lair-slot' + (item ? '' : ' is-empty');
-  btn.dataset.slot = slot;
+// A slot only displays. Everything that changes the room happens on the shelf below it, so
+// a slot is a div: a button here would promise a tap that does nothing. The dashed outline
+// of an empty one stays, because it shows where a piece will go.
+const slotView = (slot, item, theme) => {
+  const el = document.createElement('div');
+  el.className = 'lair-slot' + (item ? '' : ' is-empty');
+  el.dataset.slot = slot;
   const place = slotName(slot);
-  btn.setAttribute('aria-label', item ? `Change the ${place}` : `Add something to the ${place}`);
+  el.setAttribute('aria-label', item ? `${item.name} on the ${place}` : `Nothing on the ${place} yet`);
   if (item) {
     // the id, not the art: a slot's contents must be identifiable whether the theme has
     // real art or is still falling back to an emoji
-    btn.dataset.item = item.id;
-    btn.appendChild(art(theme?.furniture?.[item.id] ?? item.fallback, item.name, item.fallback));
-  } else {
-    btn.textContent = '+';
+    el.dataset.item = item.id;
+    el.appendChild(art(theme?.furniture?.[item.id] ?? item.fallback, item.name, item.fallback));
   }
-  btn.addEventListener('click', () => onPickSlot(slot));
-  return btn;
+  return el;
 };
 
-export const renderLairScreen = ({ state, dragon, xp, theme, furniture, onPickSlot, onBack }) => {
+export const renderLairScreen = ({ state, dragon, xp, theme, furniture, onBuy, onPlace, onBack }) => {
   const section = document.createElement('section');
   section.className = 'screen lair';
-  section.appendChild(backButton(onBack));
+  // Back on the left, what she can spend on the right: the shelf below has prices.
+  const bar = document.createElement('div');
+  bar.className = 'screen-bar';
+  bar.append(backButton(onBack), coinCounter(state.coins, theme));
+  section.appendChild(bar);
   section.appendChild(screenTitle('Lair'));
 
   const room = document.createElement('div');
@@ -51,9 +55,10 @@ export const renderLairScreen = ({ state, dragon, xp, theme, furniture, onPickSl
 
   const lair = lairOf(state, state.dragonId);
   for (const slot of slots) {
-    room.appendChild(slotButton(slot, itemInSlot(lair, furniture, slot), theme, onPickSlot));
+    room.appendChild(slotView(slot, itemInSlot(lair, furniture, slot), theme));
   }
 
   section.appendChild(room);
+  section.appendChild(renderLairShelf({ state, furniture, theme, onBuy, onPlace }));
   return section;
 };

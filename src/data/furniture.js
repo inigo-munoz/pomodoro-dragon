@@ -1,5 +1,5 @@
 // The room has four fixed positions. An item declares which one it belongs to, so a
-// picker opened from a slot can offer only what fits there.
+// shelf can list each slot's row from just the items that fit there.
 export const slots = ['wall', 'floorLeft', 'floorRight', 'corner'];
 
 // Priced against the food shop (apple 10, meat 25, cake 50) at one coin per minute, so a
