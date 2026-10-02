@@ -31,3 +31,7 @@ export const applyBackdrop = (backdrop, root = document.documentElement) => {
   if (backdrop) root.style.setProperty('--backdrop', `url("${assetUrl(backdrop)}")`);
   else root.style.removeProperty('--backdrop');
 };
+
+// The room a failed image falls back to. Furniture carries its own emoji (item.fallback); the
+// room has no catalogue entry, so the default theme is where its emoji lives.
+export const defaultRoom = themes.default.room;

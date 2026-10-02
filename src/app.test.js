@@ -1302,6 +1302,27 @@ describe('createApp front door', () => {
     expect(root.querySelector('.screen.title')).not.toBeNull();
   });
 
+  it('Back from the chooser opened by Start returns to the title screen', () => {
+    window.localStorage.setItem(config.storageKey, JSON.stringify({ dragonId: 'frost' }));
+    openRaw();
+    click('start-app');
+    root.querySelector('.choose-dragon .back-btn').click();
+    expect(root.querySelector('.screen.title')).not.toBeNull();
+    expect(root.querySelector('.choose-dragon')).toBeNull();
+  });
+
+  it('Back from the chooser opened by Change Dragon returns to Settings', () => {
+    window.localStorage.setItem(config.storageKey, JSON.stringify({ dragonId: 'frost' }));
+    openRaw();
+    click('start-app');
+    root.querySelector('[data-dragon="frost"]').click();
+    click('settings');
+    click('change-dragon');
+    root.querySelector('.choose-dragon .back-btn').click();
+    expect(root.querySelector('.screen.settings')).not.toBeNull();
+    expect(root.querySelector('.choose-dragon')).toBeNull();
+  });
+
   it('does not touch the save just by showing the title screen', () => {
     const before = window.localStorage.getItem(config.storageKey);
     openRaw();

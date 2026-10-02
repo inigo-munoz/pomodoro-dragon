@@ -1,6 +1,8 @@
 import { canAfford } from '../core/wallet.js';
 import { backButton } from './backButton.js';
+import { coinCounter } from './coinCounter.js';
 import { art } from './art.js';
+import { defaultRoom } from '../core/theme.js';
 import { screenTitle } from './screenTitle.js';
 import { themedIcon } from './themedIcon.js';
 
@@ -9,7 +11,11 @@ import { themedIcon } from './themedIcon.js';
 export const renderUnlockLair = ({ state, price, theme, onConfirm, onBack }) => {
   const section = document.createElement('section');
   section.className = 'screen unlock';
-  section.appendChild(backButton(onBack));
+  // Back on the left, the purse on the right, as in the shop: what she has is what the offer asks.
+  const bar = document.createElement('div');
+  bar.className = 'screen-bar';
+  bar.append(backButton(onBack), coinCounter(state.coins, theme));
+  section.appendChild(bar);
   section.appendChild(screenTitle('Lair'));
 
   const card = document.createElement('div');
@@ -21,7 +27,7 @@ export const renderUnlockLair = ({ state, price, theme, onConfirm, onBack }) => 
 
   // The room she is saving for, through art() so the path goes through assetUrl() and an
   // emoji or a missing room still renders. Skipped without a room: the card stays a panel.
-  if (theme?.room) card.querySelector('.unlock-art').appendChild(art(theme.room, 'Lair', theme.room));
+  if (theme?.room) card.querySelector('.unlock-art').appendChild(art(theme.room, '', defaultRoom));
 
   const affordable = canAfford(state.coins, price);
   const btn = document.createElement('button');

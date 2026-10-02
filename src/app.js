@@ -109,7 +109,7 @@ export const createApp = (root, {
   const showTitle = () => {
     // Start goes to the eggs, not straight to the timer, even when a dragon is already saved:
     // the chooser marks the current one, so carrying on is one tap and changing is free.
-    screens.set('title', renderTitleScreen({ onStart: onChangeDragon, onInstructions: showInstructions }));
+    screens.set('title', renderTitleScreen({ onStart: () => onChangeDragon(showTitle), onInstructions: showInstructions }));
     screens.show('title');
   };
 
@@ -129,8 +129,9 @@ export const createApp = (root, {
     render();
   };
 
-  const onChangeDragon = () => {
-    screens.set('choose', renderChooseDragon({ dragons, onPick, currentId: state.dragonId }));
+  // onBack is the screen the child came from: the title for Start, Settings for Change Dragon.
+  const onChangeDragon = (onBack) => {
+    screens.set('choose', renderChooseDragon({ dragons, onPick, currentId: state.dragonId, onBack }));
     screens.show('choose');
   };
 
@@ -251,7 +252,7 @@ export const createApp = (root, {
 
   const onSettings = () => {
     screens.set('settings', renderSettingsScreen({
-      settings: state.settings, config, onChangeDragon,
+      settings: state.settings, config, onChangeDragon: () => onChangeDragon(onSettings),
       onSave: (settings) => {
         const styleChanged = settings.musicStyle !== state.settings.musicStyle;
         state = { ...state, settings };

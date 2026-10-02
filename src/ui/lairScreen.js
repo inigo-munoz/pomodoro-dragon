@@ -2,6 +2,7 @@ import { currentLevel } from '../core/dragon.js';
 import { lairOf, itemInSlot } from '../core/lair.js';
 import { slots } from '../data/furniture.js';
 import { art } from './art.js';
+import { defaultRoom } from '../core/theme.js';
 import { backButton } from './backButton.js';
 import { coinCounter } from './coinCounter.js';
 import { renderLairShelf } from './lairShelf.js';
@@ -44,7 +45,7 @@ export const renderLairScreen = ({ state, dragon, xp, theme, furniture, onBuy, o
   if (theme?.room) {
     const bg = document.createElement('div');
     bg.className = 'lair-bg';
-    bg.appendChild(art(theme.room, 'Lair', theme.room));
+    bg.appendChild(art(theme.room, '', defaultRoom));
     room.appendChild(bg);
   }
 
