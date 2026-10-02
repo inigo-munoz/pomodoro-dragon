@@ -15,6 +15,8 @@ export const themes = {
     // Item emoji live on the catalogue (`item.fallback`); only the room needs one here.
     furniture: {},
     room: '🕳️',
+    // The chooser screen uses this palette, so it keeps its plain gradient sky.
+    backdrop: null,
   },
   frost: {
     palette: {
@@ -40,6 +42,7 @@ export const themes = {
       cake: '/art/foods/cake.webp',
     },
     room: '/art/lair/frost-room.webp',
+    backdrop: '/art/backdrops/frost.webp',
     furniture: {
       banner: '/art/lair/frost-banner.webp',
       painting: '/art/lair/frost-painting.webp',
@@ -79,6 +82,7 @@ export const themes = {
       cake: '/art/foods/blaze-cake.webp',
     },
     room: '/art/lair/blaze-room.webp',
+    backdrop: '/art/backdrops/blaze.webp',
     furniture: {
       banner: '/art/lair/blaze-banner.webp',
       painting: '/art/lair/blaze-painting.webp',
@@ -118,6 +122,7 @@ export const themes = {
       cake: '/art/foods/thorn-cake.webp',
     },
     room: '/art/lair/thorn-room.webp',
+    backdrop: '/art/backdrops/thorn.webp',
     furniture: {
       banner: '/art/lair/thorn-banner.webp',
       painting: '/art/lair/thorn-painting.webp',
@@ -157,6 +162,7 @@ export const themes = {
       cake: '/art/foods/tempest-cake.webp',
     },
     room: '/art/lair/tempest-room.webp',
+    backdrop: '/art/backdrops/tempest.webp',
     furniture: {
       banner: '/art/lair/tempest-banner.webp',
       painting: '/art/lair/tempest-painting.webp',

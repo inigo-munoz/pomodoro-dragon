@@ -20,7 +20,7 @@ import { createTimerState, start, pause, tick, advance, secondsForMode } from '.
 import { grantWorkReward, buyFood, leveledUp, dragonXp } from './core/game.js';
 import { currentLevel } from './core/dragon.js';
 import { lairOf, buyFurniture, placeItem, unlockLair } from './core/lair.js';
-import { resolveTheme, applyPalette } from './core/theme.js';
+import { resolveTheme, applyPalette, applyBackdrop } from './core/theme.js';
 
 export const createApp = (root, { now = () => Date.now(), audioFactory = createAudio } = {}) => {
   const store = createStore(localStorageBackend, config);
@@ -62,6 +62,7 @@ export const createApp = (root, { now = () => Date.now(), audioFactory = createA
     const dragon = getDragon(state.dragonId);
     const theme = resolveTheme(dragon.themeId);
     applyPalette(theme.palette);
+    applyBackdrop(theme.backdrop);
     screens.set('main', renderMainScreen({
       state, dragon, xp: dragonXp(state), timerState, lastReward, theme,
       lairPrice: config.lairUnlockPrice,
