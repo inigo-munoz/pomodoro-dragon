@@ -204,8 +204,7 @@ announced "Add something to the floorLeft". `src/ui/slotNames.js` now owns both 
 nothing there) and the spoken name (`left floor` / `right floor`, because a screen reader
 announces all four buttons in the same room).
 
-**Not visually checked in a browser yet.** The CSS was reviewed by reading. Slices 2 and 3
-share one manual smoke test, to be run when slice 3 closes.
+The CSS was reviewed by reading here; the shared manual smoke test is recorded below.
 
 ### Slice 3 — DONE, on `feat/friendly-settings`, not merged
 
@@ -213,6 +212,34 @@ Rows with arrow steppers for all four numeric keys (presets kept for the three d
 local draft with SAVE / RESET TO DEFAULT, and the unsaved-changes guard. `onChange` is gone in
 favour of `onSave`. Observed: **24 files / 328 tests green**, `npm run build` succeeded.
 
+### Manual smoke test — RUN AND PASSED (2026-10-02)
+
+Driven in Chrome against `npm run dev`, with a seeded save (frost dragon, `completedWork: 2`).
+Verified with eyes and with `localStorage`, not by reading CSS:
+
+- Main screen: the session dots render 2 of 4 filled.
+- Settings: the panel, the five rows, the arrows, the presets, `RESET TO DEFAULT` and `SAVE`
+  all render as designed. `SAVE` is dimmed while clean and lights up on the first change.
+- Stepping Number of Sessions to 5, pressing Back and confirming `Save` wrote
+  `sessionsBeforeLongBreak: 5` to the save file, returned to main, and the dot row
+  immediately rendered **five** dots with two filled. End to end.
+- `Don't save` left the stored `longBreakMinutes` at 15, closed the card, returned to main.
+
+**Defect found by looking, invisible to the suite** (`e1c724e`): `.big-btn.secondary` filled
+itself with `var(--card)` while sitting on a `.unlock-card` that is also `var(--card)`, so
+`Don't save` — the guard's own escape hatch — was painted the exact colour of its background
+and read as plain text rather than a button. It now carries an inset ring in `var(--back-btn)`,
+which every theme redefines, so it survives a dragon change. Same failure mode as the lair
+art: an object that shares its background's value disappears, and no unit test can see it.
+
+Final state: **24 files / 328 tests green**, `npm run build` succeeds.
+
 ## Next step
 
-Manual smoke on the dev server for slices 2 and 3, then the user decides on push, PR and merge.
+All six tasks are done and verified. The three slices sit unmerged, chained
+`feat/long-break-cycle` -> `feat/screen-titles` -> `feat/friendly-settings`.
+
+**The remaining decisions are the user's**: whether to merge the chain into `main`, whether to
+push, and whether to deploy. Nothing has been pushed. If it is deployed, verify it FROM THE
+SERVER — the service worker serves the old build, so curl the bundle rather than opening the
+page.
