@@ -1,5 +1,5 @@
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { createApp } from './app.js';
+import { createApp as createRawApp } from './app.js';
 import { config } from './data/config.js';
 import { assetUrl } from './ui/art.js';
 
@@ -14,6 +14,15 @@ const click = (action) => {
   const btn = root.querySelector(`[data-action="${action}"]`);
   if (!btn) throw new Error(`no button for data-action="${action}"`);
   btn.click();
+};
+
+// Every launch now lands on the title screen. The suites below are about what happens after
+// it, so they open the app through the front door: createApp is the real one plus a press of
+// Start. The front-door suite at the end uses createRawApp to look at the title screen itself.
+const createApp = (target, options) => {
+  const app = createRawApp(target, options);
+  target.querySelector('[data-action="start-app"]')?.click();
+  return app;
 };
 
 const pickDragon = (id) => {
@@ -331,17 +340,17 @@ describe('createApp music wiring', () => {
   const savedStyle = () => JSON.parse(window.localStorage.getItem(config.storageKey)).settings.musicStyle;
 
   it('resolves music paths against the deploy base (regression)', () => {
-    vi.stubEnv('BASE_URL', '/pomodoro-dragon/');
+    vi.stubEnv('BASE_URL', '/pomodoro-fantasy/');
     const { audioFactory } = withAudio();
     const { music } = audioFactory.mock.calls[0][0];
-    expect(music).toEqual(config.music.cozy.map((path) => `/pomodoro-dragon${path}`));
+    expect(music).toEqual(config.music.cozy.map((path) => `/pomodoro-fantasy${path}`));
   });
 
   it('every path in every playlist resolves through assetUrl', () => {
-    vi.stubEnv('BASE_URL', '/pomodoro-dragon/');
+    vi.stubEnv('BASE_URL', '/pomodoro-fantasy/');
     for (const style of config.musicStyles) {
       for (const path of config.music[style]) {
-        expect(assetUrl(path)).toBe(`/pomodoro-dragon${path}`);
+        expect(assetUrl(path)).toBe(`/pomodoro-fantasy${path}`);
       }
     }
   });
@@ -363,11 +372,11 @@ describe('createApp music wiring', () => {
   });
 
   it('choosing a style swaps the playlist through assetUrl', () => {
-    vi.stubEnv('BASE_URL', '/pomodoro-dragon/');
+    vi.stubEnv('BASE_URL', '/pomodoro-fantasy/');
     const { audio } = withAudio();
     chooseStyle('lofi');
     expect(audio.setPlaylist).toHaveBeenCalledWith(
-      config.music.lofi.map((path) => `/pomodoro-dragon${path}`),
+      config.music.lofi.map((path) => `/pomodoro-fantasy${path}`),
     );
   });
 
@@ -1138,5 +1147,45 @@ describe('createApp record screen', () => {
     click('record');
     vi.advanceTimersByTime(ONE_BLOCK_MS);
     expect(root.querySelector('.screen.record')).not.toBeNull();
+  });
+});
+
+describe('createApp front door', () => {
+  const openRaw = () => createRawApp(root);
+
+  it('opens on the title screen on every launch, even with a dragon already chosen', () => {
+    window.localStorage.setItem(config.storageKey, JSON.stringify({ dragonId: 'frost' }));
+    openRaw();
+    expect(root.querySelector('.screen.title')).not.toBeNull();
+    expect(root.querySelector('.timer-display')).toBeNull();
+  });
+
+  it('Start with no dragon opens the chooser', () => {
+    openRaw();
+    click('start-app');
+    expect(root.querySelector('.choose-dragon')).not.toBeNull();
+    expect(root.querySelector('.screen.title')).toBeNull();
+  });
+
+  it('Start with a dragon opens the timer', () => {
+    window.localStorage.setItem(config.storageKey, JSON.stringify({ dragonId: 'frost' }));
+    openRaw();
+    click('start-app');
+    expect(root.querySelector('.timer-display')).not.toBeNull();
+    expect(root.querySelector('.choose-dragon')).toBeNull();
+  });
+
+  it('opens the instructions and comes back to the title screen', () => {
+    openRaw();
+    click('instructions');
+    expect(root.querySelector('.screen.instructions')).not.toBeNull();
+    root.querySelector('.back-btn').click();
+    expect(root.querySelector('.screen.title')).not.toBeNull();
+  });
+
+  it('does not touch the save just by showing the title screen', () => {
+    const before = window.localStorage.getItem(config.storageKey);
+    openRaw();
+    expect(window.localStorage.getItem(config.storageKey)).toBe(before);
   });
 });

@@ -90,11 +90,11 @@ describe('applyBackdrop', () => {
   afterEach(() => vi.unstubAllEnvs());
 
   it('sets --backdrop to a url() routed through assetUrl', () => {
-    vi.stubEnv('BASE_URL', '/pomodoro-dragon/');
+    vi.stubEnv('BASE_URL', '/pomodoro-fantasy/');
     const root = document.createElement('div');
     applyBackdrop('/art/backdrops/frost.webp', root);
     expect(root.style.getPropertyValue('--backdrop'))
-      .toBe('url("/pomodoro-dragon/art/backdrops/frost.webp")');
+      .toBe('url("/pomodoro-fantasy/art/backdrops/frost.webp")');
   });
 
   it('removes --backdrop when the next theme has none, leaving no stale image', () => {

@@ -11,8 +11,8 @@ describe('art helper', () => {
   });
 
   it('prefixes a subpath deploy base', () => {
-    vi.stubEnv('BASE_URL', '/pomodoro-dragon/');
-    expect(assetUrl('/art/icons/coin.webp')).toBe('/pomodoro-dragon/art/icons/coin.webp');
+    vi.stubEnv('BASE_URL', '/pomodoro-fantasy/');
+    expect(assetUrl('/art/icons/coin.webp')).toBe('/pomodoro-fantasy/art/icons/coin.webp');
   });
 
   it('does not touch a value that is not root-relative', () => {

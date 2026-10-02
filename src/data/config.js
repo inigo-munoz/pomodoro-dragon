@@ -36,5 +36,8 @@ export const config = {
   },
   // The order the settings screen offers them in; the first is the default.
   musicStyles: ['cozy', 'lofi'],
+  // DO NOT rename this to match the app. localStorage is scoped to the origin, not the path, so
+  // as long as this string is untouched the saves written as "Pomodoro Dragon" still load under
+  // "Pomodoro Fantasy". Changing it orphans every existing save. src/data/config.test.js pins it.
   storageKey: 'pomodoro-dragon-save-v1',
 };
