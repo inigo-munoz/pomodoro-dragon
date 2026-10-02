@@ -4,8 +4,16 @@ export const config = {
   durations: {
     workPresets: [10, 15, 25],   // minutes
     breakPresets: [3, 5, 10],    // minutes
+    longBreakPresets: [10, 15, 20], // minutes
+    sessionsPresets: [2, 3, 4, 5],  // work blocks before a long break
     customRange: { min: 1, max: 60 },
-    default: { workMinutes: 15, breakMinutes: 5 },
+    sessionsRange: { min: 1, max: 10 },
+    default: {
+      workMinutes: 15,
+      breakMinutes: 5,
+      longBreakMinutes: 15,
+      sessionsBeforeLongBreak: 4,
+    },
   },
   // Study soundtracks, one shuffled rotation per style. Deliberately NOT in the service
   // worker's precache globs: they are fetched when played, so installing the app stays

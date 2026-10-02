@@ -123,7 +123,10 @@ describe('lair unlock state', () => {
 describe('music style setting', () => {
   it('defaults to cozy, beside the durations, without bumping the version', () => {
     const s = defaultState(config);
-    expect(s.settings).toEqual({ workMinutes: 15, breakMinutes: 5, musicStyle: 'cozy' });
+    expect(s.settings).toEqual({
+      workMinutes: 15, breakMinutes: 5, longBreakMinutes: 15, sessionsBeforeLongBreak: 4,
+      musicStyle: 'cozy',
+    });
     expect(s.version).toBe(3);
   });
 
@@ -134,7 +137,10 @@ describe('music style setting', () => {
       settings: { workMinutes: 25, breakMinutes: 10 },
     }));
     const s = createStore(backend, config).load();
-    expect(s.settings).toEqual({ workMinutes: 25, breakMinutes: 10, musicStyle: 'cozy' });
+    expect(s.settings).toEqual({
+      workMinutes: 25, breakMinutes: 10, longBreakMinutes: 15, sessionsBeforeLongBreak: 4,
+      musicStyle: 'cozy',
+    });
     expect(s.dragonId).toBe('frost');
     expect(s.coins).toBe(42);
     expect(s.muted).toBe(true);
@@ -154,5 +160,42 @@ describe('music playlists in config', () => {
     for (const style of config.musicStyles) {
       expect(config.music[style].length).toBeGreaterThan(0);
     }
+  });
+});
+
+describe('long break settings', () => {
+  it('fills the cycle defaults into a realistic save from before they existed', () => {
+    const backend = memoryBackend();
+    backend.write(config.storageKey, JSON.stringify({
+      version: 3, dragonId: 'ember', coins: 130, muted: false,
+      xpByDragon: { ember: 240 },
+      lairUnlocked: true,
+      lairs: { ember: { owned: ['cushion'], placed: { floorLeft: 'cushion' } } },
+      settings: { workMinutes: 20, breakMinutes: 4, musicStyle: 'lofi' },
+      timer: { mode: 'break', running: false, remaining: 120, endsAt: null },
+    }));
+    const s = createStore(backend, config).load();
+    expect(s.settings).toEqual({
+      workMinutes: 20, breakMinutes: 4, musicStyle: 'lofi',
+      longBreakMinutes: 15, sessionsBeforeLongBreak: 4,
+    });
+    expect(s.version).toBe(3);
+    expect(s.dragonId).toBe('ember');
+    expect(s.coins).toBe(130);
+    expect(s.xpByDragon).toEqual({ ember: 240 });
+    expect(s.lairUnlocked).toBe(true);
+    expect(s.lairs.ember.owned).toEqual(['cushion']);
+    expect(s.timer).toEqual({ mode: 'break', running: false, remaining: 120, endsAt: null });
+  });
+
+  it('keeps a saved cycle setting over the default', () => {
+    const backend = memoryBackend();
+    backend.write(config.storageKey, JSON.stringify({
+      version: 3, settings: { longBreakMinutes: 10, sessionsBeforeLongBreak: 2 },
+    }));
+    const s = createStore(backend, config).load();
+    expect(s.settings.longBreakMinutes).toBe(10);
+    expect(s.settings.sessionsBeforeLongBreak).toBe(2);
+    expect(s.settings.workMinutes).toBe(15);
   });
 });
