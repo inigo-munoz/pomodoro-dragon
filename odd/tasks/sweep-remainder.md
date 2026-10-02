@@ -96,7 +96,11 @@ Close PRs #2–#5 (their work is merged), delete the merged local branches, prun
       back; 48px dragon cards.
 - [ ] **C.** Migration that cannot wipe a save; `lifetimeBlocks` coerced; symmetric unlock guard.
 - [ ] **D.** Dead code, dead icons, stale comments, doc notes.
-- [ ] **H.** PRs closed, branches pruned.
+- [x] **H.** PRs closed, branches pruned. Done first, by the parent, while A and B ran:
+      PRs #2–#5 confirmed at +0 against `main` (`git rev-list --count main..origin/<branch>`),
+      closed with a note explaining they had merged through the chain, their remote branches
+      deleted; 21 merged local branches deleted; `main` and the two live writer branches kept.
+      `gh pr list --state open` → 0.
 
 ## Acceptance
 
