@@ -2,11 +2,18 @@ import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { createApp as createRawApp } from './app.js';
 import { config } from './data/config.js';
 import { assetUrl } from './ui/art.js';
+import { quests } from './data/quests.js';
 
 // One full interval tick is 1000ms. Blocks are seeded to 1 minute (60s), so
 // advancing 61s guarantees we cross the completion boundary regardless of
 // off-by-one interval alignment.
 const ONE_BLOCK_MS = 61_000;
+
+// Quests pay coins, and most suites below assert exact coin counts for something else: a
+// block's reward, a purchase, an unlock. Those saves start with every quest already paid, so
+// the payout stays out of their arithmetic. The quests suite at the end seeds its own saves
+// and is the one place that looks at the payout itself.
+const allPaid = quests.map((q) => q.id);
 
 let root;
 
@@ -50,7 +57,7 @@ beforeEach(() => {
   // over defaultState, so a partial object is enough.
   window.localStorage.setItem(
     config.storageKey,
-    JSON.stringify({ settings: { workMinutes: 1, breakMinutes: 1 } }),
+    JSON.stringify({ settings: { workMinutes: 1, breakMinutes: 1 }, questsPaid: allPaid }),
   );
   root = document.createElement('div');
   document.body.appendChild(root);
@@ -172,6 +179,7 @@ describe('createApp timer persistence', () => {
     config.storageKey,
     JSON.stringify({
       dragonId: 'frost', coins: 0, settings: { workMinutes: 1, breakMinutes: 1 }, timer,
+      questsPaid: allPaid,
     }),
   );
 
@@ -455,7 +463,7 @@ describe('createApp lair', () => {
     JSON.stringify({
       // Unlocked by default: the lair tests below are about the room, not the gate. A test
       // for the locked path overrides it, and `...extra` stays last so it can.
-      dragonId: 'frost', coins: 100, lairUnlocked: true,
+      dragonId: 'frost', coins: 100, lairUnlocked: true, questsPaid: allPaid,
       settings: { workMinutes: 1, breakMinutes: 1 }, ...extra,
     }),
   );
@@ -1253,5 +1261,112 @@ describe('createApp front door', () => {
     const before = window.localStorage.getItem(config.storageKey);
     openRaw();
     expect(window.localStorage.getItem(config.storageKey)).toBe(before);
+  });
+});
+
+describe('createApp quests', () => {
+  const saved = () => JSON.parse(window.localStorage.getItem(config.storageKey));
+  const seed = (extra = {}) => window.localStorage.setItem(
+    config.storageKey,
+    JSON.stringify({ dragonId: 'frost', settings: { workMinutes: 1, breakMinutes: 1 }, ...extra }),
+  );
+  const reload = () => {
+    root.remove();
+    root = document.createElement('div');
+    document.body.appendChild(root);
+    return createApp(root);
+  };
+  const finishWork = () => { click('start'); vi.advanceTimersByTime(ONE_BLOCK_MS); };
+
+  beforeEach(() => { vi.setSystemTime(new Date(2026, 9, 2, 10, 0, 0)); });
+
+  it('pays the first block once, on top of the block\'s own coins, and says only the block\'s coins', () => {
+    seed();
+    createApp(root);
+    finishWork();
+    expect(saved().questsPaid).toEqual(['blocks-1']);
+    expect(saved().coins).toBe(1 + 5);
+    expect(coins()).toBe(6);
+    // The banner reports the block itself; the quest coins are not folded into it.
+    expect(root.querySelector('.session-reward').textContent).toContain('+1');
+  });
+
+  it('pays nothing extra on a reload, and nothing more for the next block', () => {
+    seed();
+    createApp(root);
+    finishWork();
+    reload();
+    expect(saved().coins).toBe(6);
+    expect(saved().questsPaid).toEqual(['blocks-1']);
+    click('break');
+    vi.advanceTimersByTime(ONE_BLOCK_MS);
+    finishWork();
+    expect(saved().coins).toBe(7);
+    expect(saved().questsPaid).toEqual(['blocks-1']);
+  });
+
+  it('pays a save that already holds 128 blocks the first four block quests at once, and once', () => {
+    seed({ lifetimeBlocks: 128 });
+    createApp(root);
+    expect(saved().coins).toBe(135);
+    expect(saved().questsPaid).toEqual(['blocks-1', 'blocks-10', 'blocks-50', 'blocks-100']);
+    reload();
+    expect(saved().coins).toBe(135);
+    expect(saved().questsPaid).toHaveLength(4);
+  });
+
+  it('pays opening the lair', () => {
+    seed({ coins: 80 });
+    createApp(root);
+    click('lair');
+    click('unlock-confirm');
+    expect(saved().coins).toBe(80 - 50 + 10);
+    expect(saved().questsPaid).toEqual(['lair-open']);
+  });
+
+  it('pays the first decoration when a piece is bought', () => {
+    seed({ coins: 100, lairUnlocked: true, questsPaid: ['lair-open'] });
+    createApp(root);
+    click('lair');
+    root.querySelector('[data-shelf-item="bed"]').click();
+    expect(saved().coins).toBe(100 - 40 + 10);
+    expect(saved().questsPaid).toEqual(['lair-open', 'decor-1']);
+  });
+
+  it('completes the full-room quest when the fourth slot of a lair is filled', () => {
+    seed({
+      coins: 500, lairUnlocked: true, questsPaid: ['lair-open', 'decor-1'],
+      lairs: { frost: {
+        owned: ['banner', 'bed', 'lamp'],
+        slots: { wall: 'banner', floorLeft: 'bed', floorRight: 'lamp' },
+      } },
+    });
+    createApp(root);
+    click('lair');
+    expect(saved().questsPaid).toEqual(['lair-open', 'decor-1']);
+    root.querySelector('[data-shelf-item="imp"]').click();
+    expect(saved().questsPaid).toEqual(['lair-open', 'decor-1', 'room-full']);
+    expect(saved().coins).toBe(500 - 80 + 40);
+  });
+
+  it('pays the growing dragon when feeding carries it past its first stage', () => {
+    seed({ coins: 100, xpByDragon: { frost: 90 }, questsPaid: [] });
+    createApp(root);
+    // 100 coins were seeded with no quest done yet, so nothing is owed on boot.
+    expect(saved().coins).toBe(100);
+    click('shop');
+    root.querySelector('[data-food="apple"]').click();
+    expect(saved().coins).toBe(100 - 10 + 20);
+    expect(saved().questsPaid).toEqual(['dragon-grow']);
+  });
+
+  it('never pays the same quest twice however many times the state changes', () => {
+    seed({ coins: 100, xpByDragon: { frost: 90 } });
+    createApp(root);
+    click('shop');
+    root.querySelector('[data-food="apple"]').click();
+    root.querySelector('[data-food="apple"]').click();
+    expect(saved().coins).toBe(100 - 10 + 20 - 10);
+    expect(saved().questsPaid).toEqual(['dragon-grow']);
   });
 });

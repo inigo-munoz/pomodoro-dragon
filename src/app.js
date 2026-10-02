@@ -1,7 +1,8 @@
 import { config } from './data/config.js';
 import { dragons, getDragon } from './data/dragons.js';
 import { foods } from './data/foods.js';
-import { furniture } from './data/furniture.js';
+import { furniture, slots } from './data/furniture.js';
+import { quests } from './data/quests.js';
 import { createStore } from './store/store.js';
 import { localStorageBackend } from './store/localStorageBackend.js';
 import { createAudio } from './audio/audio.js';
@@ -24,6 +25,7 @@ import { grantWorkReward, buyFood, leveledUp, dragonXp } from './core/game.js';
 import { currentLevel } from './core/dragon.js';
 import { lairOf, buyFurniture, placeItem, unlockLair } from './core/lair.js';
 import { canAfford } from './core/wallet.js';
+import { payQuests } from './core/quests.js';
 import { recordBlock, pruneHistory } from './core/history.js';
 import { resolveTheme, applyPalette, applyBackdrop } from './core/theme.js';
 
@@ -65,6 +67,18 @@ export const createApp = (root, {
   };
 
   const save = () => store.save(state);
+
+  // Quests are read from state that already exists, so any change to that state may finish
+  // one. Every site that changes it settles first and saves after, in one write. The paid
+  // list makes this safe to call as often as needed: a quest that has paid never pays again.
+  const questWorld = { furniture, slots, dragons };
+  const settleQuests = () => { state = payQuests(state, quests, questWorld); };
+
+  // A save that predates quests, or one that earned a quest while the app was closed, is
+  // settled on load: the work was done, so it counts.
+  const loaded = state;
+  settleQuests();
+  if (state !== loaded) save();
 
   // Persist only the volatile timer fields so a reload can resume the session.
   const persistTimer = () => {
@@ -157,6 +171,7 @@ export const createApp = (root, {
       onBuy: (food) => {
         const oldXp = dragonXp(state);
         state = buyFood(state, food);
+        settleQuests();
         save();
         audio.playEffect('eat');
         const newXp = dragonXp(state);
@@ -197,6 +212,7 @@ export const createApp = (root, {
   // already-unlocked path are the same lines and cannot drift.
   const onConfirmUnlock = () => {
     state = unlockLair(state, config.lairUnlockPrice);
+    settleQuests();
     save();
     onLair();
   };
@@ -209,6 +225,7 @@ export const createApp = (root, {
     const { owned } = lairOf(state, state.dragonId);
     if (owned.includes(item.id) || !canAfford(state.coins, item.price)) return;
     state = buyFurniture(state, item);
+    settleQuests();
     save();
     onLair(); // rebuild so the room and the shelf both show the new piece
   };
@@ -217,6 +234,7 @@ export const createApp = (root, {
     const { owned } = lairOf(state, state.dragonId);
     if (!owned.includes(item.id)) return;
     state = placeItem(state, item);
+    settleQuests();
     save();
     onLair();
   };
@@ -307,6 +325,8 @@ export const createApp = (root, {
             recordBlock(state.history, now(), minutes), now(), config.historyDays,
           ),
         };
+        // After the block's own coins are counted, so the banner still says what the block paid.
+        settleQuests();
       } else {
         // break finished → return to a fresh idle work block (▶ Start shows)
         timerState = advance(timerState);
