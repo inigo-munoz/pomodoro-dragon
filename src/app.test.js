@@ -862,6 +862,29 @@ describe('createApp settings: long break and sessions through the real UI', () =
     expect(shownValue('sessions')).toBe('2');
   });
 
+  it('saving while a block runs still reaches the next break and the next cycle', () => {
+    seed();
+    createApp(root);
+    click('start');
+    vi.advanceTimersByTime(20_000);
+    const remainingBefore = timerText();
+    expect(remainingBefore).toBe('00:40');
+
+    click('settings');
+    tap('break-plus', 1); // 1 -> 2 minutes
+    tap('sessions-minus', 2); // 4 -> 2 sessions
+    click('save-settings');
+    root.querySelector('.back-btn').click();
+    expect(timerText()).toBe(remainingBefore); // the running block is left alone
+
+    vi.advanceTimersByTime(ONE_BLOCK_MS); // let it finish
+    click('break');
+    expect(modeLabel()).toBe('Break');
+    expect(timerText()).toBe('02:00'); // the NEW break length, with no reload
+    expect(root.querySelectorAll('.session-dot')).toHaveLength(2); // the NEW cycle length
+    expect(root.querySelectorAll('.session-dot.is-done')).toHaveLength(1);
+  });
+
   it('a parked long break picks up a shorter saved length', () => {
     seed();
     createApp(root);
