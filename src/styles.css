@@ -127,6 +127,31 @@ body {
 .art-img { width: 100%; height: 100%; object-fit: contain; }
 .dragon-stage { width: 60vw; max-width: 260px; aspect-ratio: 1; margin: auto; position: relative; }
 
+/* The dragon was the only live thing in the app standing in a void. This gives it a place:
+   a pool of light and the ground under it, drawn from --card, which every theme overrides,
+   so each dragon brings its own. It is built from the DARK end of the palette on purpose —
+   whatever shares the dragon's value erases it, which is how the lair art failed three
+   times. The art stays the brightest thing on the screen. --xp-bar is deliberately not used
+   here: the non-default themes leave it alone, so it would be purple under a frost dragon. */
+.dragon-stage::before {
+  content: '';
+  position: absolute;
+  inset: -10%;
+  background:
+    /* the contact shadow, pulled from --bg so it is darker than the pool it sits in */
+    radial-gradient(ellipse 30% 4% at 50% 79%, var(--bg) 0 55%, transparent 62%),
+    /* the pool of light. Mostly solid: --card is only 12-19 luminance points above --bg
+       across the four themes, so a gradient that fades the whole way reads as haze. The
+       cards elsewhere in the app use these same two colours and read fine because they
+       are solid shapes, so this is a shape too, with just a soft edge. */
+    radial-gradient(circle at 50% 47%, var(--card) 0 54%, transparent 60%);
+}
+/* Resting dims the place as well as the dragon, so the break reads as dusk. */
+.dragon-stage.resting::before { opacity: 0.6; }
+/* The art sits above its own backdrop. Scoped to the stage: the lair renders .dragon-art
+   too, inside an absolutely positioned room that must keep its own stacking. */
+.dragon-stage .dragon-art { position: relative; }
+
 /* Resting is shown as a state OF the dragon: dimmed, breathing slower, with a drifting
    💤. The stage carries the marker because ::after does not render on an <img>. */
 .dragon-stage.resting::after {
