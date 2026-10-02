@@ -1,6 +1,7 @@
 import { canAfford } from '../core/wallet.js';
 import { backButton } from './backButton.js';
 import { art } from './art.js';
+import { screenTitle } from './screenTitle.js';
 import { themedIcon } from './themedIcon.js';
 
 // A pure render: opening, reading and closing the offer cannot touch coins or the flag.
@@ -9,6 +10,7 @@ export const renderUnlockLair = ({ state, price, theme, onConfirm, onBack }) => 
   const section = document.createElement('section');
   section.className = 'screen unlock';
   section.appendChild(backButton(onBack));
+  section.appendChild(screenTitle('Lair'));
 
   const card = document.createElement('div');
   card.className = 'unlock-card';

@@ -3,6 +3,7 @@ import { lairOf, itemInSlot } from '../core/lair.js';
 import { slots } from '../data/furniture.js';
 import { art } from './art.js';
 import { backButton } from './backButton.js';
+import { screenTitle } from './screenTitle.js';
 
 // Every slot is a button, filled or empty: a filled slot must still open the picker, or
 // an owned item could never be put back on display for free.
@@ -27,6 +28,7 @@ export const renderLairScreen = ({ state, dragon, xp, theme, furniture, onPickSl
   const section = document.createElement('section');
   section.className = 'screen lair';
   section.appendChild(backButton(onBack));
+  section.appendChild(screenTitle('Lair'));
 
   const room = document.createElement('div');
   room.className = 'lair-room';

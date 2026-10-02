@@ -1,6 +1,7 @@
 import { canAfford } from '../core/wallet.js';
 import { backButton } from './backButton.js';
 import { art } from './art.js';
+import { screenTitle } from './screenTitle.js';
 import { themedIcon } from './themedIcon.js';
 
 export const renderShopScreen = ({ state, foods, theme, onBuy, onBack }) => {
@@ -8,6 +9,7 @@ export const renderShopScreen = ({ state, foods, theme, onBuy, onBack }) => {
   section.className = 'screen shop';
 
   section.appendChild(backButton(onBack));
+  section.appendChild(screenTitle('Shop'));
 
   const grid = document.createElement('div');
   grid.className = 'food-grid';

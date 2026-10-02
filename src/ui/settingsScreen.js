@@ -1,4 +1,5 @@
 import { backButton } from './backButton.js';
+import { screenTitle } from './screenTitle.js';
 
 const clamp = (n, { min, max }) => Math.min(max, Math.max(min, n));
 
@@ -7,10 +8,8 @@ export const renderSettingsScreen = ({ settings, config, onChange, onBack, onCha
   const section = document.createElement('section');
   section.className = 'screen settings';
 
-  const title = document.createElement('h1');
-  title.className = 'screen-title';
-  title.textContent = 'Settings';
-  section.appendChild(title);
+  section.appendChild(backButton(onBack));
+  section.appendChild(screenTitle('Settings'));
 
   const emit = (next) => onChange({ ...settings, ...next });
 
@@ -82,8 +81,6 @@ export const renderSettingsScreen = ({ settings, config, onChange, onBack, onCha
   changeDragon.textContent = 'Change Dragon';
   if (onChangeDragon) changeDragon.addEventListener('click', onChangeDragon);
   section.appendChild(changeDragon);
-
-  section.appendChild(backButton(onBack));
 
   return section;
 };

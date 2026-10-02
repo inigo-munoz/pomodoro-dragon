@@ -129,4 +129,12 @@ describe('lair screen', () => {
     const el = renderLairScreen(ctx());
     expect(el.textContent).not.toMatch(/hungry|lost|missed|neglect|streak|warning/i);
   });
+
+  it('names the screen "Lair", as a sibling before the room', () => {
+    const el = renderLairScreen(ctx());
+    const title = el.querySelector('.screen-title');
+    expect(title.textContent).toBe('Lair');
+    expect(title.parentElement).toBe(el);
+    expect(title.nextElementSibling.classList.contains('lair-room')).toBe(true);
+  });
 });

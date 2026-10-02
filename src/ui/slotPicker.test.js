@@ -108,4 +108,12 @@ describe('slot picker', () => {
     const { el } = render();
     expect(el.querySelectorAll('[draggable]')).toHaveLength(0);
   });
+
+  it('names the slot being filled, in plain words', () => {
+    const titleOf = (slot) => render({ slot }).el.querySelector('.screen-title').textContent;
+    expect(titleOf('wall')).toBe('Wall');
+    expect(titleOf('floorLeft')).toBe('Floor');
+    expect(titleOf('floorRight')).toBe('Floor');
+    expect(titleOf('corner')).toBe('Corner');
+  });
 });
