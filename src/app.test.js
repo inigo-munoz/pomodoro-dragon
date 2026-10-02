@@ -837,4 +837,16 @@ describe('createApp settings: long break and sessions through the real UI', () =
     tap('longBreak-plus', 1);
     expect(savedSettings().longBreakMinutes).toBe(3);
   });
+
+  it("Back with unsaved changes asks, and Don't save leaves the save file alone", () => {
+    seed();
+    createApp(root);
+    click('settings');
+    tap('sessions-plus', 1);
+    root.querySelector('.back-btn').click();
+    expect(root.querySelector('.confirm-overlay')).not.toBeNull();
+    click('confirm-discard');
+    expect(root.querySelector('.screen.settings')).toBeNull();
+    expect(savedSettings().sessionsBeforeLongBreak).toBe(4);
+  });
 });

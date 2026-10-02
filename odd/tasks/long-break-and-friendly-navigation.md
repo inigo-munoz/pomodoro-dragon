@@ -120,14 +120,14 @@ merge remain the user's decision.
 
 ### Slice 3 — the friendly settings panel
 
-- [ ] **T4. Arrow steppers and the panel.** Rework `group()` in
+- [x] **T4. Arrow steppers and the panel.** Rework `group()` in
       `src/ui/settingsScreen.js` into a reusable row: label, `◀`, value box, `▶`, with the
       unit. Rows: Focus Time, Break Time, Long Break Time, Number of Sessions, Music. Keep
       every contracted `data-*` hook.
-- [ ] **T5. SAVE and RESET TO DEFAULT.** The screen holds a local draft; `onChange` fires
+- [x] **T5. SAVE and RESET TO DEFAULT.** The screen holds a local draft; `onChange` fires
       only on SAVE. RESET restores `config.durations.default`. SAVE is inert while the draft
       matches what is stored, and visibly live when it does not.
-- [ ] **T6. The unsaved-changes guard.** Leaving with a dirty draft opens a confirm card
+- [x] **T6. The unsaved-changes guard.** Leaving with a dirty draft opens a confirm card
       reusing the `.unlock-card` / `.level-up-overlay` visual language: "Save your changes?"
       with two large buttons. No silent discard.
       Route for T4-T6: one delegated writer, they are one screen.
@@ -207,7 +207,12 @@ announces all four buttons in the same room).
 **Not visually checked in a browser yet.** The CSS was reviewed by reading. Slices 2 and 3
 share one manual smoke test, to be run when slice 3 closes.
 
+### Slice 3 — DONE, on `feat/friendly-settings`, not merged
+
+Rows with arrow steppers for all four numeric keys (presets kept for the three durations),
+local draft with SAVE / RESET TO DEFAULT, and the unsaved-changes guard. `onChange` is gone in
+favour of `onSave`. Observed: **24 files / 328 tests green**, `npm run build` succeeded.
+
 ## Next step
 
-T4-T6 — the settings redesign, on branch `feat/friendly-settings`, chained off
-`feat/screen-titles`.
+Manual smoke on the dev server for slices 2 and 3, then the user decides on push, PR and merge.

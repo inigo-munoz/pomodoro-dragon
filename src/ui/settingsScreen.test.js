@@ -227,3 +227,86 @@ describe('save and reset', () => {
     expect(save(el).disabled).toBe(true);
   });
 });
+
+describe('the unsaved-changes guard', () => {
+  const dirty = (handlers) => {
+    const el = render({}, handlers);
+    el.querySelector('[data-step="work-plus"]').click();
+    return el;
+  };
+  const back = (el) => el.querySelector('.back-btn').click();
+  const card = (el) => el.querySelector('.confirm-overlay');
+
+  it('leaves at once, with no card, when nothing changed', () => {
+    const onBack = vi.fn();
+    const el = render({}, { onBack });
+    back(el);
+    expect(onBack).toHaveBeenCalledTimes(1);
+    expect(card(el)).toBeNull();
+  });
+
+  it('asks before leaving with unsaved changes, and does not leave yet', () => {
+    const onBack = vi.fn();
+    const onSave = vi.fn();
+    const el = dirty({ onBack, onSave });
+    back(el);
+    expect(card(el)).not.toBeNull();
+    expect(card(el).textContent).toContain('Save your changes?');
+    expect(onBack).not.toHaveBeenCalled();
+    expect(onSave).not.toHaveBeenCalled();
+  });
+
+  it('keeps the card inside the screen and reuses the existing overlay and card styles', () => {
+    const el = dirty();
+    back(el);
+    expect(el.contains(card(el))).toBe(true);
+    expect(card(el).classList.contains('level-up-overlay')).toBe(true);
+    expect(card(el).querySelector('.unlock-card')).not.toBeNull();
+  });
+
+  it('Save applies the draft, then leaves', () => {
+    const calls = [];
+    const onSave = vi.fn((s) => calls.push(['save', s]));
+    const onBack = vi.fn(() => calls.push(['back']));
+    const el = dirty({ onSave, onBack });
+    back(el);
+    el.querySelector('[data-action="confirm-save"]').click();
+    expect(calls).toEqual([['save', { ...full, workMinutes: 16 }], ['back']]);
+  });
+
+  it("Don't save leaves without applying", () => {
+    const onSave = vi.fn();
+    const onBack = vi.fn();
+    const el = dirty({ onSave, onBack });
+    back(el);
+    const discard = el.querySelector('[data-action="confirm-discard"]');
+    expect(discard.textContent).toBe("Don't save");
+    discard.click();
+    expect(onBack).toHaveBeenCalledTimes(1);
+    expect(onSave).not.toHaveBeenCalled();
+  });
+
+  it('a second Back while the card is open does not stack another card', () => {
+    const el = dirty();
+    back(el);
+    back(el);
+    expect(el.querySelectorAll('.confirm-overlay')).toHaveLength(1);
+  });
+
+  it('after SAVE the screen is clean again, so Back leaves with no card', () => {
+    const onBack = vi.fn();
+    const el = dirty({ onBack });
+    save(el).click();
+    back(el);
+    expect(onBack).toHaveBeenCalledTimes(1);
+    expect(card(el)).toBeNull();
+  });
+
+  it('putting the values back by hand makes the screen clean again', () => {
+    const onBack = vi.fn();
+    const el = dirty({ onBack });
+    el.querySelector('[data-step="work-minus"]').click();
+    back(el);
+    expect(onBack).toHaveBeenCalledTimes(1);
+  });
+});

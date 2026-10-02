@@ -156,6 +156,38 @@ export const renderSettingsScreen = ({ settings, config, onSave, onBack, onChang
     return actions;
   };
 
+  // Leaving with unsaved changes asks first; the card lives inside this screen so it
+  // disappears with it. A clean draft leaves at once.
+  const askBeforeLeaving = () => {
+    if (!isDirty()) { onBack(); return; }
+    if (section.querySelector('.confirm-overlay')) return;
+
+    const button = (className, action, text, onClick) => {
+      const btn = document.createElement('button');
+      btn.className = className;
+      btn.dataset.action = action;
+      btn.textContent = text;
+      btn.addEventListener('click', onClick);
+      return btn;
+    };
+    const title = document.createElement('p');
+    title.className = 'unlock-title';
+    title.textContent = 'Save your changes?';
+    const card = document.createElement('div');
+    card.className = 'unlock-card';
+    card.append(
+      title,
+      button('big-btn', 'confirm-save', 'Save', () => { onSave({ ...draft }); onBack(); }),
+      button('big-btn secondary', 'confirm-discard', "Don't save", onBack),
+    );
+    const overlay = document.createElement('div');
+    overlay.className = 'level-up-overlay confirm-overlay';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-label', 'Save your changes?');
+    overlay.appendChild(card);
+    section.appendChild(overlay);
+  };
+
   const panelSlot = document.createElement('div');
   panelSlot.className = 'settings-body';
   const paint = () => panelSlot.replaceChildren(buildPanel(), buildActions(), note);
@@ -166,7 +198,7 @@ export const renderSettingsScreen = ({ settings, config, onSave, onBack, onChang
   changeDragon.textContent = 'Change Dragon';
   if (onChangeDragon) changeDragon.addEventListener('click', onChangeDragon);
 
-  section.append(backButton(onBack), screenTitle('Settings'), panelSlot, changeDragon);
+  section.append(backButton(askBeforeLeaving), screenTitle('Settings'), panelSlot, changeDragon);
   paint();
   return section;
 };
