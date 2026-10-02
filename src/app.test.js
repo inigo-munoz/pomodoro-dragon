@@ -277,6 +277,7 @@ describe('createApp destroy', () => {
 
 describe('createApp audio unlock', () => {
   let resume;
+  let app;
 
   beforeEach(() => {
     resume = vi.fn(() => Promise.resolve());
@@ -284,11 +285,14 @@ describe('createApp audio unlock', () => {
   });
 
   afterEach(() => {
+    // The app listens on `document`, which outlives this test; an app left running would
+    // keep reacting to later visibilitychange events with this AudioContext stub.
+    app.destroy();
     delete window.AudioContext;
   });
 
   it('unlocks audio on the first Start press', () => {
-    createApp(root);
+    app = createApp(root);
     pickDragon('frost');
     expect(resume).not.toHaveBeenCalled();
     click('start');
@@ -296,7 +300,7 @@ describe('createApp audio unlock', () => {
   });
 
   it('unlocks audio when the mute button is pressed', () => {
-    createApp(root);
+    app = createApp(root);
     pickDragon('frost');
     click('mute');
     expect(resume).toHaveBeenCalledTimes(1);
@@ -855,5 +859,181 @@ describe('createApp settings: long break and sessions through the real UI', () =
     click('confirm-discard');
     expect(root.querySelector('.screen.settings')).toBeNull();
     expect(savedSettings().sessionsBeforeLongBreak).toBe(4);
+  });
+});
+
+describe('createApp block reminders', () => {
+  let visibility;
+  const setVisibility = (value) => {
+    visibility.mockReturnValue(value);
+    document.dispatchEvent(new Event('visibilitychange'));
+  };
+
+  // Permission stays 'default' unless a test says otherwise, so a dismissed prompt is
+  // what the app sees by default and a second request would show up as a second call.
+  const fakeReminders = () => ({
+    permission: 'default',
+    request: vi.fn(async () => 'granted'),
+    notify: vi.fn(),
+    keepAwake: vi.fn(async () => {}),
+    release: vi.fn(async () => {}),
+  });
+
+  // These tests are about reminders, not sound; the real audio would hit whatever
+  // AudioContext stub an earlier test left behind.
+  const silentAudio = () => ({
+    setMuted: () => {}, unlock: () => {}, playMusic: () => {}, setPlaylist: () => {},
+    stopMusic: () => {}, playEffect: () => {}, toggleMute: () => false,
+  });
+
+  const seedCycle = () => window.localStorage.setItem(
+    config.storageKey,
+    JSON.stringify({
+      dragonId: 'frost', coins: 0,
+      settings: { workMinutes: 1, breakMinutes: 1, longBreakMinutes: 3, sessionsBeforeLongBreak: 2 },
+    }),
+  );
+
+  let reminders;
+  let app;
+  const launch = () => {
+    seedCycle();
+    reminders = fakeReminders();
+    app = createApp(root, { audioFactory: silentAudio, remindersFactory: () => reminders });
+  };
+
+  beforeEach(() => {
+    visibility = vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
+  });
+  afterEach(() => {
+    app?.destroy();
+    app = null;
+    visibility.mockRestore();
+  });
+
+  it('asks for permission on the first Start and never again', () => {
+    launch();
+    click('start');
+    click('pause');
+    click('start');
+    expect(reminders.request).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not ask when the browser has already decided', () => {
+    seedCycle();
+    reminders = { ...fakeReminders(), permission: 'denied' };
+    app = createApp(root, { audioFactory: silentAudio, remindersFactory: () => reminders });
+    click('start');
+    expect(reminders.request).not.toHaveBeenCalled();
+  });
+
+  it('holds the wake lock while running and lets go on pause', () => {
+    launch();
+    expect(reminders.keepAwake).not.toHaveBeenCalled();
+    click('start');
+    expect(reminders.keepAwake).toHaveBeenCalledTimes(1);
+    click('pause');
+    expect(reminders.release).toHaveBeenCalledTimes(1);
+    click('start');
+    expect(reminders.keepAwake).toHaveBeenCalledTimes(2);
+  });
+
+  it('holds the lock through a break and lets go when the block completes', () => {
+    launch();
+    click('start');
+    vi.advanceTimersByTime(ONE_BLOCK_MS);
+    expect(reminders.release).toHaveBeenCalledTimes(1); // work block done, parked at 0:00
+    click('break');
+    expect(reminders.keepAwake).toHaveBeenCalledTimes(2);
+    vi.advanceTimersByTime(ONE_BLOCK_MS);
+    expect(reminders.release).toHaveBeenCalledTimes(2);
+  });
+
+  it('takes the lock again when the page becomes visible during a block', () => {
+    launch();
+    click('start');
+    setVisibility('hidden');
+    expect(reminders.keepAwake).toHaveBeenCalledTimes(1); // nothing to take while hidden
+    setVisibility('visible');
+    expect(reminders.keepAwake).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not take the lock when the page becomes visible while idle', () => {
+    launch();
+    setVisibility('hidden');
+    setVisibility('visible');
+    click('start');
+    click('pause');
+    reminders.keepAwake.mockClear();
+    setVisibility('hidden');
+    setVisibility('visible');
+    expect(reminders.keepAwake).not.toHaveBeenCalled();
+  });
+
+  it('notifies when a work block ends while the page is hidden', () => {
+    launch();
+    click('start');
+    setVisibility('hidden');
+    vi.advanceTimersByTime(ONE_BLOCK_MS);
+    expect(reminders.notify).toHaveBeenCalledTimes(1);
+    const { title, body } = reminders.notify.mock.calls[0][0];
+    expect(`${title} ${body}`).toMatch(/break/i);
+  });
+
+  it('words a finished break as a call back to work', () => {
+    launch();
+    click('start');
+    vi.advanceTimersByTime(ONE_BLOCK_MS);
+    click('break');
+    setVisibility('hidden');
+    vi.advanceTimersByTime(ONE_BLOCK_MS);
+    const { title, body } = reminders.notify.mock.calls[0][0];
+    expect(`${title} ${body}`).toMatch(/break'?s? (is )?over|back/i);
+  });
+
+  it('says so when it was the long break that ended', () => {
+    launch();
+    for (let block = 1; block <= 2; block += 1) {
+      click('start');
+      vi.advanceTimersByTime(ONE_BLOCK_MS);
+      click('break');
+      if (block === 1) vi.advanceTimersByTime(ONE_BLOCK_MS);
+    }
+    expect(modeLabel()).toBe('Long break');
+    setVisibility('hidden');
+    vi.advanceTimersByTime(3 * 60_000 + 1000);
+    const { title, body } = reminders.notify.mock.calls[0][0];
+    expect(`${title} ${body}`).toMatch(/long break/i);
+  });
+
+  it('does not notify when a block ends in front of her', () => {
+    launch();
+    click('start');
+    vi.advanceTimersByTime(ONE_BLOCK_MS);
+    expect(reminders.notify).not.toHaveBeenCalled();
+  });
+
+  it('settles a block that ended while away the moment the page returns', () => {
+    launch();
+    click('start');
+    setVisibility('hidden');
+    // The interval never fired (a suspended tab), but the clock moved on.
+    vi.setSystemTime(Date.now() + ONE_BLOCK_MS);
+    expect(root.querySelector('[data-action="break"]')).toBeNull();
+    setVisibility('visible');
+    expect(root.querySelector('[data-action="break"]')).not.toBeNull();
+    expect(reminders.release).toHaveBeenCalledTimes(1);
+    expect(reminders.notify).not.toHaveBeenCalled(); // she is looking at it now
+  });
+
+  it('stops listening and lets go of the lock when the app is destroyed', () => {
+    launch();
+    click('start');
+    app.destroy();
+    reminders.keepAwake.mockClear();
+    setVisibility('visible');
+    expect(reminders.keepAwake).not.toHaveBeenCalled();
+    expect(reminders.release).toHaveBeenCalled();
+    app = null;
   });
 });
