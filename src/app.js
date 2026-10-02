@@ -244,6 +244,7 @@ export const createApp = (root, {
     const dragon = getDragon(state.dragonId);
     screens.set('record', renderRecordScreen({
       state, now: now(), theme: resolveTheme(dragon.themeId), onBack: render,
+      quests, world: questWorld,
     }));
     screens.show('record');
   };

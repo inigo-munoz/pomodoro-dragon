@@ -1,7 +1,9 @@
 import { weekOf, monthOf } from '../core/history.js';
+import { questProgress } from '../core/quests.js';
 import { backButton } from './backButton.js';
 import { coinCounter } from './coinCounter.js';
 import { screenTitle } from './screenTitle.js';
+import { themedIcon } from './themedIcon.js';
 
 const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
 
@@ -67,12 +69,58 @@ const weekColumn = (week, best) => {
   return col;
 };
 
+// One rung of the ladder. A quest is either done or in progress, and nothing else: there is
+// no third state to draw, so an unfinished one can only show how far it has come. A done
+// quest stays on the list with a mark, because the ladder is the point. Whether it was paid
+// is not shown: that is bookkeeping, and the state alone says what she has done.
+const questEntry = (quest, state, world, theme) => {
+  const { current, goal, done } = questProgress(quest, state, world);
+  const item = document.createElement('li');
+  item.className = 'quest food-card';
+  item.dataset.quest = quest.id;
+  item.dataset.state = done ? 'done' : 'doing';
+
+  const title = document.createElement('span');
+  title.className = 'quest-title';
+  title.textContent = quest.title;
+
+  const progress = document.createElement('span');
+  progress.className = 'quest-progress';
+  progress.textContent = `${current} / ${goal}`;
+
+  const reward = document.createElement('span');
+  reward.className = 'quest-reward';
+  const coin = document.createElement('span');
+  coin.className = 'price-coin';
+  coin.appendChild(themedIcon(theme, 'coin'));
+  reward.append(coin, ` ${quest.reward}`);
+
+  item.append(title, progress, reward);
+  if (done) {
+    const mark = document.createElement('span');
+    mark.className = 'quest-mark';
+    mark.textContent = '\u2713 Done';
+    item.appendChild(mark);
+  }
+  return item;
+};
+
+const questList = (quests, state, world, theme) => {
+  const list = document.createElement('ul');
+  list.className = 'quest-list';
+  list.setAttribute('aria-label', 'Quests');
+  list.append(...quests.map((q) => questEntry(q, state, world, theme)));
+  return list;
+};
+
 const RANGES = [
   { id: 'week', text: 'Week' },
   { id: 'month', text: 'Month' },
 ];
 
-export const renderRecordScreen = ({ state, now, theme, onBack }) => {
+// `quests` and `world` come from the caller, like the shop's foods: this screen imports no
+// data. With no quests handed in, there is simply no ladder.
+export const renderRecordScreen = ({ state, now, theme, onBack, quests = [], world = {} }) => {
   const section = document.createElement('section');
   section.className = 'screen record';
 
@@ -121,6 +169,13 @@ export const renderRecordScreen = ({ state, now, theme, onBack }) => {
   total.className = 'record-total';
   total.textContent = `You have finished ${plural(state.lifetimeBlocks ?? 0, 'block')} in all.`;
   section.appendChild(total);
+
+  if (quests.length > 0) {
+    const heading = document.createElement('h2');
+    heading.className = 'quest-heading';
+    heading.textContent = 'Quests';
+    section.append(heading, questList(quests, state, world, theme));
+  }
 
   return section;
 };

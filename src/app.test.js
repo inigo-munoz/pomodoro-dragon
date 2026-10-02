@@ -1369,4 +1369,14 @@ describe('createApp quests', () => {
     expect(saved().coins).toBe(100 - 10 + 20 - 10);
     expect(saved().questsPaid).toEqual(['dragon-grow']);
   });
+
+  it('shows the ladder on the Record screen, with a quest she has just finished marked done', () => {
+    seed();
+    createApp(root);
+    finishWork();
+    click('record');
+    expect(root.querySelectorAll('[data-quest]')).toHaveLength(quests.length);
+    expect(root.querySelector('[data-quest="blocks-1"]').dataset.state).toBe('done');
+    expect(root.querySelector('[data-quest="blocks-10"] .quest-progress').textContent).toBe('1 / 10');
+  });
 });
