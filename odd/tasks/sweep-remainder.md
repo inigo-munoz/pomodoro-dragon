@@ -91,9 +91,9 @@ Close PRs #2–#5 (their work is merged), delete the merged local branches, prun
 
 ## Tasks
 
-- [ ] **A.** Notifications through the service worker, with fallback.
-- [ ] **B.** Back at 48px everywhere; named nav buttons; room fallback; unlock purse; chooser
-      back; 48px dragon cards.
+- [x] **A.** `6bd2e29` Notifications through the service worker, with fallback. Merged as `7ab006d`.
+- [x] **B.** `4c40b49`, `d4e8b65`, `8b65310` Back at 48px everywhere; named nav buttons; room
+      fallback; unlock purse; chooser back; 48px dragon cards. Merged as `d6c6bfe`.
 - [ ] **C.** Migration that cannot wipe a save; `lifetimeBlocks` coerced; symmetric unlock guard.
 - [ ] **D.** Dead code, dead icons, stale comments, doc notes.
 - [x] **H.** PRs closed, branches pruned. Done first, by the parent, while A and B ran:
@@ -116,8 +116,34 @@ Close PRs #2–#5 (their work is merged), delete the merged local branches, prun
 
 ## Progress
 
-- Branches: `feat/sw-notifications` (A) and `feat/reach-and-truth` (B) in parallel off
-  `main`; then `feat/safe-saves` (C) and `feat/dead-weight` (D); then housekeeping.
+A and B ran in parallel in isolated worktrees off `44e3af7`, both merged into `main`:
+**33 files / 571 tests green** on the merged result (550 + 9 + 12), build OK, precache still
+127. Each writer's `app.js` touch landed in its own region (the `notify` call and the chooser
+wiring) and the two merged without conflict.
+
+Decisions the writers made and I kept:
+- A: a `showNotification` that throws is NOT retried through the constructor — the worker
+  owned the attempt, a retry could notify twice, and where the constructor throws (Android) it
+  would fail anyway. The `notify` call in `app.js` is wrapped in `Promise.resolve(...).catch`
+  so an async rejection can never surface as unhandled.
+- B: `.dragon-choice` got its own `min-height: 48px` rule rather than widening the shared
+  `.food-card` rule, so food cards are unchanged. The first-run chooser (no dragon yet) has no
+  Back on purpose — there is no screen behind it; the title-entered and Settings-entered ones
+  return where they came from. `defaultRoom` (🕳️) is exported from `core/theme.js` as the
+  room fallback. A new `src/styles.test.js` reads the final CSS and pins the single
+  `.back-btn` rule at 48px and the absence of the Settings override — the only way to test
+  layout facts under jsdom.
+
+Two instrument notes, because they cost time:
+- Both worktrees were based on `origin/main` (`44e3af7`), not local `main`, so each writer's
+  diff "deleted" this document. A 3-way merge keeps it; a diff apply would not. Checked with
+  `git merge-tree` before merging.
+- The worktrees live under `.claude/worktrees/` INSIDE the repo, so vitest on `main` ran their
+  copies too and reported 98 files / 1692 tests. The honest count came back after removing
+  them. The count must be taken with no worktrees present.
+
+C and D run next as one writer on one branch in the main working tree: they share
+`history.js` and `styles.css`, so splitting them buys a conflict, not speed.
 
 ## Next step
 
