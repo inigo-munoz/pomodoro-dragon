@@ -82,8 +82,12 @@ describe('unlock offer screen', () => {
   });
 
   it('shows no punitive copy at 0, 49 or 50 coins, and the same text whatever the purse', () => {
-    const texts = [0, 49, 50].map((coins) =>
-      renderUnlockLair(ctx({ state: { coins } })).textContent);
+    // The purse in the bar is the one honest number that varies; the copy is everything else.
+    const texts = [0, 49, 50].map((coins) => {
+      const el = renderUnlockLair(ctx({ state: { coins } }));
+      el.querySelector('.screen-bar .coin-counter').remove();
+      return el.textContent;
+    });
     for (const text of texts) expect(text).not.toMatch(/cannot|not enough|sorry|lost|fail/i);
     // A line that only appears when the child is short would read as a nudge about it.
     expect(new Set(texts).size).toBe(1);
@@ -94,10 +98,31 @@ describe('unlock offer screen', () => {
     expect(el.querySelector('[draggable]')).toBeNull();
   });
 
-  it('names the screen "Lair", after the back button', () => {
+  it('names the screen "Lair", after the bar that holds Back and the purse', () => {
     const el = renderUnlockLair(ctx());
     expect(el.querySelector('.screen-title').textContent).toBe('Lair');
-    expect(el.children[0].classList.contains('back-btn')).toBe(true);
+    expect(el.children[0].classList.contains('screen-bar')).toBe(true);
     expect(el.children[1].classList.contains('screen-title')).toBe(true);
+  });
+
+  it('shows Back on the left and the coin counter on the right', () => {
+    const el = renderUnlockLair(ctx({ state: { coins: 80 } }));
+    const bar = el.querySelector('.screen-bar');
+    expect(bar.children[0].classList.contains('back-btn')).toBe(true);
+    expect(bar.children[1].classList.contains('coin-counter')).toBe(true);
+    expect(bar.children[1].textContent).toContain('80');
+  });
+});
+
+describe('unlock screen room fallback', () => {
+  it('swaps a failed room image for the default room emoji, never its path', () => {
+    const el = renderUnlockLair(ctx({ theme: { room: '/art/lair/frost-room.webp' } }));
+    const img = el.querySelector('.unlock-art img');
+    expect(img.getAttribute("alt")).toBe("");
+    img.dispatchEvent(new Event('error'));
+    const slot = el.querySelector('.unlock-art');
+    expect(slot.querySelector('img')).toBeNull();
+    expect(slot.textContent).toBe('🕳️');
+    expect(slot.textContent).not.toContain('/art/');
   });
 });

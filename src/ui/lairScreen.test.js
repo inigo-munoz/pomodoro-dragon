@@ -174,3 +174,18 @@ describe('lair screen', () => {
     expect(title.nextElementSibling.classList.contains('lair-room')).toBe(true);
   });
 });
+
+describe('lair room fallback', () => {
+  const frostRoom = { furniture: {}, room: '/art/lair/frost-room.webp' };
+
+  it('swaps a failed room image for the default room emoji, never its path', () => {
+    const el = renderLairScreen(ctx({ theme: frostRoom }));
+    const img = el.querySelector('.lair-bg img');
+    expect(img.getAttribute("alt")).toBe("");
+    img.dispatchEvent(new Event('error'));
+    const bg = el.querySelector('.lair-bg');
+    expect(bg.querySelector('img')).toBeNull();
+    expect(bg.textContent).toBe('🕳️');
+    expect(bg.textContent).not.toContain('/art/');
+  });
+});
