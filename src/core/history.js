@@ -33,14 +33,26 @@ export const pruneHistory = (history, now, days) => {
   return Object.fromEntries(Object.entries(history).filter(([key]) => key >= oldest));
 };
 
-// n entries, oldest first, one per calendar day ending today. A day with nothing is a
-// zero entry, not a gap.
-export const lastDays = (history, now, n) =>
-  Array.from({ length: n }, (_, i) => {
-    const key = keyDaysAgo(now, n - 1 - i);
+// The calendar week containing `now`: seven entries, Monday first, Sunday last. A day
+// with nothing is a zero entry, not a gap. getDay() is 0 for Sunday, so (getDay() + 6) % 7
+// maps Monday to 0 and Sunday to 6. A day after today is `isFuture`: it has not happened
+// yet, which is not the same as a day she did nothing. Stepping goes through keyDaysAgo
+// (calendar components at midday), so a negative offset is a later day and a
+// daylight-saving change cannot skip or repeat a date.
+export const weekOf = (history, now) => {
+  const todayIndex = (new Date(now).getDay() + 6) % 7;
+  return Array.from({ length: 7 }, (_, i) => {
+    const key = keyDaysAgo(now, todayIndex - i);
     const day = history[key];
-    return { key, blocks: day?.blocks ?? 0, minutes: day?.minutes ?? 0 };
+    return {
+      key,
+      blocks: day?.blocks ?? 0,
+      minutes: day?.minutes ?? 0,
+      isToday: i === todayIndex,
+      isFuture: i > todayIndex,
+    };
   });
+};
 
 const sum = (history, field) =>
   Object.values(history).reduce((total, day) => total + day[field], 0);

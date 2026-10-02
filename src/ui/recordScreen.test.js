@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { renderRecordScreen } from './recordScreen.js';
 
-// Friday 2 October 2026, local, so the week runs Sat 26 Sep .. Fri 2 Oct.
+// Friday 2 October 2026, local, so the week runs Mon 28 Sep .. Sun 4 Oct.
 const now = new Date(2026, 9, 2, 18, 0).getTime();
 
 const ctx = (history = {}, over = {}) => ({
@@ -29,14 +29,22 @@ describe('record screen', () => {
     expect(onBack).toHaveBeenCalledTimes(1);
   });
 
-  it('shows seven days, oldest first, ending today', () => {
+  it('shows the calendar week, Monday first, with fixed English labels', () => {
     const el = renderRecordScreen(ctx());
     expect(days(el).map((d) => d.dataset.day)).toEqual([
-      '2026-09-26', '2026-09-27', '2026-09-28', '2026-09-29',
-      '2026-09-30', '2026-10-01', '2026-10-02',
+      '2026-09-28', '2026-09-29', '2026-09-30', '2026-10-01',
+      '2026-10-02', '2026-10-03', '2026-10-04',
     ]);
+    // Friday is today: Sat and Sun are still to come and carry no label text.
+    expect(days(el).slice(0, 5).map((d) => d.querySelector('.record-day-name').textContent))
+      .toEqual(['Mon', 'Tue', 'Wed', 'Thu', 'Fri']);
+  });
+
+  it('labels all seven days Mon..Sun in order once the week is over', () => {
+    const sunday = new Date(2026, 9, 4, 20, 0).getTime();
+    const el = renderRecordScreen(ctx({}, { now: sunday }));
     expect(days(el).map((d) => d.querySelector('.record-day-name').textContent))
-      .toEqual(['Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri']);
+      .toEqual(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']);
   });
 
   it('marks today, and only today', () => {
@@ -47,12 +55,25 @@ describe('record screen', () => {
     expect(marked[0].getAttribute('aria-current')).toBe('date');
   });
 
+  it('marks the days after today as future, with no number and no text at all', () => {
+    const el = renderRecordScreen(ctx({ '2026-10-02': { blocks: 2, minutes: 50 } }));
+    const future = el.querySelectorAll('.is-future');
+    expect([...future].map((d) => d.dataset.day)).toEqual(['2026-10-03', '2026-10-04']);
+    for (const d of future) {
+      expect(d.className).toContain('record-day');
+      expect(d.textContent).toBe('');
+      expect(d.querySelector('.record-count').textContent).toBe('');
+      expect(d.getAttribute('aria-label')).not.toMatch(/\d/);
+    }
+    expect(el.querySelector('.is-today').classList.contains('is-future')).toBe(false);
+  });
+
   it('shows each day\'s count and a bar that grows with the blocks', () => {
     const el = renderRecordScreen(ctx({
       '2026-10-02': { blocks: 4, minutes: 100 },
       '2026-10-01': { blocks: 2, minutes: 50 },
     }));
-    const [today, yesterday] = [days(el)[6], days(el)[5]];
+    const [today, yesterday] = [days(el)[4], days(el)[3]];
     expect(today.querySelector('.record-count').textContent).toBe('4');
     expect(yesterday.querySelector('.record-count').textContent).toBe('2');
     const h = (d) => parseFloat(d.querySelector('.record-bar').style.height);
@@ -62,10 +83,10 @@ describe('record screen', () => {
 
   it('renders a day with nothing as an empty slot, with no message and no number', () => {
     const el = renderRecordScreen(ctx({ '2026-10-02': { blocks: 1, minutes: 25 } }));
-    const empty = days(el)[0];
+    const empty = days(el)[0]; // Monday, a past day
     expect(empty.querySelector('.record-count').textContent).toBe('');
     expect(parseFloat(empty.querySelector('.record-bar').style.height)).toBe(0);
-    expect(empty.textContent).toBe('Sat');
+    expect(empty.textContent).toBe('Mon');
   });
 
   it('renders a whole empty week without any message', () => {

@@ -1,29 +1,25 @@
-import { lastDays, totalBlocks } from '../core/history.js';
+import { weekOf, totalBlocks } from '../core/history.js';
 import { backButton } from './backButton.js';
 import { coinCounter } from './coinCounter.js';
 import { screenTitle } from './screenTitle.js';
 
-const WEEK = 7;
-
 const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
 
-// The key is a local date, so the name is read from its parts rather than parsed as a
-// string (new Date('2026-10-02') is UTC midnight and can name the wrong weekday).
-const shortName = (key) => {
-  const [y, m, d] = key.split('-').map(Number);
-  return new Date(y, m - 1, d).toLocaleDateString('en-US', { weekday: 'short' });
-};
+// Fixed, not toLocaleDateString: the label must not change with the device locale, and in
+// a Monday-first week the position already names the day.
+const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-// One column per day. Only what she did is drawn: a day with nothing is an empty slot,
-// with no number and no words. Bars are scaled to the best day on screen, so the tallest
-// one fills its track and the others are read against it, never against a target.
-const dayColumn = (day, isToday, best) => {
-  const name = shortName(day.key);
+// One column per day. Only what she did is drawn: a past day with nothing is an empty
+// slot, with no number and no words. A day still to come is quieter again and has no text
+// whatsoever, so it can never read as something she did not do. Bars are scaled to the
+// best day on screen, so the tallest one fills its track and the others are read against
+// it, never against a target.
+const dayColumn = (day, name, best) => {
   const col = document.createElement('div');
-  col.className = 'record-day' + (isToday ? ' is-today' : '');
+  col.className = 'record-day' + (day.isToday ? ' is-today' : '') + (day.isFuture ? ' is-future' : '');
   col.dataset.day = day.key;
-  if (isToday) col.setAttribute('aria-current', 'date');
-  col.setAttribute('aria-label', `${name}, ${plural(day.blocks, 'block')}`);
+  if (day.isToday) col.setAttribute('aria-current', 'date');
+  col.setAttribute('aria-label', day.isFuture ? name : `${name}, ${plural(day.blocks, 'block')}`);
 
   const count = document.createElement('span');
   count.className = 'record-count';
@@ -38,7 +34,7 @@ const dayColumn = (day, isToday, best) => {
 
   const label = document.createElement('span');
   label.className = 'record-day-name';
-  label.textContent = name;
+  label.textContent = day.isFuture ? '' : name;
 
   col.append(count, track, label);
   return col;
@@ -54,11 +50,11 @@ export const renderRecordScreen = ({ state, now, theme, onBack }) => {
   section.appendChild(bar);
   section.appendChild(screenTitle('Record'));
 
-  const week = lastDays(state.history ?? {}, now, WEEK);
+  const week = weekOf(state.history ?? {}, now);
   const best = Math.max(...week.map((d) => d.blocks));
   const chart = document.createElement('div');
   chart.className = 'record-week';
-  week.forEach((day, i) => chart.appendChild(dayColumn(day, i === WEEK - 1, best)));
+  week.forEach((day, i) => chart.appendChild(dayColumn(day, DAY_NAMES[i], best)));
   section.appendChild(chart);
 
   const total = document.createElement('p');
