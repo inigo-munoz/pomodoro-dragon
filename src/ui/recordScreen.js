@@ -1,4 +1,4 @@
-import { weekOf, totalBlocks } from '../core/history.js';
+import { weekOf, monthOf, totalBlocks } from '../core/history.js';
 import { backButton } from './backButton.js';
 import { coinCounter } from './coinCounter.js';
 import { screenTitle } from './screenTitle.js';
@@ -9,11 +9,33 @@ const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
 // a Monday-first week the position already names the day.
 const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-// One column per day. Only what she did is drawn: a past day with nothing is an empty
-// slot, with no number and no words. A day still to come is quieter again and has no text
-// whatsoever, so it can never read as something she did not do. Bars are scaled to the
-// best day on screen, so the tallest one fills its track and the others are read against
-// it, never against a target.
+// A bar and its number, shared by both ranges. Only what she did is drawn: a span that has
+// happened shows its count, and a count of 0 is printed as a plain 0, a fact and nothing
+// more. A span still to come is quieter again and has no text whatsoever, so it can never
+// read as something she did not do. Bars are scaled to the best bar on screen, so the
+// tallest one fills its track and the others are read against it, never against a target.
+const barParts = (entry, best) => {
+  const count = document.createElement('span');
+  count.className = 'record-count';
+  count.textContent = entry.isFuture ? '' : String(entry.blocks);
+
+  const track = document.createElement('div');
+  track.className = 'record-track';
+  const bar = document.createElement('div');
+  bar.className = 'record-bar';
+  bar.style.height = `${best > 0 ? (entry.blocks / best) * 100 : 0}%`;
+  track.appendChild(bar);
+  return { count, track };
+};
+
+const nameLabel = (text) => {
+  const label = document.createElement('span');
+  label.className = 'record-day-name';
+  label.textContent = text;
+  return label;
+};
+
+// One column per day: the week view.
 const dayColumn = (day, name, best) => {
   const col = document.createElement('div');
   col.className = 'record-day' + (day.isToday ? ' is-today' : '') + (day.isFuture ? ' is-future' : '');
@@ -21,24 +43,31 @@ const dayColumn = (day, name, best) => {
   if (day.isToday) col.setAttribute('aria-current', 'date');
   col.setAttribute('aria-label', day.isFuture ? name : `${name}, ${plural(day.blocks, 'block')}`);
 
-  const count = document.createElement('span');
-  count.className = 'record-count';
-  count.textContent = day.blocks > 0 ? String(day.blocks) : '';
-
-  const track = document.createElement('div');
-  track.className = 'record-track';
-  const bar = document.createElement('div');
-  bar.className = 'record-bar';
-  bar.style.height = `${best > 0 ? (day.blocks / best) * 100 : 0}%`;
-  track.appendChild(bar);
-
-  const label = document.createElement('span');
-  label.className = 'record-day-name';
-  label.textContent = day.isFuture ? '' : name;
-
-  col.append(count, track, label);
+  const { count, track } = barParts(day, best);
+  col.append(count, track, nameLabel(day.isFuture ? '' : name));
   return col;
 };
+
+// One column per calendar week: the month view. It is `.record-span`, not `.record-day`,
+// because it is a span of days, and the week view's selectors stay exactly as they were.
+// The label is the in-month days it covers, and its count is the blocks of those days only.
+const weekColumn = (week, best) => {
+  const col = document.createElement('div');
+  col.className = 'record-span' + (week.isCurrent ? ' is-current' : '') + (week.isFuture ? ' is-future' : '');
+  col.dataset.week = week.key;
+  if (week.isCurrent) col.setAttribute('aria-current', 'date');
+  const name = `Days ${week.label}`;
+  col.setAttribute('aria-label', week.isFuture ? name : `${name}, ${plural(week.blocks, 'block')}`);
+
+  const { count, track } = barParts(week, best);
+  col.append(count, track, nameLabel(week.isFuture ? '' : week.label));
+  return col;
+};
+
+const RANGES = [
+  { id: 'week', text: 'Week' },
+  { id: 'month', text: 'Month' },
+];
 
 export const renderRecordScreen = ({ state, now, theme, onBack }) => {
   const section = document.createElement('section');
@@ -50,16 +79,44 @@ export const renderRecordScreen = ({ state, now, theme, onBack }) => {
   section.appendChild(bar);
   section.appendChild(screenTitle('Record'));
 
-  const week = weekOf(state.history ?? {}, now);
-  const best = Math.max(...week.map((d) => d.blocks));
+  const history = state.history ?? {};
   const chart = document.createElement('div');
   chart.className = 'record-week';
-  week.forEach((day, i) => chart.appendChild(dayColumn(day, DAY_NAMES[i], best)));
-  section.appendChild(chart);
+
+  // The range lives only in this render: the screen opens on the week every time.
+  const buttons = RANGES.map(({ id, text }) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'preset';
+    btn.dataset.range = id;
+    btn.textContent = text;
+    btn.addEventListener('click', () => draw(id));
+    return btn;
+  });
+  const switcher = document.createElement('div');
+  switcher.className = 'preset-row record-range';
+  switcher.setAttribute('role', 'group');
+  switcher.setAttribute('aria-label', 'Range');
+  switcher.append(...buttons);
+
+  const draw = (range) => {
+    const entries = range === 'month' ? monthOf(history, now) : weekOf(history, now);
+    const best = Math.max(...entries.map((e) => e.blocks));
+    chart.replaceChildren(...entries.map((e, i) => (
+      range === 'month' ? weekColumn(e, best) : dayColumn(e, DAY_NAMES[i], best)
+    )));
+    buttons.forEach((btn) => {
+      const on = btn.dataset.range === range;
+      btn.classList.toggle('active', on);
+      btn.setAttribute('aria-pressed', String(on));
+    });
+  };
+  draw('week');
+  section.append(switcher, chart);
 
   const total = document.createElement('p');
   total.className = 'record-total';
-  total.textContent = `You have finished ${plural(totalBlocks(state.history ?? {}), 'block')} in all.`;
+  total.textContent = `You have finished ${plural(totalBlocks(history), 'block')} in all.`;
   section.appendChild(total);
 
   return section;
