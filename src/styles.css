@@ -334,3 +334,21 @@ body {
 .record-day.is-today .record-day-name { opacity: 1; font-weight: 800; color: var(--accent); }
 .record-total { margin: 0; font-size: 1.2rem; text-align: center; }
 @media (prefers-reduced-motion: reduce) { .record-bar { transition: none; } }
+
+/* The front door. The name is the hero of the screen, so unlike .screen-title it is loud:
+   full --fg, centred, and given the room to breathe. */
+.screen.title { justify-content: center; text-align: center; gap: 28px; }
+.app-title {
+  margin: 0; font-size: 3.2rem; font-weight: 800; line-height: 1.05;
+  text-transform: uppercase; letter-spacing: 0.08em; color: var(--fg);
+}
+/* Quieter than Start, but still a 48px target for a child's thumb. */
+.title-link {
+  min-height: 48px; padding: 10px 16px; font-size: 1.1rem;
+  background: none; border: none; color: var(--back-btn); text-decoration: underline;
+}
+
+.instruction-list { list-style: none; margin: 0; padding: 0; width: 100%; display: flex; flex-direction: column; gap: 12px; }
+.instruction-step { background: var(--card); border-radius: 16px; padding: 14px 16px; text-align: left; }
+.instruction-step h2 { margin: 0 0 4px; font-size: 1.2rem; }
+.instruction-step p { margin: 0; font-size: 1.05rem; line-height: 1.35; }
