@@ -19,18 +19,18 @@ body {
   user-select: none;
 }
 #app { max-width: 480px; margin: 0 auto; min-height: 100vh; }
-.screen { display: flex; flex-direction: column; align-items: center; padding: 16px; gap: 16px; min-height: 100vh; }
+.screen { display: flex; flex-direction: column; align-items: center; padding: 16px; gap: 16px; min-height: 100vh; position: relative; }
 
 /* The main screen is a place, not a panel: night overhead, the sky lifting toward a horizon,
-   and darker ground below it. It is fixed to the VIEWPORT rather than painted on .screen,
-   because #app is capped at 480px and a scene that stopped at that edge would read as a
-   column instead of a world.
+   and darker ground below it. It is bounded by the app COLUMN, not the viewport: #app is
+   capped at 480px and on a wide screen a full-bleed scene spills across dead space that holds
+   nothing of ours. Absolutely positioned, so it is not a flex item of .screen.
    Only the main screen gets it. The settings panel and the shop cards are var(--card), and
    a sky that reaches var(--card) at the bottom of the screen would swallow them whole —
    the same way an object disappears when it shares its background's value. */
 .screen.main::before {
   content: '';
-  position: fixed;
+  position: absolute;
   inset: 0;
   z-index: -1;
   background:
@@ -46,7 +46,7 @@ body {
    an overlay rather than a token because no token in the palette is darker than --bg. */
 .screen:not(.main)::before {
   content: '';
-  position: fixed;
+  position: absolute;
   inset: 0;
   z-index: -1;
   background:
