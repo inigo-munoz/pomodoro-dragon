@@ -9,6 +9,8 @@ import { createReminders } from './platform/reminders.js';
 import { tones } from './audio/tones.js';
 import { assetUrl } from './ui/art.js';
 import { createScreenManager } from './ui/screens.js';
+import { renderTitleScreen } from './ui/titleScreen.js';
+import { renderInstructionsScreen } from './ui/instructionsScreen.js';
 import { renderChooseDragon } from './ui/chooseDragon.js';
 import { renderMainScreen, updateMainScreen } from './ui/mainScreen.js';
 import { renderShopScreen } from './ui/shopScreen.js';
@@ -86,6 +88,18 @@ export const createApp = (root, {
       onStart, onPause, onBreak, onShop, onLair, onRecord, onSettings, onToggleMute,
     }));
     screens.show('main');
+  };
+
+  // The front door, shown on every launch. It needs no dragon, so it is not themed and
+  // never reads the save: Start hands over to render(), which is where the app used to open.
+  const showTitle = () => {
+    screens.set('title', renderTitleScreen({ onStart: render, onInstructions: showInstructions }));
+    screens.show('title');
+  };
+
+  const showInstructions = () => {
+    screens.set('instructions', renderInstructionsScreen({ onBack: showTitle }));
+    screens.show('instructions');
   };
 
   // --- handlers ---
@@ -307,7 +321,7 @@ export const createApp = (root, {
   handleTick(); // settle a session restored from a previous run (completes it once)
   if (timerState.running) reminders.keepAwake(); // a restored block is still running
 
-  render();
+  showTitle();
 
   return {
     destroy: () => {
