@@ -111,7 +111,7 @@ merge remain the user's decision.
 
 ### Slice 2 — say where you are
 
-- [ ] **T3. Shared screen title.** New `src/ui/screenTitle.js`, in the idiom of
+- [x] **T3. Shared screen title.** `f24633a`, `63b399c` New `src/ui/screenTitle.js`, in the idiom of
       `src/ui/backButton.js`. Applied to choose-dragon, shop, lair, slot picker, unlock and
       settings; the main screen keeps its `.top-bar` and `.mode-label` untouched. Settings
       drops its own `h1` and moves `← Back` to the top. New CSS for the watermark treatment,
@@ -182,7 +182,32 @@ or `sessionsBeforeLongBreak` yet, so the settings re-bake path for those two key
 `src/app.js` has no integration test covering it. It is a plain object spread. Slice 3 adds
 the controls and must add that test.
 
+### Slice 2 — DONE, on `feat/screen-titles`, not merged
+
+| Commit | Subject |
+|---|---|
+| `f24633a` | `feat(ui): every screen says where you are` |
+| `63b399c` | `refactor(lair): name a slot in one place, and say it out loud properly` |
+
+Observed: **23 files / 301 tests green**, `npm run build` succeeded. Verified independently
+by the parent. `.screen-title` is a global rule using `var(--fg)` at `opacity: 0.45`, so no
+new token was needed and every theme keeps working.
+
+Titles: Dragons, Shop, Lair, Wall/Floor/Corner, Lair (unlock), Settings. The main screen
+deliberately has NO title — it is home, it owns the `.top-bar` and the dragon identifies it.
+A negative test now pins that decision.
+
+**Wart fixed while in there** (`63b399c`): the slot picker had just learned to title a slot
+while `lairScreen.js` still interpolated the raw id into its aria-labels, so a screen reader
+announced "Add something to the floorLeft". `src/ui/slotNames.js` now owns both the title
+(`Floor` for both floor slots — the picker is opened from one specific slot, so the side adds
+nothing there) and the spoken name (`left floor` / `right floor`, because a screen reader
+announces all four buttons in the same room).
+
+**Not visually checked in a browser yet.** The CSS was reviewed by reading. Slices 2 and 3
+share one manual smoke test, to be run when slice 3 closes.
+
 ## Next step
 
-T3 — the shared screen title, on branch `feat/screen-titles`, chained off
-`feat/long-break-cycle`.
+T4-T6 — the settings redesign, on branch `feat/friendly-settings`, chained off
+`feat/screen-titles`.
