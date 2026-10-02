@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { renderMainScreen } from './mainScreen.js';
 import { assetUrl } from './art.js';
 import { getDragon } from '../data/dragons.js';
+import { resolveTheme } from '../core/theme.js';
 
 const dragon = getDragon('frost');
 const base = {
@@ -379,5 +380,24 @@ describe('a finished work block counts the moment the bell rings', () => {
       ...base, timerState: { mode: 'work', remaining: 900, running: false },
     });
     expect(el.querySelector('.screen-title')).toBeNull();
+  });
+});
+
+describe('main screen nav bar names', () => {
+  const timerState = { mode: 'work', remaining: 900, running: false };
+
+  // An icon-only button is announced as "button" unless it carries a name; art or emoji alike.
+  it.each([
+    ['themed art', resolveTheme(dragon.themeId)],
+    ['the emoji fallback', undefined],
+  ])('gives every nav button a non-empty accessible name with %s', (_label, theme) => {
+    const el = renderMainScreen({ ...base, theme, timerState });
+    const buttons = [...el.querySelectorAll('.nav-bar [data-action]')];
+    expect(buttons.map((b) => b.dataset.action)).toEqual(['shop', 'lair', 'record', 'settings']);
+    for (const b of buttons) {
+      expect((b.getAttribute('aria-label') ?? '').trim()).not.toBe('');
+    }
+    expect(el.querySelector('[data-action="shop"]').getAttribute('aria-label')).toBe('Shop');
+    expect(el.querySelector('[data-action="settings"]').getAttribute('aria-label')).toBe('Settings');
   });
 });

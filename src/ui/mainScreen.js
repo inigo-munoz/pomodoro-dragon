@@ -84,14 +84,14 @@ export const renderMainScreen = (ctx) => {
     `<div class="xp-bar"><div class="xp-fill" style="width:${Math.round(progress.ratio * 100)}%"></div></div>` +
     `<div class="controls"></div>` +
     `<footer class="nav-bar">` +
-      `<button class="icon-btn" data-action="shop"></button>` +
+      `<button class="icon-btn" data-action="shop" aria-label="Shop"></button>` +
       `<button class="icon-btn${lairLocked ? ' is-locked' : ''}" data-action="lair"` +
         ` aria-label="${lairLocked ? `Lair, locked, ${ctx.lairPrice} coins` : 'Lair'}">` +
         // lairPrice is the one new interpolation: a numeric literal from config, never the save.
         (lairLocked ? `<span class="lock-price"><span class="price-coin"></span> ${ctx.lairPrice}</span>` : '') +
       `</button>` +
       `<button class="icon-btn" data-action="record" aria-label="Record"></button>` +
-      `<button class="icon-btn" data-action="settings"></button>` +
+      `<button class="icon-btn" data-action="settings" aria-label="Settings"></button>` +
     `</footer>`;
 
   section.querySelector('.dragon-stage').appendChild(stageArt(ctx, level));
