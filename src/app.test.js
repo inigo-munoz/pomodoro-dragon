@@ -759,6 +759,28 @@ describe('createApp long break cycle', () => {
     expect(timerText()).toBe('01:00');
   });
 
+  it('starts the next cycle with empty dots once the long break ends', () => {
+    seedCycle(null);
+    createApp(root);
+    for (let block = 1; block <= 3; block += 1) {
+      runWorkBlock();
+      click('break');
+      vi.advanceTimersByTime(ONE_BLOCK_MS);
+    }
+    runWorkBlock();
+    click('break');
+    expect(modeLabel()).toBe('Long break');
+    expect(root.querySelectorAll('.session-dot.is-done')).toHaveLength(4);
+
+    vi.advanceTimersByTime(3 * 60_000 + 1000);
+    expect(modeLabel()).toBe('Work');
+    expect(root.querySelectorAll('.session-dot.is-done')).toHaveLength(0);
+    expect(root.querySelector('.session-dots').getAttribute('aria-label')).toBe('Session 1 of 4');
+
+    click('start');
+    expect(root.querySelectorAll('.session-dot.is-done')).toHaveLength(0);
+  });
+
   it('remembers the cycle across a reload', () => {
     seedCycle(null);
     createApp(root);

@@ -30,9 +30,12 @@ const stageArt = ({ dragon, timerState }, level) => {
 
 const MODE_LABELS = { work: 'Work', break: 'Break', longBreak: 'Long break' };
 
-// Progress through the current cycle. A non-zero multiple means the long break is due or
-// running, so every dot is filled rather than wrapping back to empty. With no usable cycle
-// length there is nothing to count, so no row is drawn.
+// Progress through the current cycle. A non-zero multiple fills every dot rather than
+// wrapping back to empty, but only while the long break is due or running: that is the long
+// break itself, or the fourth work block parked at 0:00. A work block that is idle or running
+// with a multiple count is the START of the next cycle (advance() leaves the count alone
+// when the long break ends), so it shows none filled. With no usable cycle length there is
+// nothing to count, so no row is drawn.
 // A work block parked at 0:00 has been earned even though advance() has not run yet: it
 // only runs when Break is tapped. The bell and the filled dot have to land together, or the
 // dot looks like it belongs to the tap instead of to the work.
@@ -44,7 +47,8 @@ const sessionDots = (timerState) => {
   if (!(total > 0)) return '';
   const earned = earnedSessions(timerState);
   const inCycle = earned % total;
-  const done = earned > 0 && inCycle === 0 ? total : inCycle;
+  const cycleComplete = timerState.mode === 'longBreak' || earned !== (timerState.completedWork ?? 0);
+  const done = earned > 0 && inCycle === 0 && cycleComplete ? total : inCycle;
   const current = Math.min(done + 1, total);
   const dots = Array.from({ length: total }, (_, i) =>
     `<span class="session-dot${i < done ? ' is-done' : ''}"></span>`).join('');
