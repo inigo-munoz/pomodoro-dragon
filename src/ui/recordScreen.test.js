@@ -245,3 +245,28 @@ describe('record screen range', () => {
     }
   });
 });
+
+describe('work that lands in the future is still shown', () => {
+  // A tablet whose clock was running fast records blocks on a date that becomes "the future"
+  // once the clock is corrected. That is real work and must not vanish from the chart: a blank
+  // bar would read as if she had never done it. Today is Fri 2 Oct, so Sun 4 Oct is ahead.
+  it('prints the count on a future day that somehow has blocks', () => {
+    const el = renderRecordScreen(ctx({ '2026-10-04': { blocks: 3, minutes: 45 } }));
+    const sunday = days(el).find((d) => d.dataset.day === '2026-10-04');
+    expect(sunday.querySelector('.record-count').textContent).toBe('3');
+  });
+
+  it('still leaves a genuinely empty future day blank', () => {
+    const el = renderRecordScreen(ctx());
+    const blanks = days(el).filter((d) => d.classList.contains('is-future'));
+    expect(blanks.length).toBeGreaterThan(0);
+    expect(blanks.every((d) => d.querySelector('.record-count').textContent === '')).toBe(true);
+  });
+
+  it('does the same for a future week in the month view', () => {
+    const el = renderRecordScreen(ctx({ '2026-10-31': { blocks: 4, minutes: 60 } }));
+    rangeBtn(el, 'month').click();
+    const last = weeks(el).at(-1);
+    expect(last.querySelector('.record-count').textContent).toBe('4');
+  });
+});

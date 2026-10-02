@@ -17,7 +17,10 @@ const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const barParts = (entry, best) => {
   const count = document.createElement('span');
   count.className = 'record-count';
-  count.textContent = entry.isFuture ? '' : String(entry.blocks);
+  // A span still to come is blank, with one exception: if it somehow holds work, that work is
+  // shown. A tablet whose clock ran fast records real blocks on a date that becomes the future
+  // once the clock is corrected, and a blank bar would read as if she had never done them.
+  count.textContent = entry.isFuture && entry.blocks === 0 ? '' : String(entry.blocks);
 
   const track = document.createElement('div');
   track.className = 'record-track';
