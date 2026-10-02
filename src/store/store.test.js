@@ -16,7 +16,7 @@ describe('store', () => {
     const s = store.load();
     expect(s.coins).toBe(0);
     expect(s.xpByDragon).toEqual({});
-    expect(s.version).toBe(3);
+    expect(s.version).toBe(4);
     expect(s.timer).toBeNull();
     expect(s.dragonId).toBeNull();
     expect(s.settings).toEqual({ ...config.durations.default, musicStyle: 'cozy' });
@@ -37,7 +37,7 @@ describe('store', () => {
         settings: config.durations.default }));
     const store = createStore(backend, config);
     const s = store.load();
-    expect(s.version).toBe(3);
+    expect(s.version).toBe(4);
     expect(s.xpByDragon).toEqual({ frost: 120 });
     expect(s.coins).toBe(40);
     expect('xp' in s).toBe(false);
@@ -50,7 +50,7 @@ describe('store', () => {
         settings: config.durations.default }));
     const s = createStore(backend, config).load();
     expect(s.timer).toBeNull();
-    expect(s.version).toBe(3);
+    expect(s.version).toBe(4);
     expect(s.coins).toBe(5);
   });
 
@@ -70,9 +70,9 @@ describe('store', () => {
 });
 
 describe('store lairs field', () => {
-  it('defaults lairs to an empty object without bumping the version', () => {
+  it('defaults lairs to an empty object at the current version', () => {
     expect(defaultState(config).lairs).toEqual({});
-    expect(defaultState(config).version).toBe(3);
+    expect(defaultState(config).version).toBe(4);
   });
 
   it('loads an old save without lairs, keeping every other field intact', () => {
@@ -82,18 +82,18 @@ describe('store lairs field', () => {
         settings: config.durations.default, timer: null }));
     const s = createStore(backend, config).load();
     expect(s.lairs).toEqual({});
-    expect(s.version).toBe(3);
+    expect(s.version).toBe(4);
     expect(s.coins).toBe(5);
     expect(s.xpByDragon).toEqual({ frost: 10 });
   });
 });
 
 describe('lair unlock state', () => {
-  it('defaults to locked with the version unchanged and exactly two new keys', () => {
+  it('defaults to locked with the current version and exactly two new keys', () => {
     const s = defaultState(config);
     expect(s.lairUnlocked).toBe(false);
     expect(s.lairs).toEqual({});
-    expect(s.version).toBe(3);
+    expect(s.version).toBe(4);
   });
 
   it('prices the unlock in config, as data', () => {
@@ -110,7 +110,7 @@ describe('lair unlock state', () => {
     expect(s.lairs).toEqual({});
     expect(s.coins).toBe(500);
     expect(s.xpByDragon).toEqual({ frost: 80 });
-    expect(s.version).toBe(3);
+    expect(s.version).toBe(4);
   });
 
   it('keeps an unlocked flag across save and load', () => {
@@ -121,13 +121,13 @@ describe('lair unlock state', () => {
 });
 
 describe('music style setting', () => {
-  it('defaults to cozy, beside the durations, without bumping the version', () => {
+  it('defaults to cozy, beside the durations, at the current version', () => {
     const s = defaultState(config);
     expect(s.settings).toEqual({
       workMinutes: 15, breakMinutes: 5, longBreakMinutes: 15, sessionsBeforeLongBreak: 4,
       musicStyle: 'cozy',
     });
-    expect(s.version).toBe(3);
+    expect(s.version).toBe(4);
   });
 
   it('loads a save written before the setting existed with the default and loses nothing', () => {
@@ -179,7 +179,7 @@ describe('long break settings', () => {
       workMinutes: 20, breakMinutes: 4, musicStyle: 'lofi',
       longBreakMinutes: 15, sessionsBeforeLongBreak: 4,
     });
-    expect(s.version).toBe(3);
+    expect(s.version).toBe(4);
     expect(s.dragonId).toBe('ember');
     expect(s.coins).toBe(130);
     expect(s.xpByDragon).toEqual({ ember: 240 });
@@ -201,9 +201,9 @@ describe('long break settings', () => {
 });
 
 describe('store history field', () => {
-  it('defaults history to an empty object without bumping the version', () => {
+  it('defaults history to an empty object at the current version', () => {
     expect(defaultState(config).history).toEqual({});
-    expect(defaultState(config).version).toBe(3);
+    expect(defaultState(config).version).toBe(4);
   });
 
   it('loads a realistic save from before the record existed, gaining history and losing nothing', () => {
@@ -218,7 +218,7 @@ describe('store history field', () => {
     backend.write(config.storageKey, JSON.stringify(old));
     const s = createStore(backend, config).load();
     expect(s.history).toEqual({});
-    expect(s).toEqual({ ...old, history: {} });
+    expect(s).toEqual({ ...old, version: 4, history: {} });
   });
 
   it('round-trips a saved history', () => {
@@ -226,5 +226,64 @@ describe('store history field', () => {
     const history = { '2026-10-02': { blocks: 3, minutes: 75 } };
     store.save({ ...defaultState(config), history });
     expect(store.load().history).toEqual(history);
+  });
+});
+
+describe('the center slot was once called corner', () => {
+  const load = (save) => {
+    const backend = memoryBackend();
+    backend.write(config.storageKey, JSON.stringify(save));
+    return createStore(backend, config).load();
+  };
+  const settings = config.durations.default;
+
+  it('moves a placed pet from corner to center, losing nothing else', () => {
+    const old = {
+      version: 3, dragonId: 'frost', coins: 12, xpByDragon: { frost: 80 }, lairUnlocked: true,
+      lairs: { frost: { owned: ['imp', 'bed', 'banner'],
+        slots: { wall: 'banner', floorLeft: 'bed', corner: 'imp' } } },
+      muted: false, settings, timer: null, history: {},
+    };
+    const s = load(old);
+    expect(s.lairs.frost.slots).toEqual({ wall: 'banner', floorLeft: 'bed', center: 'imp' });
+    expect('corner' in s.lairs.frost.slots).toBe(false);
+    expect(s.lairs.frost.owned).toEqual(['imp', 'bed', 'banner']);
+    expect(s.version).toBe(4);
+    expect(s.coins).toBe(12);
+    expect(s.xpByDragon).toEqual({ frost: 80 });
+  });
+
+  it('migrates every dragon that has a decorated lair', () => {
+    const s = load({
+      version: 3, dragonId: 'frost',
+      lairs: {
+        frost: { owned: ['imp'], slots: { corner: 'imp' } },
+        ember: { owned: ['bird', 'bed'], slots: { corner: 'bird', floorRight: 'bed' } },
+      },
+    });
+    expect(s.lairs.frost).toEqual({ owned: ['imp'], slots: { center: 'imp' } });
+    expect(s.lairs.ember).toEqual({ owned: ['bird', 'bed'],
+      slots: { center: 'bird', floorRight: 'bed' } });
+  });
+
+  it('leaves a lair with no corner untouched', () => {
+    const lair = { owned: ['bed'], slots: { floorLeft: 'bed' } };
+    expect(load({ version: 3, lairs: { frost: lair } }).lairs.frost).toEqual(lair);
+  });
+
+  it('does not throw on a lair with no slots, and keeps it', () => {
+    expect(load({ version: 3, lairs: { frost: { owned: ['bed'] } } }).lairs.frost)
+      .toEqual({ owned: ['bed'] });
+  });
+
+  it('does not throw on a save with no lairs', () => {
+    const s = load({ version: 3, dragonId: 'frost', coins: 5 });
+    expect(s.lairs).toEqual({});
+    expect(s.coins).toBe(5);
+  });
+
+  it('does not touch a current save that already uses center', () => {
+    const lair = { owned: ['imp'], slots: { center: 'imp' } };
+    expect(load({ version: 4, lairs: { frost: lair } }).lairs.frost).toEqual(lair);
   });
 });

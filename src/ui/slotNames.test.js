@@ -7,14 +7,14 @@ describe('slot names', () => {
     expect(slotTitle('wall')).toBe('Wall');
     expect(slotTitle('floorLeft')).toBe('Floor');
     expect(slotTitle('floorRight')).toBe('Floor');
-    expect(slotTitle('corner')).toBe('Corner');
+    expect(slotTitle('center')).toBe('Center');
   });
 
   it('speaks the two floor slots apart, because a title cannot', () => {
     expect(slotName('floorLeft')).toBe('left floor');
     expect(slotName('floorRight')).toBe('right floor');
     expect(slotName('wall')).toBe('wall');
-    expect(slotName('corner')).toBe('corner');
+    expect(slotName('center')).toBe('center');
   });
 
   it('names every slot the lair actually has', () => {

@@ -295,7 +295,7 @@ body {
 .lair-slot[data-slot="floorRight"] { bottom: 6%; right: 6%; }
 /* the pet sits on the floor at the dragon's feet, between the two furniture slots.
    Up in a top corner it read as floating in mid-air over the cave. */
-.lair-slot[data-slot="corner"] { bottom: 6%; left: 50%; transform: translateX(-50%); }
+.lair-slot[data-slot="center"] { bottom: 6%; left: 50%; transform: translateX(-50%); }
 .lair-slot.is-empty { border: 2px dashed var(--accent); background: rgba(0, 0, 0, 0.25); opacity: 0.75; }
 .food-owned { font-weight: 700; color: var(--accent); }
 

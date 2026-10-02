@@ -1,6 +1,6 @@
 // The room has four fixed positions. An item declares which one it belongs to, so a
 // shelf can list each slot's row from just the items that fit there.
-export const slots = ['wall', 'floorLeft', 'floorRight', 'corner'];
+export const slots = ['wall', 'floorLeft', 'floorRight', 'center'];
 
 // Priced against the food shop (apple 10, meat 25, cake 50) at one coin per minute, so a
 // single piece is a few completed blocks of saving. The emoji lives only here: themes
@@ -15,7 +15,7 @@ export const furniture = [
   { id: 'lamp',      slot: 'floorRight', name: 'Lamp',      price: 25, fallback: '🪔' },
   { id: 'chest',     slot: 'floorRight', name: 'Chest',     price: 35, fallback: '🧰' },
   { id: 'shelf',     slot: 'floorRight', name: 'Bookshelf', price: 55, fallback: '📚' },
-  { id: 'imp',       slot: 'corner',     name: 'Imp',       price: 80, fallback: '👺', pet: true },
-  { id: 'bird',      slot: 'corner',     name: 'Bird',      price: 65, fallback: '🐦', pet: true },
-  { id: 'hatchling', slot: 'corner',     name: 'Hatchling', price: 90, fallback: '🐣', pet: true },
+  { id: 'imp',       slot: 'center',     name: 'Imp',       price: 80, fallback: '👺', pet: true },
+  { id: 'bird',      slot: 'center',     name: 'Bird',      price: 65, fallback: '🐦', pet: true },
+  { id: 'hatchling', slot: 'center',     name: 'Hatchling', price: 90, fallback: '🐣', pet: true },
 ];
