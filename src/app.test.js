@@ -22,6 +22,10 @@ const click = (action) => {
 const createApp = (target, options) => {
   const app = createRawApp(target, options);
   target.querySelector('[data-action="start-app"]')?.click();
+  // Start lands on the eggs now, so a test that seeded a dragon has to tap it to carry on.
+  // This only replays what the child does; it hides no behaviour from the assertions.
+  const saved = JSON.parse(window.localStorage.getItem(config.storageKey) || 'null')?.dragonId;
+  if (saved) target.querySelector(`[data-dragon="${saved}"]`)?.click();
   return app;
 };
 
@@ -1167,12 +1171,23 @@ describe('createApp front door', () => {
     expect(root.querySelector('.screen.title')).toBeNull();
   });
 
-  it('Start with a dragon opens the timer', () => {
+  // Start always goes to the eggs, even when a dragon is already saved: the chooser marks the
+  // current one, so continuing is one tap and changing dragon costs nothing extra.
+  it('Start opens the egg selection even with a dragon already chosen', () => {
     window.localStorage.setItem(config.storageKey, JSON.stringify({ dragonId: 'frost' }));
     openRaw();
     click('start-app');
+    expect(root.querySelector('.choose-dragon')).not.toBeNull();
+    expect(root.querySelector('.timer-display')).toBeNull();
+  });
+
+  it('marks the saved dragon on that screen, so one tap carries on', () => {
+    window.localStorage.setItem(config.storageKey, JSON.stringify({ dragonId: 'blaze' }));
+    openRaw();
+    click('start-app');
+    expect(root.querySelector('[data-dragon="blaze"]').className).toContain('current');
+    root.querySelector('[data-dragon="blaze"]').click();
     expect(root.querySelector('.timer-display')).not.toBeNull();
-    expect(root.querySelector('.choose-dragon')).toBeNull();
   });
 
   it('opens the instructions and comes back to the title screen', () => {

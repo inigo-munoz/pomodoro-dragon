@@ -93,7 +93,9 @@ export const createApp = (root, {
   // The front door, shown on every launch. It needs no dragon, so it is not themed and
   // never reads the save: Start hands over to render(), which is where the app used to open.
   const showTitle = () => {
-    screens.set('title', renderTitleScreen({ onStart: render, onInstructions: showInstructions }));
+    // Start goes to the eggs, not straight to the timer, even when a dragon is already saved:
+    // the chooser marks the current one, so carrying on is one tap and changing is free.
+    screens.set('title', renderTitleScreen({ onStart: onChangeDragon, onInstructions: showInstructions }));
     screens.show('title');
   };
 
@@ -103,7 +105,15 @@ export const createApp = (root, {
   };
 
   // --- handlers ---
-  const onPick = (id) => { state = { ...state, dragonId: id }; save(); render(); };
+  // Confirming the dragon already in play must not rewrite the save file. The front door now
+  // sends everyone through this screen on every launch, so confirming is the common case and
+  // changing is the rare one; a write on every start would be pure churn.
+  const onPick = (id) => {
+    if (id === state.dragonId) return render();
+    state = { ...state, dragonId: id };
+    save();
+    render();
+  };
 
   const onChangeDragon = () => {
     screens.set('choose', renderChooseDragon({ dragons, onPick, currentId: state.dragonId }));
