@@ -5,6 +5,7 @@ export const defaultState = (config) => ({
   xpByDragon: {},
   lairs: {},
   lairUnlocked: false,
+  history: {},
   muted: false,
   settings: { ...config.durations.default, musicStyle: config.musicStyles[0] },
   timer: null,

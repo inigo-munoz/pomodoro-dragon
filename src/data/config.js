@@ -1,6 +1,8 @@
 export const config = {
   coinsPerMinute: 1,
   lairUnlockPrice: 50,
+  // Days of study record kept in the save; older ones are dropped so it cannot grow forever.
+  historyDays: 60,
   durations: {
     workPresets: [10, 15, 25],   // minutes
     breakPresets: [3, 5, 10],    // minutes

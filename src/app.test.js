@@ -1037,3 +1037,73 @@ describe('createApp block reminders', () => {
     app = null;
   });
 });
+
+describe('createApp study record', () => {
+  const saved = () => JSON.parse(window.localStorage.getItem(config.storageKey));
+  const reload = () => {
+    root.remove();
+    root = document.createElement('div');
+    document.body.appendChild(root);
+    return createApp(root);
+  };
+  const finishWork = () => { click('start'); vi.advanceTimersByTime(ONE_BLOCK_MS); };
+
+  beforeEach(() => {
+    // Late evening on purpose: the one-minute block ends at 23:31 local, and it must
+    // still be recorded on that same day.
+    vi.setSystemTime(new Date(2026, 9, 2, 23, 30, 0));
+  });
+
+  it('records one block and its minutes when a work block finishes', () => {
+    createApp(root);
+    pickDragon('frost');
+    finishWork();
+    expect(saved().history).toEqual({ '2026-10-02': { blocks: 1, minutes: 1 } });
+  });
+
+  it('records nothing when a break finishes', () => {
+    createApp(root);
+    pickDragon('frost');
+    finishWork();
+    click('break');
+    vi.advanceTimersByTime(ONE_BLOCK_MS);
+    expect(saved().history).toEqual({ '2026-10-02': { blocks: 1, minutes: 1 } });
+  });
+
+  it('records nothing for a long break', () => {
+    window.localStorage.setItem(config.storageKey, JSON.stringify({
+      dragonId: 'frost', settings: { workMinutes: 1, breakMinutes: 1, longBreakMinutes: 1 },
+      timer: { mode: 'longBreak', running: false, remaining: 60, endsAt: null, completedWork: 4 },
+    }));
+    createApp(root);
+    click('start');
+    vi.advanceTimersByTime(ONE_BLOCK_MS);
+    expect(saved().history).toEqual({});
+  });
+
+  it('keeps the record across a reload and keeps adding to it', () => {
+    const app = createApp(root);
+    pickDragon('frost');
+    finishWork();
+    app.destroy();
+    reload();
+    expect(saved().history['2026-10-02'].blocks).toBe(1);
+    click('break');
+    vi.advanceTimersByTime(ONE_BLOCK_MS);
+    finishWork();
+    expect(saved().history['2026-10-02']).toEqual({ blocks: 2, minutes: 2 });
+  });
+
+  it('prunes days older than the window when it records', () => {
+    window.localStorage.setItem(config.storageKey, JSON.stringify({
+      dragonId: 'frost', settings: { workMinutes: 1, breakMinutes: 1 },
+      history: {
+        '2026-01-01': { blocks: 9, minutes: 225 },
+        '2026-10-01': { blocks: 2, minutes: 50 },
+      },
+    }));
+    createApp(root);
+    finishWork();
+    expect(Object.keys(saved().history)).toEqual(['2026-10-01', '2026-10-02']);
+  });
+});

@@ -199,3 +199,32 @@ describe('long break settings', () => {
     expect(s.settings.workMinutes).toBe(15);
   });
 });
+
+describe('store history field', () => {
+  it('defaults history to an empty object without bumping the version', () => {
+    expect(defaultState(config).history).toEqual({});
+    expect(defaultState(config).version).toBe(3);
+  });
+
+  it('loads a realistic save from before the record existed, gaining history and losing nothing', () => {
+    const backend = memoryBackend();
+    const old = {
+      version: 3, dragonId: 'blaze', coins: 37, xpByDragon: { blaze: 240, frost: 90 },
+      lairs: { blaze: { owned: ['bed'], slots: { floorLeft: 'bed' } } },
+      lairUnlocked: true, muted: true,
+      settings: { ...config.durations.default, workMinutes: 20, musicStyle: 'lofi' },
+      timer: { mode: 'break', running: false, remaining: 120, endsAt: null, completedWork: 2 },
+    };
+    backend.write(config.storageKey, JSON.stringify(old));
+    const s = createStore(backend, config).load();
+    expect(s.history).toEqual({});
+    expect(s).toEqual({ ...old, history: {} });
+  });
+
+  it('round-trips a saved history', () => {
+    const store = createStore(memoryBackend(), config);
+    const history = { '2026-10-02': { blocks: 3, minutes: 75 } };
+    store.save({ ...defaultState(config), history });
+    expect(store.load().history).toEqual(history);
+  });
+});
