@@ -1,5 +1,6 @@
 import { canAfford } from '../core/wallet.js';
 import { backButton } from './backButton.js';
+import { coinCounter } from './coinCounter.js';
 import { art } from './art.js';
 import { screenTitle } from './screenTitle.js';
 import { themedIcon } from './themedIcon.js';
@@ -8,7 +9,11 @@ export const renderShopScreen = ({ state, foods, theme, onBuy, onBack }) => {
   const section = document.createElement('section');
   section.className = 'screen shop';
 
-  section.appendChild(backButton(onBack));
+  // Back on the left, what she can spend on the right: prices mean little without the purse.
+  const bar = document.createElement('div');
+  bar.className = 'screen-bar';
+  bar.append(backButton(onBack), coinCounter(state.coins, theme));
+  section.appendChild(bar);
   section.appendChild(screenTitle('Shop'));
 
   const grid = document.createElement('div');

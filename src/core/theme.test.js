@@ -1,5 +1,6 @@
-import { describe, it, expect, afterEach } from 'vitest';
-import { resolveTheme, applyPalette } from './theme.js';
+import { describe, it, expect, afterEach, vi } from 'vitest';
+import { existsSync } from 'node:fs';
+import { resolveTheme, applyPalette, applyBackdrop } from './theme.js';
 import { themes } from '../data/themes.js';
 
 describe('resolveTheme', () => {
@@ -65,5 +66,42 @@ describe('applyPalette', () => {
     applyPalette({ bg: '#123456', 'accent-fg': '#abcdef' }, root);
     expect(root.style.getPropertyValue('--bg')).toBe('#123456');
     expect(root.style.getPropertyValue('--accent-fg')).toBe('#abcdef');
+  });
+});
+
+describe('resolveTheme backdrop', () => {
+  const ids = ['frost', 'blaze', 'thorn', 'tempest'];
+
+  it.each(ids)('gives %s its own backdrop path', (id) => {
+    expect(resolveTheme(id).backdrop).toBe(`/art/backdrops/${id}.webp`);
+  });
+
+  it('has no backdrop for the default theme or an unknown id', () => {
+    expect(resolveTheme('default').backdrop).toBeNull();
+    expect(resolveTheme('nope').backdrop).toBeNull();
+  });
+
+  it.each(ids)('has the %s file on disk under public/', (id) => {
+    expect(existsSync(`public/art/backdrops/${id}.webp`)).toBe(true);
+  });
+});
+
+describe('applyBackdrop', () => {
+  afterEach(() => vi.unstubAllEnvs());
+
+  it('sets --backdrop to a url() routed through assetUrl', () => {
+    vi.stubEnv('BASE_URL', '/pomodoro-dragon/');
+    const root = document.createElement('div');
+    applyBackdrop('/art/backdrops/frost.webp', root);
+    expect(root.style.getPropertyValue('--backdrop'))
+      .toBe('url("/pomodoro-dragon/art/backdrops/frost.webp")');
+  });
+
+  it('removes --backdrop when the next theme has none, leaving no stale image', () => {
+    const root = document.createElement('div');
+    applyBackdrop('/art/backdrops/frost.webp', root);
+    expect(root.style.getPropertyValue('--backdrop')).not.toBe('');
+    applyBackdrop(null, root);
+    expect(root.style.getPropertyValue('--backdrop')).toBe('');
   });
 });
