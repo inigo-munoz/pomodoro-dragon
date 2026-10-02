@@ -152,7 +152,22 @@ fallback needed an entry there rather than a parameter: `record: '📖'` at `the
 four themed icons are being generated separately; until they land, every theme shows that
 emoji.
 
+### The four themed icons — DONE (`a4f8451`)
+
+Generated through the usual pipeline and wired into `src/data/themes.js`. The default theme
+keeps `record: '📖'`, because the chooser screen runs on that palette before a dragon exists.
+
+Built to the ICON rules, not the illustration ones: one bold scroll silhouette, a pale cream
+core, no ornament. Verified the way that rule demands — rendered at 32px over each theme's own
+background, where the core measures **240-247 against a background of 14-22**. The first Blaze
+icon batch once died by being orange on orange, so the parchment is deliberately the same cream
+in all four and only the rods carry the theme.
+
+`src/core/theme.test.js` now pins it: every real theme resolves its own `.webp`, the default
+keeps the emoji, and no two themes share an icon. Prompts recorded in `docs/art-prompts.md`.
+
+Final: **28 files / 426 tests green**, build succeeds, precache 125 entries.
+
 ## Next step
 
-The four themed `record` icons, then nothing outstanding. The branch sits unmerged at the end
-of the chain.
+Nothing outstanding. The branch sits unmerged at the end of the chain.
