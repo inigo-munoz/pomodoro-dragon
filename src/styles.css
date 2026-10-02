@@ -68,16 +68,19 @@ body {
 .food-card.dimmed, .big-btn.dimmed { opacity: 0.4; }
 .food-icon, .dragon-art { font-size: 2.5rem; }
 
-.setting-group { width: 100%; }
-.setting-group h2 { margin: 0 0 10px; font-size: 1.3rem; }
-.preset-row { display: flex; flex-wrap: wrap; gap: 10px; flex: 0 1 auto; }
-.preset, .setting-control > button { min-width: 48px; min-height: 48px; font-size: 1.3rem; padding: 12px 18px; border: none; border-radius: 12px; background: var(--card); color: var(--fg); }
-.preset.active { background: var(--accent); color: var(--accent-fg); }
-
-/* settings screen: one left-aligned column, stepper and presets in one control */
+/* The settings panel: one card, one row per setting. Rows are label, stepper, then the
+   quick presets in a quieter line. Arrows are the big, obvious thing to tap. */
 .settings { align-items: stretch; }
-.settings .setting-control { display: flex; align-items: center; gap: 10px; }
-.settings .setting-control > button { flex: none; }
+.settings-panel { display: flex; flex-direction: column; gap: 20px; padding: 20px; border-radius: 20px; background: var(--card); }
+.setting-row { display: flex; flex-direction: column; gap: 10px; }
+.setting-label { font-size: 1.3rem; font-weight: 700; }
+.stepper { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.stepper .value { flex: 1; text-align: center; font-size: 1.8rem; font-weight: 800; padding: 10px 8px; border-radius: 12px; background: var(--xp-bar); font-variant-numeric: tabular-nums; }
+.arrow-btn { flex: none; min-width: 64px; min-height: 64px; font-size: 1.8rem; border: none; border-radius: 16px; background: var(--accent); color: var(--accent-fg); }
+.arrow-btn:active { transform: scale(0.94); }
+.preset-row { display: flex; flex-wrap: wrap; gap: 10px; }
+.preset { min-width: 48px; min-height: 48px; font-size: 1.1rem; padding: 10px 16px; border: none; border-radius: 12px; background: var(--xp-bar); color: var(--fg); }
+.preset.active { background: var(--accent); color: var(--accent-fg); }
 .settings .big-btn { align-self: flex-start; min-height: 48px; }
 .settings .back-btn { min-width: 48px; min-height: 48px; padding: 8px 12px; margin-left: -12px; }
 

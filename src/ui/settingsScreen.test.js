@@ -79,3 +79,64 @@ describe('settings screen', () => {
     expect(el.children[0]).toBe(back);
   });
 });
+
+describe('settings rows', () => {
+  const full = {
+    workMinutes: 15, breakMinutes: 5, longBreakMinutes: 15, sessionsBeforeLongBreak: 4, musicStyle: 'cozy',
+  };
+  const { customRange, sessionsRange } = config.durations;
+  const render = (overrides = {}, onChange = vi.fn()) =>
+    renderSettingsScreen({ settings: { ...full, ...overrides }, config, onChange, onBack: () => {} });
+
+  it('has one row per setting, in order', () => {
+    const labels = [...render().querySelectorAll('.setting-row .setting-label')].map((n) => n.textContent);
+    expect(labels).toEqual(['Focus Time', 'Break Time', 'Long Break Time', 'Number of Sessions', 'Music']);
+  });
+
+  it('shows each value with its unit, and no unit for sessions', () => {
+    const values = [...render().querySelectorAll('.setting-row .value')].map((n) => n.textContent);
+    expect(values).toEqual(['15 min', '5 min', '15 min', '4']);
+  });
+
+  it('uses arrow glyphs on the steppers', () => {
+    const el = render();
+    expect(el.querySelector('[data-step="sessions-minus"]').textContent).toBe('◀');
+    expect(el.querySelector('[data-step="sessions-plus"]').textContent).toBe('▶');
+  });
+
+  it.each([
+    ['longBreak', 'longBreakMinutes', customRange],
+    ['sessions', 'sessionsBeforeLongBreak', sessionsRange],
+  ])('steps %s by one and clamps at both ends', (prefix, key, range) => {
+    const onChange = vi.fn();
+    render({}, onChange).querySelector(`[data-step="${prefix}-plus"]`).click();
+    expect(onChange).toHaveBeenLastCalledWith({ ...full, [key]: full[key] + 1 });
+    onChange.mockClear();
+    render({}, onChange).querySelector(`[data-step="${prefix}-minus"]`).click();
+    expect(onChange).toHaveBeenLastCalledWith({ ...full, [key]: full[key] - 1 });
+    onChange.mockClear();
+    render({ [key]: range.max }, onChange).querySelector(`[data-step="${prefix}-plus"]`).click();
+    render({ [key]: range.min }, onChange).querySelector(`[data-step="${prefix}-minus"]`).click();
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it('sessions use their own range, not the duration range', () => {
+    const onChange = vi.fn();
+    render({ sessionsBeforeLongBreak: 10 }, onChange).querySelector('[data-step="sessions-plus"]').click();
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it('keeps presets for the three durations and none for sessions', () => {
+    const el = render();
+    expect(el.querySelectorAll('[data-work-preset]')).toHaveLength(3);
+    expect(el.querySelectorAll('[data-break-preset]')).toHaveLength(3);
+    expect(el.querySelectorAll('[data-longBreak-preset]')).toHaveLength(3);
+    expect(el.querySelector('[data-sessions-preset]')).toBeNull();
+  });
+
+  it('a long break preset reports the new settings', () => {
+    const onChange = vi.fn();
+    render({}, onChange).querySelector('[data-longBreak-preset="20"]').click();
+    expect(onChange).toHaveBeenCalledWith({ ...full, longBreakMinutes: 20 });
+  });
+});
