@@ -273,7 +273,11 @@ body {
 .lair-bg .art-img { width: 100%; height: 100%; object-fit: cover; }
 .lair-bg .art-emoji { font-size: 7rem; opacity: 0.5; }
 /* the dragon never takes taps, so a slot overlapping it stays reachable */
-.lair-room > .dragon-art { position: absolute; left: 18%; top: 22%; width: 64%; height: 56%; object-fit: contain; font-size: 5rem; pointer-events: none; }
+/* A 50% square, centred, with its top where it always was. Its base lands at 72%, one point
+   above the floor slots, which start at 73% (bottom 6% + height 21%): the old 64x56 box ran to
+   78% and the dragon's feet and tail sat over the bed, the cushion and the pet. The user
+   chose to reduce the dragon rather than move the slots. styles.test.js pins the geometry. */
+.lair-room > .dragon-art { position: absolute; left: 25%; top: 22%; width: 50%; height: 50%; object-fit: contain; font-size: 5rem; pointer-events: none; }
 /* sized as a share of the room, not a fixed rem: the room shrinks on a narrow screen
    and fixed slots would collide. 21% is what the art was drawn for. */
 .lair-slot { position: absolute; width: 21%; height: 21%; padding: 4px; border: none; border-radius: 16px; background: transparent; color: var(--fg); font-size: 2.6rem; display: flex; align-items: center; justify-content: center; pointer-events: none; }
