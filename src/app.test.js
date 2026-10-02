@@ -646,6 +646,24 @@ describe('createApp lair', () => {
       expect(saved().lairUnlocked).not.toBe(true);
     });
 
+    it('ignores a forced confirm on a stale screen with too few coins, without throwing', () => {
+      lockedSave({ coins: 49 });
+      createApp(root);
+      openLair();
+      const btn = root.querySelector('[data-action="unlock-confirm"]');
+      btn.removeAttribute('disabled');
+      // jsdom reports a throw inside a listener as a window error rather than rethrowing it.
+      const errors = [];
+      const onError = (e) => { e.preventDefault(); errors.push(e.message); };
+      window.addEventListener('error', onError);
+      btn.click();
+      window.removeEventListener('error', onError);
+      expect(errors).toEqual([]);
+      expect(root.querySelector('.screen.unlock')).not.toBeNull();
+      expect(saved().coins).toBe(49);
+      expect(saved().lairUnlocked).not.toBe(true);
+    });
+
     it('dismisses to the main screen with nothing changed, however often', () => {
       lockedSave();
       createApp(root);

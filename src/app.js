@@ -211,7 +211,10 @@ export const createApp = (root, {
 
   // Re-enter onLair rather than opening the room here, so the post-unlock path and the
   // already-unlocked path are the same lines and cannot drift.
+  // The purse is re-checked here like in onBuyItem: unlockLair throws on too few coins, and
+  // the screen's own guard only knows the purse as it was when it was drawn.
   const onConfirmUnlock = () => {
+    if (!state.lairUnlocked && !canAfford(state.coins, config.lairUnlockPrice)) return;
     state = unlockLair(state, config.lairUnlockPrice);
     settleQuests();
     save();

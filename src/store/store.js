@@ -46,8 +46,12 @@ const migrate = (merged, parsed) => {
   // The defaults merge would hand an older save 0, and the total would drop to nothing. The
   // history it still holds is the best honest estimate; whatever was pruned is gone for good.
   if ((parsed.version ?? 0) < 5 && !Number.isFinite(parsed.lifetimeBlocks)) {
-    next = { ...next, lifetimeBlocks: totalBlocks(parsed.history ?? {}) };
+    next = { ...next, lifetimeBlocks: totalBlocks(parsed.history) };
   }
+  // A counter that is not a finite number would turn "5" + 1 into "51". It becomes 0 and is
+  // NOT reseeded from history, for every version: a save that already paid quests would
+  // otherwise count the pruned-and-kept days twice.
+  if (!Number.isFinite(next.lifetimeBlocks)) next = { ...next, lifetimeBlocks: 0 };
   // Empty is the honest default for an old save: the quests it has already earned then pay
   // out once, at the next payout. The list is checked rather than trusted, since a value that
   // is not a list would make every later `includes` throw.

@@ -326,6 +326,55 @@ describe('store lifetime blocks', () => {
   });
 });
 
+describe('store: a corrupt save cannot wipe the rest', () => {
+  const load = (save) => {
+    const backend = memoryBackend();
+    backend.write(config.storageKey, JSON.stringify(save));
+    return createStore(backend, config).load();
+  };
+
+  it('keeps every field of a v3 save that has a null day and a string day', () => {
+    const s = load({
+      version: 3, dragonId: 'frost', coins: 42, xp: 90,
+      lairs: { frost: { owned: ['imp'], slots: { corner: 'imp' } } },
+      history: {
+        '2026-09-01': { blocks: 4, minutes: 100 },
+        '2026-09-02': null,
+        '2026-09-03': 'oops',
+        '2026-10-02': { blocks: 3, minutes: 75 },
+      },
+    });
+    expect(s.dragonId).toBe('frost');
+    expect(s.coins).toBe(42);
+    expect(s.xpByDragon).toEqual({ frost: 90 });
+    expect(s.lairs.frost.slots).toEqual({ center: 'imp' });
+    expect(s.lifetimeBlocks).toBe(7);
+    expect(s.version).toBe(6);
+  });
+
+  it.each([null, 'text', 7, [], [null, 'x'], { a: { b: { blocks: 9 } } }, { a: { blocks: 'x' } }])(
+    'never throws for a history shaped like %j', (history) => {
+      const s = load({ version: 4, dragonId: 'frost', coins: 5, history });
+      expect(s.coins).toBe(5);
+      expect(s.lifetimeBlocks).toBe(0);
+    },
+  );
+
+  it('coerces a string lifetimeBlocks on a current save so it cannot concatenate', () => {
+    const s = load({ version: 6, coins: 5, lifetimeBlocks: '5' });
+    expect(s.lifetimeBlocks).toBe(0);
+    expect(s.coins).toBe(5);
+  });
+
+  it.each([null, NaN, 'x', {}, Infinity])('turns lifetimeBlocks %j into 0 on a v6 save', (v) => {
+    expect(load({ version: 6, lifetimeBlocks: v }).lifetimeBlocks).toBe(0);
+  });
+
+  it('keeps a valid lifetimeBlocks on a current save', () => {
+    expect(load({ version: 6, lifetimeBlocks: 12 }).lifetimeBlocks).toBe(12);
+  });
+});
+
 describe('store: quests paid', () => {
   const load = (saved) => {
     const backend = memoryBackend();
