@@ -12,7 +12,6 @@ import { renderChooseDragon } from './ui/chooseDragon.js';
 import { renderMainScreen, updateMainScreen } from './ui/mainScreen.js';
 import { renderShopScreen } from './ui/shopScreen.js';
 import { renderLairScreen } from './ui/lairScreen.js';
-import { renderSlotPicker } from './ui/slotPicker.js';
 import { renderUnlockLair } from './ui/unlockLairScreen.js';
 import { renderSettingsScreen } from './ui/settingsScreen.js';
 import { showLevelUp } from './ui/levelUp.js';
