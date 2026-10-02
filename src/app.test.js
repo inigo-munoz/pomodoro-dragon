@@ -113,6 +113,7 @@ describe('createApp full timer loop', () => {
     const workPlus = root.querySelector('[data-step="work-plus"]');
     expect(workPlus).not.toBeNull();
     workPlus.click();
+    click('save-settings');
 
     root.querySelector('.back-btn').click();
 
@@ -139,11 +140,12 @@ describe('createApp full timer loop', () => {
 
     // Drop the work length well below what is left on the clock.
     click('settings');
-    // The settings screen re-renders on every change, so the button must be looked up
-    // again each time — a held reference is detached after the first click.
+    // The settings screen repaints its panel on every change, so the button must be looked
+    // up again each time — a held reference is detached after the first click.
     for (let i = 0; i < 14; i += 1) {
       root.querySelector('[data-step="work-minus"]').click();
     }
+    click('save-settings');
     root.querySelector('.back-btn').click();
 
     // The clock must never show more than the length it belongs to.
@@ -320,6 +322,7 @@ describe('createApp music wiring', () => {
   const chooseStyle = (style) => {
     click('settings');
     root.querySelector(`[data-music-preset="${style}"]`).click();
+    click('save-settings');
   };
   const savedStyle = () => JSON.parse(window.localStorage.getItem(config.storageKey)).settings.musicStyle;
 
@@ -381,6 +384,7 @@ describe('createApp music wiring', () => {
     const { audio } = withAudio();
     click('settings');
     root.querySelector('[data-work-preset="25"]').click();
+    click('save-settings');
     expect(audio.setPlaylist).not.toHaveBeenCalled();
   });
 });
@@ -748,5 +752,89 @@ describe('createApp long break cycle', () => {
     runWorkBlock(); // the fourth block overall, two of them before the reload
     click('break');
     expect(modeLabel()).toBe('Long break');
+  });
+});
+
+describe('createApp settings: long break and sessions through the real UI', () => {
+  const seed = () => window.localStorage.setItem(
+    config.storageKey,
+    JSON.stringify({
+      dragonId: 'frost', coins: 0,
+      settings: { workMinutes: 1, breakMinutes: 1, longBreakMinutes: 3, sessionsBeforeLongBreak: 4 },
+    }),
+  );
+  const savedSettings = () => JSON.parse(window.localStorage.getItem(config.storageKey)).settings;
+  const reload = () => {
+    vi.clearAllTimers();
+    root.remove();
+    root = document.createElement('div');
+    document.body.appendChild(root);
+    createApp(root);
+  };
+  const tap = (hook, times) => {
+    for (let i = 0; i < times; i += 1) root.querySelector(`[data-step="${hook}"]`).click();
+  };
+
+  it('saved values reach the running timer and survive a reload', () => {
+    seed();
+    createApp(root);
+    click('settings');
+    tap('longBreak-plus', 2); // 3 -> 5 minutes
+    tap('sessions-minus', 2); // 4 -> 2 sessions
+    expect(savedSettings().longBreakMinutes).toBe(3); // nothing is stored before SAVE
+    click('save-settings');
+    expect(savedSettings()).toMatchObject({ longBreakMinutes: 5, sessionsBeforeLongBreak: 2 });
+    root.querySelector('.back-btn').click();
+
+    // Two blocks now earn the long break, and it lasts the new five minutes.
+    click('start');
+    vi.advanceTimersByTime(ONE_BLOCK_MS);
+    click('break');
+    expect(modeLabel()).toBe('Break');
+    vi.advanceTimersByTime(ONE_BLOCK_MS);
+    click('start');
+    vi.advanceTimersByTime(ONE_BLOCK_MS);
+    click('break');
+    expect(modeLabel()).toBe('Long break');
+    expect(timerText()).toBe('05:00');
+
+    reload();
+    expect(savedSettings()).toMatchObject({ longBreakMinutes: 5, sessionsBeforeLongBreak: 2 });
+    click('settings');
+    const shownValue = (hook) =>
+      root.querySelector(`[data-step="${hook}-plus"]`).closest('.setting-row .stepper')
+        .querySelector('.value').textContent;
+    expect(shownValue('longBreak')).toBe('5 min');
+    expect(shownValue('sessions')).toBe('2');
+  });
+
+  it('a parked long break picks up a shorter saved length', () => {
+    seed();
+    createApp(root);
+    click('settings');
+    tap('longBreak-minus', 2); // 3 -> 1 minute
+    click('save-settings');
+    root.querySelector('.back-btn').click();
+    for (let block = 1; block <= 3; block += 1) {
+      click('start');
+      vi.advanceTimersByTime(ONE_BLOCK_MS);
+      click('break');
+      vi.advanceTimersByTime(ONE_BLOCK_MS);
+    }
+    click('start');
+    vi.advanceTimersByTime(ONE_BLOCK_MS);
+    click('break');
+    expect(modeLabel()).toBe('Long break');
+    expect(timerText()).toBe('01:00');
+  });
+
+  it('a change made after saving stays out of the save file until SAVE is pressed again', () => {
+    seed();
+    createApp(root);
+    click('settings');
+    tap('sessions-minus', 3);
+    click('save-settings');
+    tap('longBreak-plus', 1);
+    expect(savedSettings().longBreakMinutes).toBe(3);
   });
 });

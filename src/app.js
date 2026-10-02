@@ -169,7 +169,7 @@ export const createApp = (root, { now = () => Date.now(), audioFactory = createA
   const onSettings = () => {
     screens.set('settings', renderSettingsScreen({
       settings: state.settings, config, onChangeDragon,
-      onChange: (settings) => {
+      onSave: (settings) => {
         const styleChanged = settings.musicStyle !== state.settings.musicStyle;
         state = { ...state, settings };
         if (styleChanged) audio.setPlaylist(playlistFor(settings.musicStyle));
@@ -199,7 +199,6 @@ export const createApp = (root, { now = () => Date.now(), audioFactory = createA
           };
         }
         persistTimer();
-        onSettings();
       },
       onBack: render,
     }));
