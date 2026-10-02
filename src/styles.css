@@ -333,7 +333,7 @@ body {
 .shelf-item[data-state="placed"] { outline: 3px solid var(--accent); outline-offset: -3px; }
 .shelf-item[data-state="locked"] { cursor: default; }
 
-/* The record: seven columns, oldest to today. Existing tokens only. A column with nothing
+/* The record: seven columns, Monday to Sunday. A day still to come is only an outline. Existing tokens only. A column with nothing
    in it is just an empty track, so no day reads as a gap she has to explain. */
 .record-week { display: flex; gap: 8px; width: 100%; align-items: stretch; }
 .record-day { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
@@ -346,6 +346,7 @@ body {
 .record-day-name { font-size: 0.95rem; opacity: 0.8; }
 .record-day.is-today .record-bar { background: var(--accent); }
 .record-day.is-today .record-day-name { opacity: 1; font-weight: 800; color: var(--accent); }
+.record-day.is-future .record-track { background: transparent; box-shadow: inset 0 0 0 2px var(--card); }
 .record-total { margin: 0; font-size: 1.2rem; text-align: center; }
 @media (prefers-reduced-motion: reduce) { .record-bar { transition: none; } }
 
