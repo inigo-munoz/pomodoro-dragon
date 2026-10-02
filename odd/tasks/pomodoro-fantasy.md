@@ -70,14 +70,14 @@ like an oversight to the next person.
 
 ## Tasks
 
-- [ ] **F1. The two screens.** `titleScreen.js` and `instructionsScreen.js`, in the idiom of
+- [x] **F1. The two screens.** `4673321` `titleScreen.js` and `instructionsScreen.js`, in the idiom of
       the other screens. Instructions cover: work blocks and the break, the long break after
       four, coins for finishing work, food to grow the dragon, the lair and its shelf, and the
       record. No guilt language, per the rule frozen in `lairScreen.test.js`.
-- [ ] **F2. Make it the front door.** The title screen is what `render()` shows on load; Start
+- [x] **F2. Make it the front door.** `f3ef149` The title screen is what `render()` shows on load; Start
       routes to the chooser or the timer exactly as before. Back from the instructions returns
       to the title screen.
-- [ ] **F3. The rename.** `index.html` title, `vite.config.js` base and manifest, and
+- [x] **F3. The rename.** `f766957` `index.html` title, `vite.config.js` base and manifest, and
       `package.json`. **Leave `config.storageKey` alone**, with a comment explaining why.
 - [ ] **F4. The repository.** Rename on GitHub, push, verify FROM THE SERVER, and tell the user
       to reinstall the PWA on the tablet.
@@ -102,9 +102,43 @@ like an oversight to the next person.
 
 ## Progress
 
-- Branch `feat/pomodoro-fantasy`, off `main` at `14346ab`.
-- Nothing implemented yet.
+Branch `feat/pomodoro-fantasy`. F1-F3 done; **F4, the repository rename, is still open.**
+
+| Commit | Subject |
+|---|---|
+| `4673321` | `feat(ui): a front door, and a page that explains the game` |
+| `f3ef149` | `feat(app): open on the title screen` |
+| `f766957` | `chore: rename the app to Pomodoro Fantasy` |
+
+Observed: **31 files / 442 tests green** (baseline 426), `npm run build` succeeds and
+`dist/index.html` references `/pomodoro-fantasy/`. The built manifest reads name
+Pomodoro Fantasy, short_name Fantasy, with `start_url` and `scope` both `/pomodoro-fantasy/`.
+
+### Manual smoke test — RUN AND PASSED (2026-10-02)
+
+Against the dev server, restarted on the new base:
+
+- Launch lands on the title screen, every time.
+- Start with a dragon already chosen opens the timer; with none, the chooser. Both verified.
+- The instructions open and Back returns to the title screen.
+- The instructions read correctly and take every number from `config`: four blocks, one coin
+  per minute, fifty coins for the Lair. They pass the no-guilt assertion.
+- **The existing save loaded under the new name**, dragon `frost` intact. This is the proof
+  that keeping `storageKey` was the right call.
+
+### A thing I was wrong about, checked rather than assumed
+
+"How it works" renders underlined in the back-button colour and looked like a raw browser link
+with a poor tap target. Measured: it is a `<button>`, 132x48, so it already meets the 48px
+floor. It is the app's existing secondary-control style, not a defect. Nothing was changed.
+
+### Open question for the user
+
+The Start button is green, because the title screen runs on the DEFAULT palette — no dragon
+has been chosen yet, and `--accent` there is `#66cc33`. It is the only green on an otherwise
+indigo screen. Correct by the rules, possibly not wanted.
 
 ## Next step
 
-F1 — the two screens.
+F4 — rename the repository, push, verify FROM THE SERVER, and tell the user to reinstall the
+PWA on the tablet.
