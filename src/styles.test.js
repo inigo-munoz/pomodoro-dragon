@@ -27,3 +27,11 @@ describe('48px touch floor', () => {
     expect(rules.some((r) => /min-height:\s*48px/.test(r))).toBe(true);
   });
 });
+
+describe('no dead rules', () => {
+  it('keeps exactly one .screen.title justify-content, and no .shelf-tag', () => {
+    const centred = rulesFor('.screen.title').filter((r) => /justify-content/.test(r));
+    expect(centred).toHaveLength(1);
+    expect(css).not.toMatch(/shelf-tag/);
+  });
+});

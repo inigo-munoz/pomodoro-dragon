@@ -1,9 +1,6 @@
 const liveRemaining = (state, now) =>
   Math.max(0, Math.ceil((state.endsAt - now) / 1000));
 
-export const remainingAt = (state, now) =>
-  state.running ? liveRemaining(state, now) : state.remaining;
-
 export const createTimerState = (settings) => ({
   mode: 'work',
   running: false,

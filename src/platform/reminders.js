@@ -7,7 +7,7 @@ const defaultServiceWorker = () => globalThis.navigator?.serviceWorker ?? null;
 
 // Permission states are the browser's own ('default', 'granted', 'denied') plus one of
 // ours for an environment with no Notification API at all.
-export const UNSUPPORTED = 'unsupported';
+const UNSUPPORTED = 'unsupported';
 
 // Lookups are injectable as values; `undefined` falls back to the browser global, `null`
 // means "this API is absent", which is what tests of the unsupported path pass.

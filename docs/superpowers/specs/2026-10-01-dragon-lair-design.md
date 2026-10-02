@@ -1,3 +1,6 @@
+> Historical: the slot picker was replaced by the lair shelf.
+> The slot `corner` became `center`.
+
 # Dragon Lair — design
 
 Date: 2026-10-01

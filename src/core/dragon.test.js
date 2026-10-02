@@ -1,14 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { addXp, currentLevel, levelProgress } from './dragon.js';
+import { currentLevel, levelProgress } from './dragon.js';
 import { getDragon } from '../data/dragons.js';
 
 const frost = getDragon('frost'); // thresholds: 0, 100, 300, 600
 
 describe('dragon', () => {
-  it('adds xp', () => {
-    expect(addXp(0, 20)).toBe(20);
-  });
-
   it('derives the level at exact thresholds (not before, not after)', () => {
     expect(currentLevel(frost, 0).level).toBe(1);
     expect(currentLevel(frost, 99).level).toBe(1);

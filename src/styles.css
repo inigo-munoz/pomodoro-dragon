@@ -331,7 +331,7 @@ body {
 .shelf-item .food-icon { font-size: 1.8rem; line-height: 1; }
 .shelf-item .art-img { width: 2rem; height: 2rem; object-fit: contain; }
 .shelf-item .food-name { font-size: 0.72rem; line-height: 1.15; }
-.shelf-item .food-price, .shelf-item .shelf-tag { font-size: 0.72rem; line-height: 1.15; }
+.shelf-item .food-price { font-size: 0.72rem; line-height: 1.15; }
 .shelf-item .coin-icon .art-img, .shelf-item .price-coin .art-img { width: 1.1rem; height: 1.1rem; }
 .shelf-item[data-state="placed"] { outline: 3px solid var(--accent); outline-offset: -3px; }
 .shelf-item[data-state="locked"] { cursor: default; }
@@ -383,7 +383,6 @@ body {
     url('/art/backdrops/title.webp') center bottom / cover no-repeat,
     var(--bg);
 }
-.screen.title { justify-content: center; }
 
 /* The front door is the one screen that never changes theme: it runs on the default palette
    before a dragon exists, and --accent there is green, which fought the painting behind it.

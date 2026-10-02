@@ -104,8 +104,14 @@ export const monthOf = (history, now) => {
   }));
 };
 
-const sum = (history, field) =>
-  Object.values(history).reduce((total, day) => total + day[field], 0);
+// A save is data from outside: one `null`, string or half-written day must not take the
+// whole total (and with it the migration) down, so such entries count for nothing.
+const sum = (history, field) => {
+  if (history === null || typeof history !== 'object') return 0;
+  return Object.values(history).reduce((total, day) => {
+    const n = day !== null && typeof day === 'object' ? day[field] : undefined;
+    return Number.isFinite(n) ? total + n : total;
+  }, 0);
+};
 
 export const totalBlocks = (history) => sum(history, 'blocks');
-export const totalMinutes = (history) => sum(history, 'minutes');

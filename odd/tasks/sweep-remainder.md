@@ -94,8 +94,8 @@ Close PRs #2–#5 (their work is merged), delete the merged local branches, prun
 - [x] **A.** `6bd2e29` Notifications through the service worker, with fallback. Merged as `7ab006d`.
 - [x] **B.** `4c40b49`, `d4e8b65`, `8b65310` Back at 48px everywhere; named nav buttons; room
       fallback; unlock purse; chooser back; 48px dragon cards. Merged as `d6c6bfe`.
-- [ ] **C.** Migration that cannot wipe a save; `lifetimeBlocks` coerced; symmetric unlock guard.
-- [ ] **D.** Dead code, dead icons, stale comments, doc notes.
+- [x] **C.** `ede970f` Migration that cannot wipe a save; `lifetimeBlocks` coerced; symmetric unlock guard.
+- [x] **D.** `fcc7184`, `25aa8f8` Dead code, dead icons, stale comments, doc notes.
 - [x] **H.** PRs closed, branches pruned. Done first, by the parent, while A and B ran:
       PRs #2–#5 confirmed at +0 against `main` (`git rev-list --count main..origin/<branch>`),
       closed with a note explaining they had merged through the chain, their remote branches
@@ -145,6 +145,33 @@ Two instrument notes, because they cost time:
 C and D run next as one writer on one branch in the main working tree: they share
 `history.js` and `styles.css`, so splitting them buys a conflict, not speed.
 
+### C and D — done, one writer, one branch
+
+**34 files / 593 tests green**, build OK, **precache 127 → 123**: exactly the four `*mute*.webp`
+files removed (the sweep said five; it was four). `addXp`, `remainingAt`, `totalMinutes`,
+`slotTitle` and the `title` field are gone, with their tests; `src/data/themes.test.js` now
+derives the icon keys the UI actually calls and pins every theme to exactly that set, so a dead
+key cannot creep back. `styles.test.js` pins one `.screen.title` rule and no `.shelf-tag`.
+
+Verified by hand, not from the report: a hostile v3 save — a `null` day, an `"oops"` day,
+`lifetimeBlocks: '5'`, a `corner` slot — loads intact (frost, 88 coins, `center: bird`,
+version 6, `lifetimeBlocks` 7 from the two valid days). Before C that exact file became
+`defaultState`: total loss. All four migrations ran in order on it.
+
+Honest notes from the writer, kept:
+- The unlock guard produced NO observable RED: `unlockLairScreen.js` already gates on
+  `affordable`, so a forced click with 49 coins was a no-op before and after. The app-level
+  check is defence in depth, symmetric with `onBuyItem`; its test pins that no window `error`
+  fires (jsdom swallows listener throws, so a bare `not.toThrow()` would be vacuous).
+- Seven exports stay exported because a test imports each (`dayKey`, `findItem`, `emptyLair`,
+  `satisfiedQuests`, `defaultState`, `isImagePath`, `addDragonXp`); only `UNSUPPORTED` was
+  un-exported. No test was weakened to hide a symbol.
+- The "Settings-derived durations" comment described the restore path, not the settings
+  handler; it now sits above `createTimerState(...)` in the restore.
+- `corner` still appears in the BODY of `docs/art-prompts.md` by design (historical prompts);
+  the title and a note changed. The two lair documents got a two-line note and nothing else.
+
 ## Next step
 
-Dispatch A and B.
+Merge into `main`, push, verify from the server. Then only the user's items remain: the
+dragon over `floorLeft`, music through pause, and the instructions wording.
