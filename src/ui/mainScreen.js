@@ -86,6 +86,7 @@ export const renderMainScreen = (ctx) => {
         // lairPrice is the one new interpolation: a numeric literal from config, never the save.
         (lairLocked ? `<span class="lock-price"><span class="price-coin"></span> ${ctx.lairPrice}</span>` : '') +
       `</button>` +
+      `<button class="icon-btn" data-action="record" aria-label="Record"></button>` +
       `<button class="icon-btn" data-action="settings"></button>` +
     `</footer>`;
 
@@ -100,6 +101,7 @@ export const renderMainScreen = (ctx) => {
     .appendChild(themedIcon(theme, 'sound'));
   section.querySelector('[data-action="shop"]').appendChild(themedIcon(theme, 'shop'));
   section.querySelector('[data-action="lair"]').appendChild(themedIcon(theme, 'lair'));
+  section.querySelector('[data-action="record"]').appendChild(themedIcon(theme, 'record'));
   section.querySelector('[data-action="settings"]').appendChild(themedIcon(theme, 'settings'));
   section.querySelector('.lock-price .price-coin')?.appendChild(themedIcon(theme, 'coin'));
 
@@ -115,6 +117,7 @@ export const renderMainScreen = (ctx) => {
   section.querySelector('[data-action="mute"]').addEventListener('click', ctx.onToggleMute);
   section.querySelector('[data-action="shop"]').addEventListener('click', ctx.onShop);
   section.querySelector('[data-action="lair"]').addEventListener('click', ctx.onLair);
+  section.querySelector('[data-action="record"]').addEventListener('click', ctx.onRecord);
   section.querySelector('[data-action="settings"]').addEventListener('click', ctx.onSettings);
   return section;
 };

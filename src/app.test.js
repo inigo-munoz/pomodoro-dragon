@@ -1107,3 +1107,36 @@ describe('createApp study record', () => {
     expect(Object.keys(saved().history)).toEqual(['2026-10-01', '2026-10-02']);
   });
 });
+
+describe('createApp record screen', () => {
+  it('opens from the fourth nav button and returns to the main screen', () => {
+    createApp(root);
+    pickDragon('frost');
+    click('record');
+    expect(root.querySelector('.screen.record')).not.toBeNull();
+    expect(root.querySelector('.screen-title').textContent).toBe('Record');
+    root.querySelector('.back-btn').click();
+    expect(root.querySelector('.screen.main')).not.toBeNull();
+    expect(root.querySelector('.screen.record')).toBeNull();
+  });
+
+  it('shows the blocks she just finished, today and in total', () => {
+    vi.setSystemTime(new Date(2026, 9, 2, 10, 0, 0));
+    createApp(root);
+    pickDragon('frost');
+    click('start');
+    vi.advanceTimersByTime(ONE_BLOCK_MS);
+    click('record');
+    expect(root.querySelector('.is-today .record-count').textContent).toBe('1');
+    expect(root.querySelector('.record-total').textContent).toContain('1 block');
+  });
+
+  it('does not yank the record back to main while the timer keeps ticking', () => {
+    createApp(root);
+    pickDragon('frost');
+    click('start');
+    click('record');
+    vi.advanceTimersByTime(ONE_BLOCK_MS);
+    expect(root.querySelector('.screen.record')).not.toBeNull();
+  });
+});

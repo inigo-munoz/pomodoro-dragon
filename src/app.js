@@ -12,6 +12,7 @@ import { createScreenManager } from './ui/screens.js';
 import { renderChooseDragon } from './ui/chooseDragon.js';
 import { renderMainScreen, updateMainScreen } from './ui/mainScreen.js';
 import { renderShopScreen } from './ui/shopScreen.js';
+import { renderRecordScreen } from './ui/recordScreen.js';
 import { renderLairScreen } from './ui/lairScreen.js';
 import { renderUnlockLair } from './ui/unlockLairScreen.js';
 import { renderSettingsScreen } from './ui/settingsScreen.js';
@@ -82,7 +83,7 @@ export const createApp = (root, {
     screens.set('main', renderMainScreen({
       state, dragon, xp: dragonXp(state), timerState, lastReward, theme,
       lairPrice: config.lairUnlockPrice,
-      onStart, onPause, onBreak, onShop, onLair, onSettings, onToggleMute,
+      onStart, onPause, onBreak, onShop, onLair, onRecord, onSettings, onToggleMute,
     }));
     screens.show('main');
   };
@@ -194,6 +195,15 @@ export const createApp = (root, {
     state = placeItem(state, item);
     save();
     onLair();
+  };
+
+  // Read-only: nothing here changes the save, so there is nothing to re-render on return.
+  const onRecord = () => {
+    const dragon = getDragon(state.dragonId);
+    screens.set('record', renderRecordScreen({
+      state, now: now(), theme: resolveTheme(dragon.themeId), onBack: render,
+    }));
+    screens.show('record');
   };
 
   const onSettings = () => {
