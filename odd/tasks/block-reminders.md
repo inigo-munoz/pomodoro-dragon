@@ -83,11 +83,11 @@ tablet lying on a desk going to sleep by itself.
 
 ## Tasks
 
-- [ ] **R1. The adapter.** `src/platform/reminders.js`, exporting `createReminders` built like
+- [x] **R1. The adapter.** `eefd298` `src/platform/reminders.js`, exporting `createReminders` built like
       `createAudio`: dependencies injected so tests can drive it without globals. Surface:
       `permission`, `request()`, `notify({ title, body })`, `keepAwake()`, `release()`.
       Unsupported, denied and throwing environments all degrade to silence.
-- [ ] **R2. Wire it into the app.** `src/app.js` takes a `remindersFactory` beside
+- [x] **R2. Wire it into the app.** `9d6b63f` `src/app.js` takes a `remindersFactory` beside
       `audioFactory`. Request once on the first Start, hold the lock while running, release on
       pause and completion, notify on completion when hidden, re-acquire and settle on
       `visibilitychange`.
@@ -112,9 +112,45 @@ tablet lying on a desk going to sleep by itself.
 
 ## Progress
 
-- Branch `feat/block-reminders`, chained off `feat/lair-shelf`.
-- Nothing implemented yet.
+Branch `feat/block-reminders`, chained off `feat/lair-shelf`. Both tasks done.
+
+| Commit | Subject |
+|---|---|
+| `eefd298` | `feat(platform): an adapter for notifications and the screen wake lock` |
+| `9d6b63f` | `feat(timer): tell her the block ended even when she looked away` |
+
+Observed: **26 files / 381 tests green** (baseline 345), `npm run build` succeeds.
+`src/core/timer.js` untouched, as scoped.
+
+### Browser smoke test — what was verified live, and what could not be
+
+Run against the dev server on `localhost`, which is a secure context (`isSecureContext: true`,
+`navigator.wakeLock` and `Notification` both present).
+
+**Verified against the real browser:**
+- Pressing Start calls the REAL `navigator.wakeLock.request('screen')`.
+- Permission is requested exactly once on the first Start and not on a later one.
+- A refusal from the real API is swallowed and the timer keeps running.
+- `notify` fires with the right title and body when granted, and is silent when denied.
+- With both APIs absent, `permission` reads `unsupported` and every method is silent.
+
+**Verified against a double, exercising the shipped module in the browser:** acquires once,
+does not stack on a repeat or on concurrent calls, releases once, a double release is safe,
+re-acquires after a release, and a lock that lands AFTER a release is not leaked.
+
+**NOT verifiable from this session, and here is why.** An automated Claude-in-Chrome tab
+reports `document.visibilityState === 'hidden'` even while it renders and screenshots fine.
+The Wake Lock spec refuses a `'screen'` lock to a hidden page by design, so the lock can never
+actually be HELD in that tab. The first probe looked like a bug — two requests, zero releases —
+and was not: the browser auto-releases on hide, the adapter's `release` listener clears its
+sentinel, and the next call correctly takes a fresh one. The metric was measuring the harness,
+not the code.
+
+**Left for a human, one tap:** open the app on the tablet, start a block, and confirm the
+screen does not sleep, then confirm the notification arrives with the app backgrounded and the
+screen on.
 
 ## Next step
 
-R1 — the adapter.
+Nothing outstanding. The branch sits unmerged at the end of the chain. Merging, pushing and
+deploying are the user's call.
