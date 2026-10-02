@@ -34,7 +34,11 @@ body {
   inset: 0;
   z-index: -1;
   background:
-    radial-gradient(ellipse 150% 34% at 50% 104%, var(--bg) 0 68%, transparent 71%),
+    /* The ground sits ON TOP of the backdrop, so it has to be a shade, not a colour: an
+       opaque var(--bg) here erased the lower third of the painting. Translucent black still
+       builds a horizon over the gradient sky when no backdrop is set, and over a backdrop it
+       just settles the foreground, which also helps the start button and the nav read. */
+    radial-gradient(ellipse 150% 36% at 50% 106%, rgba(0, 0, 0, 0.5) 0 55%, transparent 78%),
     var(--backdrop, none) center bottom / cover no-repeat,
     linear-gradient(to bottom, var(--bg) 0%, var(--bg) 16%, var(--card) 88%, var(--card) 100%);
 }
