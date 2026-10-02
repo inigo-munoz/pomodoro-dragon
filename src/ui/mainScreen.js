@@ -32,10 +32,18 @@ const MODE_LABELS = { work: 'Work', break: 'Break', longBreak: 'Long break' };
 // Progress through the current cycle. A non-zero multiple means the long break is due or
 // running, so every dot is filled rather than wrapping back to empty. With no usable cycle
 // length there is nothing to count, so no row is drawn.
-const sessionDots = ({ sessionsBeforeLongBreak: total, completedWork = 0 }) => {
+// A work block parked at 0:00 has been earned even though advance() has not run yet: it
+// only runs when Break is tapped. The bell and the filled dot have to land together, or the
+// dot looks like it belongs to the tap instead of to the work.
+const earnedSessions = ({ mode, remaining, running, completedWork = 0 }) =>
+  mode === 'work' && remaining === 0 && !running ? completedWork + 1 : completedWork;
+
+const sessionDots = (timerState) => {
+  const total = timerState.sessionsBeforeLongBreak;
   if (!(total > 0)) return '';
-  const inCycle = completedWork % total;
-  const done = completedWork > 0 && inCycle === 0 ? total : inCycle;
+  const earned = earnedSessions(timerState);
+  const inCycle = earned % total;
+  const done = earned > 0 && inCycle === 0 ? total : inCycle;
   const current = Math.min(done + 1, total);
   const dots = Array.from({ length: total }, (_, i) =>
     `<span class="session-dot${i < done ? ' is-done' : ''}"></span>`).join('');

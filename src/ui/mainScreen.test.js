@@ -317,3 +317,34 @@ describe('long break and cycle progress', () => {
     expect(render({ sessionsBeforeLongBreak: undefined }).querySelector('.session-dots')).toBeNull();
   });
 });
+
+describe('a finished work block counts the moment the bell rings', () => {
+  const timer = (over) => ({
+    mode: 'work', remaining: 100, running: false,
+    sessionsBeforeLongBreak: 4, completedWork: 0, ...over,
+  });
+  const render = (over) => renderMainScreen({ ...base, timerState: timer(over) });
+  const parked = (over) => render({ remaining: 0, running: false, ...over });
+
+  it('fills the dot while the block waits at zero, before Break is tapped', () => {
+    const el = parked({ completedWork: 0 });
+    expect(el.querySelectorAll('.session-dot.is-done')).toHaveLength(1);
+    expect(el.querySelector('.session-dots').getAttribute('aria-label')).toBe('Session 2 of 4');
+  });
+
+  it('fills every dot when the last block of the cycle waits at zero', () => {
+    const el = parked({ completedWork: 3 });
+    expect(el.querySelectorAll('.session-dot.is-done')).toHaveLength(4);
+    expect(el.querySelector('.session-dots').getAttribute('aria-label')).toBe('Session 4 of 4');
+  });
+
+  it('does not count a running work block that merely shows zero seconds left', () => {
+    const el = render({ completedWork: 1, remaining: 0, running: true });
+    expect(el.querySelectorAll('.session-dot.is-done')).toHaveLength(1);
+  });
+
+  it('does not count a break parked at zero', () => {
+    const el = parked({ mode: 'break', completedWork: 1 });
+    expect(el.querySelectorAll('.session-dot.is-done')).toHaveLength(1);
+  });
+});
