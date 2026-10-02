@@ -76,14 +76,14 @@ with it: the screen shows what she DID and never what she did not.
 
 ## Tasks
 
-- [ ] **H1. The pure core.** `src/core/history.js`: `dayKey(now)` as a local `YYYY-MM-DD`,
+- [x] **H1. The pure core.** `ca8d162` `src/core/history.js`: `dayKey(now)` as a local `YYYY-MM-DD`,
       `recordBlock(history, now, minutes)` adding to that day's `blocks` and `minutes`,
       `pruneHistory(history, now, days)` keeping the most recent window, `lastDays(history,
       now, n)` returning n entries oldest-first including empty days, and a total.
-- [ ] **H2. Save it.** `history: {}` in `defaultState`; record on work completion in `app.js`
+- [x] **H2. Save it.** `1b78741` `history: {}` in `defaultState`; record on work completion in `app.js`
       beside `grantWorkReward`, then prune. A test must prove an old save without the field
       loads clean and gains it.
-- [ ] **H3. Show it.** `src/ui/recordScreen.js` with the screen title, the back button, a bar
+- [x] **H3. Show it.** `c5638a1` `src/ui/recordScreen.js` with the screen title, the back button, a bar
       per day for the last seven with today marked, and the all-time block count. A fourth
       nav button on the main screen opens it. Carries the no-guilt negative test.
 
@@ -108,9 +108,51 @@ with it: the screen shows what she DID and never what she did not.
 
 ## Progress
 
-- Branch `feat/study-record`, chained off `feat/block-reminders`.
-- Nothing implemented yet.
+Branch `feat/study-record`, chained off `feat/block-reminders`. All three tasks done.
+
+| Commit | Subject |
+|---|---|
+| `ca8d162` | `feat(core): remember the blocks she finishes` |
+| `1b78741` | `feat(store): keep the record in the save file` |
+| `c5638a1` | `feat(ui): a screen that shows the work she did` |
+
+Observed: **28 files / 420 tests green** (baseline 381), `npm run build` succeeds.
+
+### A factual error in this document, corrected by the implementation
+
+This document and the brief both claimed a block finished at **23:30 in Spain** would land on
+the next day under `toISOString()`. **That is wrong.** Spain is UTC+1 or UTC+2, so 23:30 local
+is still the same UTC day. What UTC actually breaks here is **00:00 to 02:00 local**, which it
+pushes onto the PREVIOUS day. West of UTC it is the evening that breaks instead.
+
+The bug was real and the fix is right; the example was backwards. The implementation kept the
+23:30 case (correct and harmless) and added the 00:30 case, which is the one that genuinely
+fails under `toISOString()` — and the RED run proves it:
+`AssertionError: expected '2026-10-02' to be '2026-10-03'`.
+
+It also went further than asked: `lastDays` and `pruneHistory` step back with
+`new Date(y, m, d - n, 12)` so a daylight-saving change cannot skip or repeat a date, with a
+test across Spain's 2026-03-29 transition, and the suite passes under `TZ=America/New_York`.
+
+### Manual smoke test — RUN AND PASSED (2026-10-02)
+
+Seeded a week with gaps (2, 4, none, 1, none, 5, 3 blocks) and opened the screen:
+
+- Seven day columns oldest-first, today marked in the accent colour.
+- The two empty days render as an empty track with no number and no message.
+- The total reads "You have finished 15 blocks in all", which matches the seed.
+- Content ends at 545 of 993 px: it fits a tablet screen with room to spare, answering the
+  open question the implementation could not settle from jsdom.
+- The no-guilt assertion holds against the live DOM.
+
+### Note on the nav icon
+
+`themedIcon` resolves a missing per-theme icon through `themes.default.icons[key]`, so the
+fallback needed an entry there rather than a parameter: `record: '📖'` at `themes.js:13`. The
+four themed icons are being generated separately; until they land, every theme shows that
+emoji.
 
 ## Next step
 
-H1 — the pure core.
+The four themed `record` icons, then nothing outstanding. The branch sits unmerged at the end
+of the chain.
