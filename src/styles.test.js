@@ -35,3 +35,26 @@ describe('no dead rules', () => {
     expect(css).not.toMatch(/shelf-tag/);
   });
 });
+
+describe('the lair dragon stands clear of the floor slots', () => {
+  // Geometry pinned from the stylesheet itself: the dragon's box must end above the top edge
+  // of the floor slots, or its feet and tail hide whatever the child placed there. Earlier the
+  // box ran 22% + 56% = 78% down a room whose floor slots start at 73%, and the bed, the
+  // cushion and the pet were partly behind it. jsdom computes no layout; the CSS is the fact.
+  const pct = (rule, prop) => Number(new RegExp(`${prop}:\\s*([\\d.]+)%`).exec(rule)?.[1]);
+  const rule = (selector) => css.split('\n').find((line) => line.startsWith(selector)) ?? '';
+
+  it('ends above the floor slots', () => {
+    const dragon = rule('.lair-room > .dragon-art');
+    const slot = rule('.lair-slot {');
+    const floor = rule('.lair-slot[data-slot="floorLeft"]');
+    const dragonBottom = pct(dragon, 'top') + pct(dragon, 'height');
+    const floorTop = 100 - pct(floor, 'bottom') - pct(slot, 'height');
+    expect(dragonBottom).toBeLessThanOrEqual(floorTop);
+  });
+
+  it('stays centred', () => {
+    const dragon = rule('.lair-room > .dragon-art');
+    expect(pct(dragon, 'left') * 2 + pct(dragon, 'width')).toBe(100);
+  });
+});
