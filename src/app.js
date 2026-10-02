@@ -114,7 +114,7 @@ export const createApp = (root, {
   };
 
   const showInstructions = () => {
-    screens.set('instructions', renderInstructionsScreen({ onBack: showTitle }));
+    screens.set('instructions', renderInstructionsScreen({ onBack: showTitle, settings: state.settings }));
     screens.show('instructions');
   };
 

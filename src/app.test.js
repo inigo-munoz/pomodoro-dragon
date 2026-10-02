@@ -1320,6 +1320,15 @@ describe('createApp front door', () => {
     expect(root.querySelector('.screen.title')).not.toBeNull();
   });
 
+  it('the instructions state the cycle the child saved, not the default', () => {
+    window.localStorage.setItem(config.storageKey, JSON.stringify({
+      settings: { ...config.durations.default, musicStyle: config.musicStyles[0], sessionsBeforeLongBreak: 2 },
+    }));
+    openRaw();
+    click('instructions');
+    expect(root.querySelector('.screen.instructions').textContent).toContain('After 2 work blocks');
+  });
+
   it('Back from the chooser opened by Start returns to the title screen', () => {
     window.localStorage.setItem(config.storageKey, JSON.stringify({ dragonId: 'frost' }));
     openRaw();
