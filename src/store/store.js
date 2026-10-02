@@ -1,7 +1,7 @@
 import { totalBlocks } from '../core/history.js';
 
 export const defaultState = (config) => ({
-  version: 5,
+  version: 6,
   dragonId: null,
   coins: 0,
   xpByDragon: {},
@@ -10,6 +10,9 @@ export const defaultState = (config) => ({
   history: {},
   // Every work block ever finished. Unlike `history` it is never pruned, so it only grows.
   lifetimeBlocks: 0,
+  // Ids of the quests already paid. Coins get spent, so the purse cannot say what was paid;
+  // this list is the only thing that stops a quest from paying twice.
+  questsPaid: [],
   muted: false,
   settings: { ...config.durations.default, musicStyle: config.musicStyles[0] },
   timer: null,
@@ -31,7 +34,7 @@ const renameCornerSlot = (lairs) => {
 // Upgrade older saves to the current shape. v1 (global `xp`) becomes the
 // per-dragon `xpByDragon`; v2 gains `timer`, which the defaults merge fills in; v3 lairs
 // move their `corner` slot to `center`; v4 saves gain `lifetimeBlocks`, seeded from the
-// history they still hold.
+// history they still hold; v5 saves gain `questsPaid`.
 const migrate = (merged, parsed) => {
   let next = merged;
   if ('xp' in parsed) {
@@ -45,7 +48,11 @@ const migrate = (merged, parsed) => {
   if ((parsed.version ?? 0) < 5 && !Number.isFinite(parsed.lifetimeBlocks)) {
     next = { ...next, lifetimeBlocks: totalBlocks(parsed.history ?? {}) };
   }
-  return { ...next, version: 5 };
+  // Empty is the honest default for an old save: the quests it has already earned then pay
+  // out once, at the next payout. The list is checked rather than trusted, since a value that
+  // is not a list would make every later `includes` throw.
+  if (!Array.isArray(next.questsPaid)) next = { ...next, questsPaid: [] };
+  return { ...next, version: 6 };
 };
 
 export const createStore = (backend, config) => {

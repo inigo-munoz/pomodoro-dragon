@@ -1,5 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
 import { renderRecordScreen } from './recordScreen.js';
+import { quests } from '../data/quests.js';
+import { furniture, slots } from '../data/furniture.js';
+import { dragons } from '../data/dragons.js';
 
 // Friday 2 October 2026, local, so the week runs Mon 28 Sep .. Sun 4 Oct.
 const now = new Date(2026, 9, 2, 18, 0).getTime();
@@ -285,5 +288,87 @@ describe('work that lands in the future is still shown', () => {
     rangeBtn(el, 'month').click();
     const last = weeks(el).at(-1);
     expect(last.querySelector('.record-count').textContent).toBe('4');
+  });
+});
+
+describe('record screen: quest ladder', () => {
+  const world = { furniture, slots, dragons };
+  const qctx = (state = {}, over = {}) => ctx({}, {
+    state: { coins: 12, history: {}, lifetimeBlocks: 0, ...state }, quests, world, ...over,
+  });
+  const entry = (el, id) => el.querySelector(`[data-quest="${id}"]`);
+  const DEADLINE = /expire|deadline|\\blate\\b|fail|overdue|hurry|only \d+ (days|hours)|time('s| is) up/i;
+
+  it('lists every quest, in catalogue order, under the chart and the lifetime total', () => {
+    const el = renderRecordScreen(qctx());
+    expect([...el.querySelectorAll('[data-quest]')].map((e) => e.dataset.quest))
+      .toEqual(quests.map((q) => q.id));
+    const order = [...el.children];
+    const list = el.querySelector('.quest-list');
+    expect(order.indexOf(list)).toBeGreaterThan(order.indexOf(el.querySelector('.record-total')));
+    expect(order.indexOf(el.querySelector('.record-week'))).toBeLessThan(order.indexOf(list));
+  });
+
+  it('shows each quest\'s title and its coin reward with the coin art', () => {
+    const e = entry(renderRecordScreen(qctx()), 'blocks-50');
+    expect(e.querySelector('.quest-title').textContent).toBe('Fifty blocks');
+    expect(e.querySelector('.quest-reward').textContent).toContain('40');
+    expect(e.querySelector('.quest-reward .art-emoji, .quest-reward .art-img')).not.toBeNull();
+  });
+
+  it('marks a finished quest as done and keeps it listed', () => {
+    const el = renderRecordScreen(qctx({ lifetimeBlocks: 12 }));
+    const done = entry(el, 'blocks-10');
+    expect(done).not.toBeNull();
+    expect(done.dataset.state).toBe('done');
+    expect(done.querySelector('.quest-mark').textContent).toMatch(/done/i);
+    expect(done.querySelector('.quest-progress').textContent).toBe('10 / 10');
+  });
+
+  it('shows how far an unfinished quest has come, marked as in progress', () => {
+    const el = renderRecordScreen(qctx({ lifetimeBlocks: 12 }));
+    const doing = entry(el, 'blocks-50');
+    expect(doing.dataset.state).toBe('doing');
+    expect(doing.querySelector('.quest-progress').textContent).toBe('12 / 50');
+    expect(doing.querySelector('.quest-mark')).toBeNull();
+  });
+
+  it('shows an untouched quest as 0 / goal, still just in progress', () => {
+    const el = renderRecordScreen(qctx());
+    expect(entry(el, 'room-full').dataset.state).toBe('doing');
+    expect(entry(el, 'room-full').querySelector('.quest-progress').textContent).toBe('0 / 4');
+  });
+
+  it('has only two states, done and doing, across a mixed save', () => {
+    const el = renderRecordScreen(qctx({ lifetimeBlocks: 60, lairUnlocked: true }));
+    const states = new Set([...el.querySelectorAll('[data-quest]')].map((e) => e.dataset.state));
+    expect([...states].sort()).toEqual(['doing', 'done']);
+  });
+
+  it('counts a quest as done by what she did, not by what has been paid', () => {
+    const el = renderRecordScreen(qctx({ lifetimeBlocks: 1, questsPaid: [] }));
+    expect(entry(el, 'blocks-1').dataset.state).toBe('done');
+  });
+
+  it('keeps the chart, the range switch and the lifetime total as they were', () => {
+    const el = renderRecordScreen(qctx({ lifetimeBlocks: 7 }));
+    expect(days(el)).toHaveLength(7);
+    expect(rangeBtn(el, 'month')).not.toBeNull();
+    expect(el.querySelector('.record-total').textContent).toBe('You have finished 7 blocks in all.');
+    rangeBtn(el, 'month').click();
+    expect(weeks(el).length).toBeGreaterThan(0);
+    expect(el.querySelectorAll('[data-quest]')).toHaveLength(quests.length);
+  });
+
+  it('draws no ladder when it is handed no quests', () => {
+    expect(renderRecordScreen(ctx()).querySelector('.quest-list')).toBeNull();
+  });
+
+  it('uses no guilt, deadline or failure wording, whatever the state', () => {
+    for (const state of [{}, { lifetimeBlocks: 12 }, { lifetimeBlocks: 500, lairUnlocked: true }]) {
+      const text = renderRecordScreen(qctx(state)).textContent;
+      expect(text).not.toMatch(GUILT);
+      expect(text).not.toMatch(DEADLINE);
+    }
   });
 });

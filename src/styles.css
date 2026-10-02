@@ -349,6 +349,17 @@ body {
 .record-day.is-future .record-track, .record-span.is-future .record-track { background: transparent; box-shadow: inset 0 0 0 2px var(--card); }
 .record-range { justify-content: center; }
 .record-total { margin: 0; font-size: 1.2rem; text-align: center; }
+/* The quest ladder reuses the shop's card. A rung is only ever in progress or done, so a done
+   one is set apart by the accent and a mark, and nothing is ever dimmed or struck out. */
+.quest-heading { margin: 8px 0 0; font-size: 1.3rem; text-align: center; }
+.quest-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; width: 100%; }
+.quest { display: grid; grid-template-columns: 1fr auto; align-items: center; column-gap: 12px; row-gap: 2px; transition: none; }
+.quest:active { transform: none; }
+.quest-title { font-weight: 700; }
+.quest-progress { font-variant-numeric: tabular-nums; text-align: right; }
+.quest-reward { opacity: 0.85; }
+.quest-mark { text-align: right; font-weight: 800; color: var(--accent); }
+.quest[data-state="done"] { outline: 3px solid var(--accent); outline-offset: -3px; }
 @media (prefers-reduced-motion: reduce) { .record-bar { transition: none; } }
 
 /* The front door. The name is the hero of the screen, so unlike .screen-title it is loud:
