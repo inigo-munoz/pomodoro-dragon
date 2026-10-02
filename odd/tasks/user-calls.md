@@ -45,15 +45,39 @@ screen before any save exists.
 
 ## Tasks
 
-- [ ] **U1.** Dragon sized to clear the floor slots, calibrated in the browser.
-- [ ] **U2.** Music: no change; recorded above.
-- [ ] **U3.** Instructions read the saved settings and mention quests.
+- [x] **U1.** `1977fe2` Dragon sized to clear the floor slots, calibrated in the browser. Merged `39f87dd`.
+- [x] **U2.** Music: no change; recorded above.
+- [x] **U3.** `eac2f3c` Instructions read the saved settings and mention quests. Merged `5f5143f`.
 
 ## Progress
 
 - U1 by the parent on `feat/dragon-room` in the main tree; U3 by a writer in an isolated
   worktree on `feat/instructions-read-settings`. Disjoint files.
 
+## Result
+
+**34 files / 601 tests green** on merged `main` (593 + 2 geometry + 6 instructions), build OK,
+precache 123, one worktree.
+
+U1, the measured value: the dragon is a centred **50% square** with its top kept at 22%, so
+its base lands at **72%** — one point above the floor slots, which start at 73%. Pinned by a
+test in `styles.test.js` that reads the stylesheet and asserts `top + height ≤ 100 − bottom −
+slotHeight`, plus centring. Verified in the real Blaze room with the bed, the hatchling and
+the chest placed: the box overlaps none of the three floor slots (measured, not eyeballed),
+and the dragon is still the hero of the room. The wall slot's box still meets the dragon's
+box by ~21px as it always did; the art's transparent top keeps the trophy clear.
+
+U3: the instructions take `settings` and fall back to the defaults when none exist (the title
+screen can open them before any save). A new "Quests" step names the Record and the coins.
+The old comment claiming the page could not drift was rewritten.
+
+Instrument notes, again: vitest on `main` picked up the writer's worktree copy of
+`styles.test.js` and reported its 4 tests as if they were mine, while my own file had failed
+to load (`new URL(..., import.meta.url)` is not a `file:` URL under vitest). Reusing the
+file's existing `css` reader and running with `--exclude '.claude/**'` gave the honest RED
+(78 > 73). And a save seeded with every slot filled paid seven quests on boot — 120 → 270
+coins — which incidentally confirmed the quest payout end to end once more.
+
 ## Next step
 
-Dispatch U3; calibrate U1.
+Push; verify from the server (the bundle changed, so the hash is a valid signal).
