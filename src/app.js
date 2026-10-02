@@ -16,7 +16,7 @@ import { renderSlotPicker } from './ui/slotPicker.js';
 import { renderUnlockLair } from './ui/unlockLairScreen.js';
 import { renderSettingsScreen } from './ui/settingsScreen.js';
 import { showLevelUp } from './ui/levelUp.js';
-import { createTimerState, start, pause, tick, advance } from './core/timer.js';
+import { createTimerState, start, pause, tick, advance, secondsForMode } from './core/timer.js';
 import { grantWorkReward, buyFood, leveledUp, dragonXp } from './core/game.js';
 import { currentLevel } from './core/dragon.js';
 import { lairOf, buyFurniture, placeItem, unlockLair } from './core/lair.js';
@@ -42,18 +42,15 @@ export const createApp = (root, { now = () => Date.now(), audioFactory = createA
   const restored = { ...createTimerState(state.settings), ...state.timer };
   let timerState = {
     ...restored,
-    remaining: Math.min(
-      restored.remaining,
-      restored.mode === 'work' ? restored.workSeconds : restored.breakSeconds,
-    ),
+    remaining: Math.min(restored.remaining, secondsForMode(restored, restored.mode)),
   };
 
   const save = () => store.save(state);
 
   // Persist only the volatile timer fields so a reload can resume the session.
   const persistTimer = () => {
-    const { mode, running, remaining, endsAt } = timerState;
-    state = { ...state, timer: { mode, running, remaining, endsAt } };
+    const { mode, running, remaining, endsAt, completedWork } = timerState;
+    state = { ...state, timer: { mode, running, remaining, endsAt, completedWork } };
     save();
   };
 
@@ -179,17 +176,23 @@ export const createApp = (root, { now = () => Date.now(), audioFactory = createA
         if (!timerState.running) {
           const workSeconds = settings.workMinutes * 60;
           const breakSeconds = settings.breakMinutes * 60;
+          const longBreakSeconds = settings.longBreakMinutes * 60;
           const atFreshWorkStart =
             timerState.mode === 'work' && timerState.remaining === timerState.workSeconds;
           // Never leave the countdown longer than the length it now belongs to. Keeping
           // a part-used block intact is worth doing, but a few seconds of accidental
           // progress used to lock the new duration out entirely: set work to 1 minute
           // with 14:48 on the clock and the clock stayed at 14:48.
-          const limit = timerState.mode === 'work' ? workSeconds : breakSeconds;
-          timerState = {
+          const rebaked = {
             ...timerState,
             workSeconds,
             breakSeconds,
+            longBreakSeconds,
+            sessionsBeforeLongBreak: settings.sessionsBeforeLongBreak,
+          };
+          const limit = secondsForMode(rebaked, timerState.mode);
+          timerState = {
+            ...rebaked,
             remaining: atFreshWorkStart
               ? workSeconds
               : Math.min(timerState.remaining, limit),

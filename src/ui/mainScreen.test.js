@@ -265,3 +265,86 @@ describe('lair navigation', () => {
     });
   });
 });
+
+describe('long break and cycle progress', () => {
+  const timer = (over) => ({
+    mode: 'work', remaining: 100, running: false,
+    sessionsBeforeLongBreak: 4, completedWork: 0, ...over,
+  });
+  const render = (over) => renderMainScreen({ ...base, timerState: timer(over) });
+  const dots = (el) => [...el.querySelectorAll('.session-dot')];
+
+  it('labels the three modes Work, Break and Long break', () => {
+    const label = (mode) => render({ mode }).querySelector('.mode-label').textContent;
+    expect(label('work')).toBe('Work');
+    expect(label('break')).toBe('Break');
+    expect(label('longBreak')).toBe('Long break');
+  });
+
+  it('keeps the resting dragon during a long break', () => {
+    const el = render({ mode: 'longBreak', completedWork: 4 });
+    expect(el.querySelector('.dragon-stage').classList.contains('resting')).toBe(true);
+    const img = el.querySelector('img.dragon-art.alive.resting');
+    expect(img).not.toBeNull();
+    expect(img.getAttribute('alt')).toBe(`${dragon.name} is resting`);
+  });
+
+  it('offers Resume break for a paused long break', () => {
+    const el = render({ mode: 'longBreak', completedWork: 4 });
+    expect(el.querySelector('.controls').textContent).toContain('Resume break');
+  });
+
+  it('shows one dot per session, none filled at the start of a cycle', () => {
+    const el = render({ completedWork: 0 });
+    expect(dots(el)).toHaveLength(4);
+    expect(el.querySelectorAll('.session-dot.is-done')).toHaveLength(0);
+    expect(el.querySelector('.session-dots').getAttribute('aria-label')).toBe('Session 1 of 4');
+  });
+
+  it('fills the dots for the work blocks finished in this cycle', () => {
+    const el = render({ completedWork: 6 });
+    expect(el.querySelectorAll('.session-dot.is-done')).toHaveLength(2);
+    expect(el.querySelector('.session-dots').getAttribute('aria-label')).toBe('Session 3 of 4');
+  });
+
+  it('fills every dot when the long break is due or running', () => {
+    expect(render({ mode: 'longBreak', completedWork: 8 })
+      .querySelectorAll('.session-dot.is-done')).toHaveLength(4);
+  });
+
+  it('renders no dots when the cycle length is unknown or not positive', () => {
+    expect(render({ sessionsBeforeLongBreak: 0 }).querySelector('.session-dots')).toBeNull();
+    expect(render({ sessionsBeforeLongBreak: undefined }).querySelector('.session-dots')).toBeNull();
+  });
+});
+
+describe('a finished work block counts the moment the bell rings', () => {
+  const timer = (over) => ({
+    mode: 'work', remaining: 100, running: false,
+    sessionsBeforeLongBreak: 4, completedWork: 0, ...over,
+  });
+  const render = (over) => renderMainScreen({ ...base, timerState: timer(over) });
+  const parked = (over) => render({ remaining: 0, running: false, ...over });
+
+  it('fills the dot while the block waits at zero, before Break is tapped', () => {
+    const el = parked({ completedWork: 0 });
+    expect(el.querySelectorAll('.session-dot.is-done')).toHaveLength(1);
+    expect(el.querySelector('.session-dots').getAttribute('aria-label')).toBe('Session 2 of 4');
+  });
+
+  it('fills every dot when the last block of the cycle waits at zero', () => {
+    const el = parked({ completedWork: 3 });
+    expect(el.querySelectorAll('.session-dot.is-done')).toHaveLength(4);
+    expect(el.querySelector('.session-dots').getAttribute('aria-label')).toBe('Session 4 of 4');
+  });
+
+  it('does not count a running work block that merely shows zero seconds left', () => {
+    const el = render({ completedWork: 1, remaining: 0, running: true });
+    expect(el.querySelectorAll('.session-dot.is-done')).toHaveLength(1);
+  });
+
+  it('does not count a break parked at zero', () => {
+    const el = parked({ mode: 'break', completedWork: 1 });
+    expect(el.querySelectorAll('.session-dot.is-done')).toHaveLength(1);
+  });
+});

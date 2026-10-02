@@ -1,6 +1,7 @@
 import { currentLevel, levelProgress } from '../core/dragon.js';
 import { art } from './art.js';
 import { themedIcon } from './themedIcon.js';
+import { isBreak } from '../core/timer.js';
 
 const fmt = (seconds) => {
   const m = Math.floor(seconds / 60);
@@ -9,7 +10,7 @@ const fmt = (seconds) => {
 };
 
 const idleLabel = ({ mode, remaining, workSeconds }) => {
-  if (mode === 'break') return '▶ Resume break';
+  if (isBreak(mode)) return '▶ Resume break';
   return remaining < workSeconds ? '▶ Keep studying' : '▶ Start studying';
 };
 
@@ -18,12 +19,35 @@ const idleLabel = ({ mode, remaining, workSeconds }) => {
 // hatch when the break started and revert when it ended, and would have shown a baby to
 // someone who had raised an adult. Rest is a state of your dragon, not another dragon.
 const stageArt = ({ dragon, timerState }, level) => {
-  const resting = timerState.mode === 'break';
+  const resting = isBreak(timerState.mode);
   const node = art(level.image, dragon.name, level.fallback);
   if (resting && node.tagName === 'IMG') node.alt = `${dragon.name} is resting`;
   node.classList.add('dragon-art', 'alive');
   if (resting) node.classList.add('resting');
   return node;
+};
+
+const MODE_LABELS = { work: 'Work', break: 'Break', longBreak: 'Long break' };
+
+// Progress through the current cycle. A non-zero multiple means the long break is due or
+// running, so every dot is filled rather than wrapping back to empty. With no usable cycle
+// length there is nothing to count, so no row is drawn.
+// A work block parked at 0:00 has been earned even though advance() has not run yet: it
+// only runs when Break is tapped. The bell and the filled dot have to land together, or the
+// dot looks like it belongs to the tap instead of to the work.
+const earnedSessions = ({ mode, remaining, running, completedWork = 0 }) =>
+  mode === 'work' && remaining === 0 && !running ? completedWork + 1 : completedWork;
+
+const sessionDots = (timerState) => {
+  const total = timerState.sessionsBeforeLongBreak;
+  if (!(total > 0)) return '';
+  const earned = earnedSessions(timerState);
+  const inCycle = earned % total;
+  const done = earned > 0 && inCycle === 0 ? total : inCycle;
+  const current = Math.min(done + 1, total);
+  const dots = Array.from({ length: total }, (_, i) =>
+    `<span class="session-dot${i < done ? ' is-done' : ''}"></span>`).join('');
+  return `<div class="session-dots" aria-label="Session ${current} of ${total}">${dots}</div>`;
 };
 
 export const renderMainScreen = (ctx) => {
@@ -43,14 +67,15 @@ export const renderMainScreen = (ctx) => {
   section.innerHTML =
     `<header class="top-bar">` +
       `<span class="coin-counter"><span class="coin-icon"></span> ${state.coins}</span>` +
-      `<span class="mode-label">${timerState.mode === 'work' ? 'Work' : 'Break'}</span>` +
+      `<span class="mode-label">${MODE_LABELS[timerState.mode] ?? 'Break'}</span>` +
       `<button class="icon-btn${state.muted ? ' is-muted' : ''}" data-action="mute"` +
         ` aria-pressed="${state.muted}"` +
         ` aria-label="${state.muted ? 'Unmute' : 'Mute'}"></button>` +
     `</header>` +
+    sessionDots(timerState) +
     `<p class="timer-display">${fmt(timerState.remaining)}</p>` +
     (reward ? `<p class="session-reward">+${reward} <span class="coin-icon"></span></p>` : '') +
-    `<div class="dragon-stage${timerState.mode === 'break' ? ' resting' : ''}"></div>` +
+    `<div class="dragon-stage${isBreak(timerState.mode) ? ' resting' : ''}"></div>` +
     `<div class="xp-bar"><div class="xp-fill" style="width:${Math.round(progress.ratio * 100)}%"></div></div>` +
     `<div class="controls"></div>` +
     `<footer class="nav-bar">` +

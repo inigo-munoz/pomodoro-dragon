@@ -11,7 +11,18 @@ export const createTimerState = (settings) => ({
   endsAt: null,
   workSeconds: settings.workMinutes * 60,
   breakSeconds: settings.breakMinutes * 60,
+  longBreakSeconds: settings.longBreakMinutes * 60,
+  sessionsBeforeLongBreak: settings.sessionsBeforeLongBreak,
+  completedWork: 0,
 });
+
+export const isBreak = (mode) => mode === 'break' || mode === 'longBreak';
+
+export const secondsForMode = (state, mode) => {
+  if (mode === 'work') return state.workSeconds;
+  if (mode === 'longBreak') return state.longBreakSeconds;
+  return state.breakSeconds;
+};
 
 export const start = (state, now) => {
   if (state.running) return state;
@@ -37,8 +48,24 @@ export const tick = (state, now) => {
   };
 };
 
+// The one place the next phase is chosen. The work counter only ever grows; the modulo
+// turns it into a cycle (long breaks after 4, 8, 12...). A missing or non-positive cycle
+// length means "never a long break" rather than a division by zero.
 export const advance = (state) => {
-  const nextMode = state.mode === 'work' ? 'break' : 'work';
-  const remaining = nextMode === 'work' ? state.workSeconds : state.breakSeconds;
-  return { ...state, mode: nextMode, remaining, running: false, endsAt: null };
+  let { completedWork = 0 } = state;
+  let nextMode = 'work';
+  if (state.mode === 'work') {
+    completedWork += 1;
+    const cycle = state.sessionsBeforeLongBreak;
+    const longDue = cycle > 0 && completedWork % cycle === 0;
+    nextMode = longDue ? 'longBreak' : 'break';
+  }
+  return {
+    ...state,
+    mode: nextMode,
+    completedWork,
+    remaining: secondsForMode(state, nextMode),
+    running: false,
+    endsAt: null,
+  };
 };

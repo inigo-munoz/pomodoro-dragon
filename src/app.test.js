@@ -687,3 +687,66 @@ describe('createApp lair', () => {
     });
   });
 });
+
+describe('createApp long break cycle', () => {
+  const seedCycle = (timer) => window.localStorage.setItem(
+    config.storageKey,
+    JSON.stringify({
+      dragonId: 'frost', coins: 0, timer,
+      settings: { workMinutes: 1, breakMinutes: 1, longBreakMinutes: 3, sessionsBeforeLongBreak: 4 },
+    }),
+  );
+
+  const runWorkBlock = () => { click('start'); vi.advanceTimersByTime(ONE_BLOCK_MS); };
+
+  it('gives three short breaks and then a long one that pays nothing', () => {
+    seedCycle(null);
+    createApp(root);
+
+    for (let block = 1; block <= 3; block += 1) {
+      runWorkBlock();
+      click('break');
+      expect(modeLabel()).toBe('Break');
+      expect(timerText()).toBe('01:00');
+      vi.advanceTimersByTime(ONE_BLOCK_MS); // finish the break
+    }
+
+    runWorkBlock();
+    const coinsBefore = coins();
+    click('break');
+    expect(modeLabel()).toBe('Long break');
+    expect(timerText()).toBe('03:00');
+
+    vi.advanceTimersByTime(3 * 60_000 + 1000);
+    expect(coins()).toBe(coinsBefore); // resting is never paid
+    expect(modeLabel()).toBe('Work');
+    expect(timerText()).toBe('01:00');
+  });
+
+  it('remembers the cycle across a reload', () => {
+    seedCycle(null);
+    createApp(root);
+    runWorkBlock();
+    click('break');
+    vi.advanceTimersByTime(ONE_BLOCK_MS);
+    runWorkBlock();
+    click('break'); // the second block is counted when it is left, so two are done mid-cycle
+
+    const at = Date.now();
+    vi.clearAllTimers();
+    vi.setSystemTime(at);
+    root.remove();
+    root = document.createElement('div');
+    document.body.appendChild(root);
+    createApp(root);
+
+    expect(root.querySelectorAll('.session-dot.is-done')).toHaveLength(2);
+    vi.advanceTimersByTime(ONE_BLOCK_MS); // finish the break
+    runWorkBlock();
+    click('break');
+    vi.advanceTimersByTime(ONE_BLOCK_MS);
+    runWorkBlock(); // the fourth block overall, two of them before the reload
+    click('break');
+    expect(modeLabel()).toBe('Long break');
+  });
+});
