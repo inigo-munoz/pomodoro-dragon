@@ -38,6 +38,23 @@ body {
     linear-gradient(to bottom, var(--bg) 0%, var(--bg) 16%, var(--card) 88%, var(--card) 100%);
 }
 
+/* Every other screen gets depth instead of sky, and it has to go the OTHER way. The panels
+   and cards on these screens are all var(--card) — .food-card, .dragon-choice,
+   .settings-panel, .lair-room, .unlock-card — so a background climbing toward var(--card)
+   would swallow the very things the child is meant to tap. This darkens toward the edges and
+   the foot of the screen instead, so a card is always the lighter thing in view. The black is
+   an overlay rather than a token because no token in the palette is darker than --bg. */
+.screen:not(.main)::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(ellipse 150% 30% at 50% 103%, rgba(0, 0, 0, 0.45) 0 64%, transparent 69%),
+    radial-gradient(ellipse 115% 85% at 50% 10%, transparent 0 38%, rgba(0, 0, 0, 0.4) 100%),
+    var(--bg);
+}
+
 .top-bar, .nav-bar { display: flex; justify-content: space-between; width: 100%; align-items: center; }
 .coin-counter { font-size: 1.4rem; font-weight: 700; }
 .mode-label { font-size: 1.1rem; opacity: 0.8; }
