@@ -301,6 +301,8 @@ export const createApp = (root, {
         const minutes = timerState.workSeconds / 60;
         state = {
           ...state,
+          // Counted beside the history so the two can never disagree; pruning never touches it.
+          lifetimeBlocks: (state.lifetimeBlocks ?? 0) + 1,
           history: pruneHistory(
             recordBlock(state.history, now(), minutes), now(), config.historyDays,
           ),

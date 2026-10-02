@@ -1,4 +1,4 @@
-import { weekOf, monthOf, totalBlocks } from '../core/history.js';
+import { weekOf, monthOf } from '../core/history.js';
 import { backButton } from './backButton.js';
 import { coinCounter } from './coinCounter.js';
 import { screenTitle } from './screenTitle.js';
@@ -119,7 +119,7 @@ export const renderRecordScreen = ({ state, now, theme, onBack }) => {
 
   const total = document.createElement('p');
   total.className = 'record-total';
-  total.textContent = `You have finished ${plural(totalBlocks(history), 'block')} in all.`;
+  total.textContent = `You have finished ${plural(state.lifetimeBlocks ?? 0, 'block')} in all.`;
   section.appendChild(total);
 
   return section;

@@ -4,8 +4,11 @@ import { renderRecordScreen } from './recordScreen.js';
 // Friday 2 October 2026, local, so the week runs Mon 28 Sep .. Sun 4 Oct.
 const now = new Date(2026, 9, 2, 18, 0).getTime();
 
+// The lifetime counter is its own field in the save. By default it equals what the history
+// sums to, which is the honest state of a player whose window still holds everything.
+const sumBlocks = (history) => Object.values(history).reduce((n, d) => n + d.blocks, 0);
 const ctx = (history = {}, over = {}) => ({
-  state: { coins: 12, history },
+  state: { coins: 12, history, lifetimeBlocks: sumBlocks(history) },
   now,
   theme: { icons: {} },
   onBack: vi.fn(),
@@ -104,6 +107,20 @@ describe('record screen', () => {
       '2026-10-02': { blocks: 3, minutes: 75 },
     }));
     expect(el.querySelector('.record-total').textContent).toBe('You have finished 13 blocks in all.');
+  });
+
+  it('reads the total from the lifetime counter, not from the days still in the history', () => {
+    // 60 days of history have been pruned away: only 3 blocks are visible, 130 were finished.
+    const el = renderRecordScreen({
+      ...ctx({ '2026-10-02': { blocks: 3, minutes: 75 } }),
+      state: { coins: 12, history: { '2026-10-02': { blocks: 3, minutes: 75 } }, lifetimeBlocks: 130 },
+    });
+    expect(el.querySelector('.record-total').textContent).toBe('You have finished 130 blocks in all.');
+  });
+
+  it('says 0 blocks when the save has no lifetime counter at all', () => {
+    const el = renderRecordScreen({ ...ctx(), state: { coins: 12, history: {} } });
+    expect(el.querySelector('.record-total').textContent).toBe('You have finished 0 blocks in all.');
   });
 
   it('says "block" for exactly one', () => {

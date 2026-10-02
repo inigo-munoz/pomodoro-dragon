@@ -1,11 +1,15 @@
+import { totalBlocks } from '../core/history.js';
+
 export const defaultState = (config) => ({
-  version: 4,
+  version: 5,
   dragonId: null,
   coins: 0,
   xpByDragon: {},
   lairs: {},
   lairUnlocked: false,
   history: {},
+  // Every work block ever finished. Unlike `history` it is never pruned, so it only grows.
+  lifetimeBlocks: 0,
   muted: false,
   settings: { ...config.durations.default, musicStyle: config.musicStyles[0] },
   timer: null,
@@ -26,7 +30,8 @@ const renameCornerSlot = (lairs) => {
 
 // Upgrade older saves to the current shape. v1 (global `xp`) becomes the
 // per-dragon `xpByDragon`; v2 gains `timer`, which the defaults merge fills in; v3 lairs
-// move their `corner` slot to `center`.
+// move their `corner` slot to `center`; v4 saves gain `lifetimeBlocks`, seeded from the
+// history they still hold.
 const migrate = (merged, parsed) => {
   let next = merged;
   if ('xp' in parsed) {
@@ -35,7 +40,12 @@ const migrate = (merged, parsed) => {
     next = { ...rest, xpByDragon };
   }
   if ((parsed.version ?? 0) < 4) next = { ...next, lairs: renameCornerSlot(next.lairs) };
-  return { ...next, version: 4 };
+  // The defaults merge would hand an older save 0, and the total would drop to nothing. The
+  // history it still holds is the best honest estimate; whatever was pruned is gone for good.
+  if ((parsed.version ?? 0) < 5 && !Number.isFinite(parsed.lifetimeBlocks)) {
+    next = { ...next, lifetimeBlocks: totalBlocks(parsed.history ?? {}) };
+  }
+  return { ...next, version: 5 };
 };
 
 export const createStore = (backend, config) => {
