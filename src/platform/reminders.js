@@ -3,6 +3,7 @@
 // silence. A throw from here would break the timer, which is far worse than a missed bell.
 const defaultNotification = () => globalThis.Notification ?? null;
 const defaultWakeLock = () => globalThis.navigator?.wakeLock ?? null;
+const defaultServiceWorker = () => globalThis.navigator?.serviceWorker ?? null;
 
 // Permission states are the browser's own ('default', 'granted', 'denied') plus one of
 // ours for an environment with no Notification API at all.
@@ -13,6 +14,7 @@ export const UNSUPPORTED = 'unsupported';
 export const createReminders = ({
   notification = defaultNotification(),
   wakeLock = defaultWakeLock(),
+  serviceWorker = defaultServiceWorker(),
 } = {}) => {
   // A pending acquire is held as a promise so two overlapping keepAwake calls share one
   // request instead of stacking two locks.
@@ -38,12 +40,27 @@ export const createReminders = ({
       return readPermission();
     },
 
-    notify({ title, body }) {
+    // Android Chrome refuses `new Notification()` and only shows notices through a service
+    // worker registration, so that is tried first. Resolves once the attempt is over and
+    // never rejects: a missed bell must not break the timer.
+    async notify({ title, body }) {
       if (readPermission() !== 'granted') return;
+      let registration = null;
+      try {
+        // With no service worker there is nothing to await, so the constructor fallback
+        // below still runs synchronously.
+        if (serviceWorker) registration = await serviceWorker.getRegistration();
+      } catch { /* the lookup failed; treat it like having no registration */ }
+      if (registration) {
+        try {
+          await registration.showNotification(title, { body });
+        } catch { /* the worker owned the attempt; a constructor retry could notify twice */ }
+        return;
+      }
       try {
         // eslint-disable-next-line no-new
         new notification(title, { body });
-      } catch { /* some browsers only allow notifications through a service worker */ }
+      } catch { /* desktop browsers allow this; where it throws there is no other way left */ }
     },
 
     async keepAwake() {

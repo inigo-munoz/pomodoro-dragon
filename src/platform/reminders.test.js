@@ -72,6 +72,65 @@ describe('notify', () => {
   });
 });
 
+describe('notify through the service worker', () => {
+  const granted = () => fakeNotification({ permission: 'granted' });
+  const withRegistration = (registration) => ({ getRegistration: vi.fn(async () => registration) });
+  const fakeRegistration = () => ({ showNotification: vi.fn(async () => {}) });
+
+  it('shows through the registration and leaves the constructor alone', async () => {
+    const notification = granted();
+    const registration = fakeRegistration();
+    await createReminders({ notification, serviceWorker: withRegistration(registration) })
+      .notify({ title: 'Block done', body: 'Take a break' });
+    expect(registration.showNotification).toHaveBeenCalledWith('Block done', { body: 'Take a break' });
+    expect(notification.shown).toHaveLength(0);
+  });
+
+  it.each([null, undefined])('falls back to the constructor when there is no registration (%s)', async (none) => {
+    const notification = granted();
+    await createReminders({ notification, serviceWorker: withRegistration(none) })
+      .notify({ title: 't', body: 'b' });
+    expect(notification.shown).toHaveLength(1);
+  });
+
+  it('swallows a showNotification that rejects, without a second notice from the constructor', async () => {
+    // The worker owned the attempt; retrying through the constructor could double-notify.
+    const notification = granted();
+    const registration = { showNotification: vi.fn(async () => { throw new Error('nope'); }) };
+    await expect(createReminders({ notification, serviceWorker: withRegistration(registration) })
+      .notify({ title: 't', body: 'b' })).resolves.toBeUndefined();
+    expect(notification.shown).toHaveLength(0);
+  });
+
+  it('swallows a showNotification that throws synchronously', async () => {
+    const registration = { showNotification: vi.fn(() => { throw new Error('nope'); }) };
+    await expect(createReminders({ notification: granted(), serviceWorker: withRegistration(registration) })
+      .notify({ title: 't', body: 'b' })).resolves.toBeUndefined();
+  });
+
+  it('swallows a getRegistration that rejects', async () => {
+    const serviceWorker = { getRegistration: vi.fn(async () => { throw new Error('nope'); }) };
+    await expect(createReminders({ notification: granted(), serviceWorker })
+      .notify({ title: 't', body: 'b' })).resolves.toBeUndefined();
+  });
+
+  it.each(['default', 'denied'])('touches neither path while permission is %s', async (permission) => {
+    const notification = fakeNotification({ permission });
+    const registration = fakeRegistration();
+    const serviceWorker = withRegistration(registration);
+    await createReminders({ notification, serviceWorker }).notify({ title: 't', body: 'b' });
+    expect(serviceWorker.getRegistration).not.toHaveBeenCalled();
+    expect(registration.showNotification).not.toHaveBeenCalled();
+    expect(notification.shown).toHaveLength(0);
+  });
+
+  it('keeps the constructor behaviour when there is no service worker at all', async () => {
+    const notification = granted();
+    await createReminders({ notification, serviceWorker: null }).notify({ title: 't', body: 'b' });
+    expect(notification.shown).toHaveLength(1);
+  });
+});
+
 describe('request', () => {
   it('asks once and reports the result', async () => {
     const notification = fakeNotification({ answer: 'granted' });
