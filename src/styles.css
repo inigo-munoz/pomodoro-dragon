@@ -10,6 +10,19 @@
 }
 
 * { box-sizing: border-box; }
+/* One display face, self-hosted. Google's CDN would be a network request an offline PWA
+   cannot make, so the file lives in public/ and is precached with everything else.
+   It is used ONLY for display headings. The body stays on system-ui on purpose: a child
+   still learning to read should not have to decode an engraved serif to follow the
+   instructions. Cinzel, SIL Open Font License 1.1, licence shipped at public/fonts/OFL.txt. */
+@font-face {
+  font-family: 'Cinzel';
+  src: url('/fonts/cinzel-700.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 body {
   margin: 0;
   font-family: system-ui, sans-serif;
@@ -149,7 +162,8 @@ body {
 /* One quiet word per screen, always in the same place: a chapter title, not a shout.
    --fg at low opacity so every theme's palette carries it without a new token. */
 .screen-title {
-  align-self: flex-start; margin: 0; font-size: 2.4rem; font-weight: 800;
+  font-family: 'Cinzel', Georgia, serif;
+  align-self: flex-start; margin: 0; font-size: 2.4rem; font-weight: 700;
   text-transform: uppercase; letter-spacing: 0.12em; text-align: left;
   color: var(--fg); opacity: 0.45;
 }
@@ -338,8 +352,36 @@ body {
 /* The front door. The name is the hero of the screen, so unlike .screen-title it is loud:
    full --fg, centred, and given the room to breathe. */
 .screen.title { justify-content: center; text-align: center; gap: 28px; }
+/* The front door has its own painting rather than a theme backdrop: it is shown before a
+   dragon exists, so there is no theme to ask. Bounded to the app column like the others, and
+   darkened at the top and bottom because this sky is the brightest of the set (mean 42 against
+   16-32 for the four themed ones) and the white title has to win. */
+.screen.title::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0.15) 38%,
+                               rgba(0, 0, 0, 0.15) 62%, rgba(0, 0, 0, 0.5) 100%),
+    url('/art/backdrops/title.webp') center bottom / cover no-repeat,
+    var(--bg);
+}
+.screen.title { justify-content: center; }
+
+/* The front door is the one screen that never changes theme: it runs on the default palette
+   before a dragon exists, and --accent there is green, which fought the painting behind it.
+   Literal colours are safe here for exactly that reason, and they borrow the parchment-on-dark
+   language the scroll icons already use. */
+.screen.title .big-btn.primary {
+  background: #f2e6c8; color: #2a2033;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.45);
+}
+.screen.title .title-link { color: #f2e6c8; opacity: 0.85; }
+
 .app-title {
-  margin: 0; font-size: 3.2rem; font-weight: 800; line-height: 1.05;
+  font-family: 'Cinzel', Georgia, serif;
+  margin: 0; font-size: 3.2rem; font-weight: 700; line-height: 1.1;
   text-transform: uppercase; letter-spacing: 0.08em; color: var(--fg);
 }
 /* Quieter than Start, but still a 48px target for a child's thumb. */

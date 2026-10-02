@@ -8,7 +8,8 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       workbox: {
-        globPatterns: ['**/*.{js,css,html,webp,png,svg}'],
+        // woff2 belongs here or the display font is a network request the offline app cannot make.
+        globPatterns: ['**/*.{js,css,html,webp,png,svg,woff2}'],
       },
       manifest: {
         name: 'Pomodoro Fantasy',

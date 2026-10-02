@@ -59,3 +59,17 @@ the ID3 title and artist tags when it re-encodes an upload.
 
 That recovery is the reason the current tracks are named after the music they contain
 rather than by index, and the reason their metadata was kept rather than stripped.
+
+## Fonts
+
+### Cinzel (display only)
+
+- **Used for**: the title on the front door and the heading on every screen. Body text stays
+  on `system-ui` on purpose — a child still learning to read should not have to decode an
+  engraved serif to follow the instructions.
+- **Licence**: SIL Open Font License 1.1. The full licence ships at `public/fonts/OFL.txt`.
+- **Copyright**: 2020 The Cinzel Project Authors (https://github.com/NDISCOVER/Cinzel)
+- **Why self-hosted**: this is an offline PWA. Loading it from Google's CDN would be a network
+  request the app cannot make when it is offline, so the `.woff2` lives in `public/fonts/` and
+  is precached with everything else. That is why `woff2` was added to the workbox
+  `globPatterns` in `vite.config.js`.
