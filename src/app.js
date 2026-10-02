@@ -20,6 +20,7 @@ import { createTimerState, start, pause, tick, advance, secondsForMode } from '.
 import { grantWorkReward, buyFood, leveledUp, dragonXp } from './core/game.js';
 import { currentLevel } from './core/dragon.js';
 import { lairOf, buyFurniture, placeItem, unlockLair } from './core/lair.js';
+import { canAfford } from './core/wallet.js';
 import { resolveTheme, applyPalette, applyBackdrop } from './core/theme.js';
 
 export const createApp = (root, { now = () => Date.now(), audioFactory = createAudio } = {}) => {
@@ -126,7 +127,7 @@ export const createApp = (root, { now = () => Date.now(), audioFactory = createA
     const dragon = getDragon(state.dragonId);
     screens.set('lair', renderLairScreen({
       state, dragon, xp: dragonXp(state), theme: resolveTheme(dragon.themeId), furniture,
-      onPickSlot, onBack: render,
+      onBuy: onBuyItem, onPlace: onPlaceItem, onBack: render,
     }));
     screens.show('lair');
   };
@@ -148,23 +149,24 @@ export const createApp = (root, { now = () => Date.now(), audioFactory = createA
     onLair();
   };
 
-  const onPickSlot = (slot) => {
-    const dragon = getDragon(state.dragonId);
-    screens.set('picker', renderSlotPicker({
-      state, slot, furniture, theme: resolveTheme(dragon.themeId),
-      onChoose: onChooseItem, onBack: onLair,
-    }));
-    screens.show('picker');
+  // Buying and placing are mutually exclusive in core: placing needs an owned item, buying
+  // an unowned one, and a wrong branch throws rather than quietly charging twice. The shelf
+  // already routes by state, but ownership and the purse are re-checked here so no stale or
+  // forged tap can reach the wrong branch or overspend. buyFurniture writes the slot itself.
+  const onBuyItem = (item) => {
+    const { owned } = lairOf(state, state.dragonId);
+    if (owned.includes(item.id) || !canAfford(state.coins, item.price)) return;
+    state = buyFurniture(state, item);
+    save();
+    onLair(); // rebuild so the room and the shelf both show the new piece
   };
 
-  // The two core contracts are mutually exclusive on purpose: placing needs an owned
-  // item, buying needs an unowned one. Routing on `owned` here keeps a re-display free,
-  // and a wrong branch would throw rather than quietly charge twice, so nothing is caught.
-  const onChooseItem = (item) => {
+  const onPlaceItem = (item) => {
     const { owned } = lairOf(state, state.dragonId);
-    state = owned.includes(item.id) ? placeItem(state, item) : buyFurniture(state, item);
+    if (!owned.includes(item.id)) return;
+    state = placeItem(state, item);
     save();
-    onLair(); // rebuild so the filled slot shows
+    onLair();
   };
 
   const onSettings = () => {
