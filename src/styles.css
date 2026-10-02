@@ -300,3 +300,16 @@ body {
 .unlock-art .art-img { width: 100%; height: 100%; object-fit: cover; }
 .unlock-art .art-emoji { font-size: 7rem; opacity: 0.5; }
 .unlock-blurb { margin: 0; text-align: center; }
+
+/* the shelf under the lair: one row per slot, its label above three cards. The cards are
+   the shop's .food-card, tightened so twelve of them fit under the room. A piece in the
+   room is outlined in the accent so it reads as "there" at a glance. */
+.lair-shelf { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+.shelf-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.shelf-label { grid-column: 1 / -1; font-weight: 700; text-transform: capitalize; }
+.shelf-item { align-items: center; padding: 6px; gap: 2px; min-height: 48px; }
+.shelf-item .food-icon { font-size: 1.8rem; line-height: 1; }
+.shelf-item .art-img { width: 2.4rem; height: 2.4rem; object-fit: contain; }
+.shelf-item .food-name { font-size: 0.85rem; }
+.shelf-item[data-state="placed"] { outline: 3px solid var(--accent); outline-offset: -3px; }
+.shelf-item[data-state="locked"] { cursor: default; }
