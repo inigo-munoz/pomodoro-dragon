@@ -1121,6 +1121,57 @@ describe('createApp study record', () => {
   });
 });
 
+describe('createApp lifetime total', () => {
+  const saved = () => JSON.parse(window.localStorage.getItem(config.storageKey));
+  const finishWork = () => { click('start'); vi.advanceTimersByTime(ONE_BLOCK_MS); };
+
+  beforeEach(() => { vi.setSystemTime(new Date(2026, 9, 2, 10, 0, 0)); });
+
+  it('counts a finished work block in the day and in the lifetime total', () => {
+    createApp(root);
+    pickDragon('frost');
+    finishWork();
+    expect(saved().history['2026-10-02'].blocks).toBe(1);
+    expect(saved().lifetimeBlocks).toBe(1);
+  });
+
+  it('does not count a finished break', () => {
+    createApp(root);
+    pickDragon('frost');
+    finishWork();
+    click('break');
+    vi.advanceTimersByTime(ONE_BLOCK_MS);
+    expect(saved().lifetimeBlocks).toBe(1);
+  });
+
+  it('never loses a block when history is pruned past its day', () => {
+    createApp(root);
+    pickDragon('frost');
+    finishWork();
+    expect(saved().lifetimeBlocks).toBe(1);
+    // Months later: the first block's day leaves the 60-day window on the next record.
+    click('break');
+    vi.advanceTimersByTime(ONE_BLOCK_MS);
+    vi.setSystemTime(new Date(2027, 0, 20, 10, 0, 0));
+    finishWork();
+    expect(Object.keys(saved().history)).toEqual(['2027-01-20']);
+    expect(saved().lifetimeBlocks).toBe(2);
+    click('record');
+    expect(root.querySelector('.record-total').textContent)
+      .toBe('You have finished 2 blocks in all.');
+  });
+
+  it('seeds an old save from its history and keeps counting from there', () => {
+    window.localStorage.setItem(config.storageKey, JSON.stringify({
+      version: 4, dragonId: 'frost', settings: { workMinutes: 1, breakMinutes: 1 },
+      history: { '2026-10-01': { blocks: 5, minutes: 125 } },
+    }));
+    createApp(root);
+    finishWork();
+    expect(saved().lifetimeBlocks).toBe(6);
+  });
+});
+
 describe('createApp record screen', () => {
   it('opens from the fourth nav button and returns to the main screen', () => {
     createApp(root);
